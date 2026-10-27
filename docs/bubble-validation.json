@@ -1,0 +1,954 @@
+{
+  "date": "2026-10-26",
+  "server": "http://127.0.0.1:3001",
+  "pages": [
+    {
+      "name": "inicio",
+      "size": [
+        1280,
+        800
+      ],
+      "backgrounds": 1,
+      "backgroundLoaded": true,
+      "fixed": true,
+      "backgroundTop": 0,
+      "width": 1280,
+      "overflow": false,
+      "failedImages": [],
+      "smallBubbleControls": [],
+      "fixedAfterScroll": true
+    },
+    {
+      "name": "anuncios",
+      "size": [
+        1280,
+        800
+      ],
+      "backgrounds": 1,
+      "backgroundLoaded": true,
+      "fixed": true,
+      "backgroundTop": 0,
+      "width": 1280,
+      "overflow": false,
+      "failedImages": [],
+      "smallBubbleControls": [],
+      "fixedAfterScroll": true
+    },
+    {
+      "name": "categorias",
+      "size": [
+        1280,
+        800
+      ],
+      "backgrounds": 1,
+      "backgroundLoaded": true,
+      "fixed": true,
+      "backgroundTop": 0,
+      "width": 1280,
+      "overflow": false,
+      "failedImages": [],
+      "smallBubbleControls": [],
+      "fixedAfterScroll": true
+    },
+    {
+      "name": "login",
+      "size": [
+        1280,
+        800
+      ],
+      "backgrounds": 1,
+      "backgroundLoaded": true,
+      "fixed": true,
+      "backgroundTop": 0,
+      "width": 1280,
+      "overflow": false,
+      "failedImages": [],
+      "smallBubbleControls": [],
+      "fixedAfterScroll": true
+    },
+    {
+      "name": "registro",
+      "size": [
+        1280,
+        800
+      ],
+      "backgrounds": 1,
+      "backgroundLoaded": true,
+      "fixed": true,
+      "backgroundTop": 0,
+      "width": 1280,
+      "overflow": false,
+      "failedImages": [],
+      "smallBubbleControls": [],
+      "fixedAfterScroll": true
+    },
+    {
+      "name": "detalle",
+      "size": [
+        1280,
+        800
+      ],
+      "backgrounds": 1,
+      "backgroundLoaded": true,
+      "fixed": true,
+      "backgroundTop": 0,
+      "width": 1280,
+      "overflow": false,
+      "failedImages": [],
+      "smallBubbleControls": [],
+      "fixedAfterScroll": true
+    },
+    {
+      "name": "ayuda",
+      "size": [
+        1280,
+        800
+      ],
+      "backgrounds": 1,
+      "backgroundLoaded": true,
+      "fixed": true,
+      "backgroundTop": 0,
+      "width": 1280,
+      "overflow": false,
+      "failedImages": [],
+      "smallBubbleControls": [],
+      "fixedAfterScroll": true
+    },
+    {
+      "name": "inicio",
+      "size": [
+        1440,
+        900
+      ],
+      "backgrounds": 1,
+      "backgroundLoaded": true,
+      "fixed": true,
+      "backgroundTop": 0,
+      "width": 1440,
+      "overflow": false,
+      "failedImages": [],
+      "smallBubbleControls": [],
+      "fixedAfterScroll": true
+    },
+    {
+      "name": "anuncios",
+      "size": [
+        1440,
+        900
+      ],
+      "backgrounds": 1,
+      "backgroundLoaded": true,
+      "fixed": true,
+      "backgroundTop": 0,
+      "width": 1440,
+      "overflow": false,
+      "failedImages": [],
+      "smallBubbleControls": [],
+      "fixedAfterScroll": true
+    },
+    {
+      "name": "categorias",
+      "size": [
+        1440,
+        900
+      ],
+      "backgrounds": 1,
+      "backgroundLoaded": true,
+      "fixed": true,
+      "backgroundTop": 0,
+      "width": 1440,
+      "overflow": false,
+      "failedImages": [],
+      "smallBubbleControls": [],
+      "fixedAfterScroll": true
+    },
+    {
+      "name": "login",
+      "size": [
+        1440,
+        900
+      ],
+      "backgrounds": 1,
+      "backgroundLoaded": true,
+      "fixed": true,
+      "backgroundTop": 0,
+      "width": 1440,
+      "overflow": false,
+      "failedImages": [],
+      "smallBubbleControls": [],
+      "fixedAfterScroll": true
+    },
+    {
+      "name": "registro",
+      "size": [
+        1440,
+        900
+      ],
+      "backgrounds": 1,
+      "backgroundLoaded": true,
+      "fixed": true,
+      "backgroundTop": 0,
+      "width": 1440,
+      "overflow": false,
+      "failedImages": [],
+      "smallBubbleControls": [],
+      "fixedAfterScroll": true
+    },
+    {
+      "name": "detalle",
+      "size": [
+        1440,
+        900
+      ],
+      "backgrounds": 1,
+      "backgroundLoaded": true,
+      "fixed": true,
+      "backgroundTop": 0,
+      "width": 1440,
+      "overflow": false,
+      "failedImages": [],
+      "smallBubbleControls": [],
+      "fixedAfterScroll": true
+    },
+    {
+      "name": "ayuda",
+      "size": [
+        1440,
+        900
+      ],
+      "backgrounds": 1,
+      "backgroundLoaded": true,
+      "fixed": true,
+      "backgroundTop": 0,
+      "width": 1440,
+      "overflow": false,
+      "failedImages": [],
+      "smallBubbleControls": [],
+      "fixedAfterScroll": true
+    },
+    {
+      "name": "inicio",
+      "size": [
+        768,
+        1024
+      ],
+      "backgrounds": 1,
+      "backgroundLoaded": true,
+      "fixed": true,
+      "backgroundTop": 0,
+      "width": 768,
+      "overflow": false,
+      "failedImages": [],
+      "smallBubbleControls": [],
+      "fixedAfterScroll": true
+    },
+    {
+      "name": "anuncios",
+      "size": [
+        768,
+        1024
+      ],
+      "backgrounds": 1,
+      "backgroundLoaded": true,
+      "fixed": true,
+      "backgroundTop": 0,
+      "width": 768,
+      "overflow": false,
+      "failedImages": [],
+      "smallBubbleControls": [],
+      "fixedAfterScroll": true
+    },
+    {
+      "name": "categorias",
+      "size": [
+        768,
+        1024
+      ],
+      "backgrounds": 1,
+      "backgroundLoaded": true,
+      "fixed": true,
+      "backgroundTop": 0,
+      "width": 768,
+      "overflow": false,
+      "failedImages": [],
+      "smallBubbleControls": [],
+      "fixedAfterScroll": true
+    },
+    {
+      "name": "login",
+      "size": [
+        768,
+        1024
+      ],
+      "backgrounds": 1,
+      "backgroundLoaded": true,
+      "fixed": true,
+      "backgroundTop": 0,
+      "width": 768,
+      "overflow": false,
+      "failedImages": [],
+      "smallBubbleControls": [],
+      "fixedAfterScroll": true
+    },
+    {
+      "name": "registro",
+      "size": [
+        768,
+        1024
+      ],
+      "backgrounds": 1,
+      "backgroundLoaded": true,
+      "fixed": true,
+      "backgroundTop": 0,
+      "width": 768,
+      "overflow": false,
+      "failedImages": [],
+      "smallBubbleControls": [],
+      "fixedAfterScroll": true
+    },
+    {
+      "name": "detalle",
+      "size": [
+        768,
+        1024
+      ],
+      "backgrounds": 1,
+      "backgroundLoaded": true,
+      "fixed": true,
+      "backgroundTop": 0,
+      "width": 768,
+      "overflow": false,
+      "failedImages": [],
+      "smallBubbleControls": [],
+      "fixedAfterScroll": true
+    },
+    {
+      "name": "ayuda",
+      "size": [
+        768,
+        1024
+      ],
+      "backgrounds": 1,
+      "backgroundLoaded": true,
+      "fixed": true,
+      "backgroundTop": 0,
+      "width": 768,
+      "overflow": false,
+      "failedImages": [],
+      "smallBubbleControls": [],
+      "fixedAfterScroll": true
+    },
+    {
+      "name": "inicio",
+      "size": [
+        390,
+        844
+      ],
+      "backgrounds": 1,
+      "backgroundLoaded": true,
+      "fixed": true,
+      "backgroundTop": 0,
+      "width": 390,
+      "overflow": false,
+      "failedImages": [],
+      "smallBubbleControls": [],
+      "fixedAfterScroll": true
+    },
+    {
+      "name": "anuncios",
+      "size": [
+        390,
+        844
+      ],
+      "backgrounds": 1,
+      "backgroundLoaded": true,
+      "fixed": true,
+      "backgroundTop": 0,
+      "width": 390,
+      "overflow": false,
+      "failedImages": [],
+      "smallBubbleControls": [],
+      "fixedAfterScroll": true
+    },
+    {
+      "name": "categorias",
+      "size": [
+        390,
+        844
+      ],
+      "backgrounds": 1,
+      "backgroundLoaded": true,
+      "fixed": true,
+      "backgroundTop": 0,
+      "width": 390,
+      "overflow": false,
+      "failedImages": [],
+      "smallBubbleControls": [],
+      "fixedAfterScroll": true
+    },
+    {
+      "name": "login",
+      "size": [
+        390,
+        844
+      ],
+      "backgrounds": 1,
+      "backgroundLoaded": true,
+      "fixed": true,
+      "backgroundTop": 0,
+      "width": 390,
+      "overflow": false,
+      "failedImages": [],
+      "smallBubbleControls": [],
+      "fixedAfterScroll": true
+    },
+    {
+      "name": "registro",
+      "size": [
+        390,
+        844
+      ],
+      "backgrounds": 1,
+      "backgroundLoaded": true,
+      "fixed": true,
+      "backgroundTop": 0,
+      "width": 390,
+      "overflow": false,
+      "failedImages": [],
+      "smallBubbleControls": [],
+      "fixedAfterScroll": true
+    },
+    {
+      "name": "detalle",
+      "size": [
+        390,
+        844
+      ],
+      "backgrounds": 1,
+      "backgroundLoaded": true,
+      "fixed": true,
+      "backgroundTop": 0,
+      "width": 390,
+      "overflow": false,
+      "failedImages": [],
+      "smallBubbleControls": [],
+      "fixedAfterScroll": true
+    },
+    {
+      "name": "ayuda",
+      "size": [
+        390,
+        844
+      ],
+      "backgrounds": 1,
+      "backgroundLoaded": true,
+      "fixed": true,
+      "backgroundTop": 0,
+      "width": 390,
+      "overflow": false,
+      "failedImages": [],
+      "smallBubbleControls": [],
+      "fixedAfterScroll": true
+    },
+    {
+      "name": "perfil",
+      "size": [
+        1280,
+        800
+      ],
+      "backgrounds": 1,
+      "backgroundLoaded": true,
+      "fixed": true,
+      "backgroundTop": 0,
+      "width": 1280,
+      "overflow": false,
+      "failedImages": [],
+      "smallBubbleControls": [],
+      "fixedAfterScroll": true
+    },
+    {
+      "name": "publicar",
+      "size": [
+        1280,
+        800
+      ],
+      "backgrounds": 1,
+      "backgroundLoaded": true,
+      "fixed": true,
+      "backgroundTop": 0,
+      "width": 1280,
+      "overflow": false,
+      "failedImages": [],
+      "smallBubbleControls": [],
+      "fixedAfterScroll": true
+    },
+    {
+      "name": "perfil",
+      "size": [
+        1440,
+        900
+      ],
+      "backgrounds": 1,
+      "backgroundLoaded": true,
+      "fixed": true,
+      "backgroundTop": 0,
+      "width": 1440,
+      "overflow": false,
+      "failedImages": [],
+      "smallBubbleControls": [],
+      "fixedAfterScroll": true
+    },
+    {
+      "name": "publicar",
+      "size": [
+        1440,
+        900
+      ],
+      "backgrounds": 1,
+      "backgroundLoaded": true,
+      "fixed": true,
+      "backgroundTop": 0,
+      "width": 1440,
+      "overflow": false,
+      "failedImages": [],
+      "smallBubbleControls": [],
+      "fixedAfterScroll": true
+    },
+    {
+      "name": "perfil",
+      "size": [
+        768,
+        1024
+      ],
+      "backgrounds": 1,
+      "backgroundLoaded": true,
+      "fixed": true,
+      "backgroundTop": 0,
+      "width": 768,
+      "overflow": false,
+      "failedImages": [],
+      "smallBubbleControls": [],
+      "fixedAfterScroll": true
+    },
+    {
+      "name": "publicar",
+      "size": [
+        768,
+        1024
+      ],
+      "backgrounds": 1,
+      "backgroundLoaded": true,
+      "fixed": true,
+      "backgroundTop": 0,
+      "width": 768,
+      "overflow": false,
+      "failedImages": [],
+      "smallBubbleControls": [],
+      "fixedAfterScroll": true
+    },
+    {
+      "name": "perfil",
+      "size": [
+        390,
+        844
+      ],
+      "backgrounds": 1,
+      "backgroundLoaded": true,
+      "fixed": true,
+      "backgroundTop": 0,
+      "width": 390,
+      "overflow": false,
+      "failedImages": [],
+      "smallBubbleControls": [],
+      "fixedAfterScroll": true
+    },
+    {
+      "name": "publicar",
+      "size": [
+        390,
+        844
+      ],
+      "backgrounds": 1,
+      "backgroundLoaded": true,
+      "fixed": true,
+      "backgroundTop": 0,
+      "width": 390,
+      "overflow": false,
+      "failedImages": [],
+      "smallBubbleControls": [],
+      "fixedAfterScroll": true
+    }
+  ],
+  "checks": {
+    "autoRotation": true,
+    "manualPause": true,
+    "allCurrentPageReachable": true,
+    "frontToBack": true,
+    "dragRotates": true,
+    "dragDoesNotOpenModal": true,
+    "modalRealDescription": true,
+    "whatsapp": true,
+    "focusTrap": true,
+    "focusRestored": true,
+    "manualPauseSurvivesModal": true,
+    "sideCardOpens": true,
+    "search": true,
+    "categoryFilter": true,
+    "simpleView": true,
+    "reducedMotion": true,
+    "mobileSwipe": true,
+    "mobileSwipeNoModal": true,
+    "demoLogin": true,
+    "photoPreview": true,
+    "catalogUnchanged": true
+  },
+  "movement": {
+    "before": [
+      {
+        "id": 20,
+        "angle": 357.23,
+        "depth": 0.9988,
+        "transform": "translate3d(-50%, -50%, 0px) translate3d(-17.41px, 79.91px, 95.89px) scale(0.9299)"
+      },
+      {
+        "id": 2,
+        "angle": 57.23,
+        "depth": 0.5413,
+        "transform": "translate3d(-50%, -50%, 0px) translate3d(302.7px, 43.3px, 51.96px) scale(0.8818)"
+      },
+      {
+        "id": 3,
+        "angle": 117.23,
+        "depth": -0.4575,
+        "transform": "translate3d(-50%, -50%, 0px) translate3d(320.11px, -36.6px, -43.92px) scale(0.777)"
+      },
+      {
+        "id": 1,
+        "angle": 177.23,
+        "depth": -0.9988,
+        "transform": "translate3d(-50%, -50%, 0px) translate3d(17.41px, -79.91px, -95.89px) scale(0.7201)"
+      },
+      {
+        "id": 8,
+        "angle": 237.23,
+        "depth": -0.5413,
+        "transform": "translate3d(-50%, -50%, 0px) translate3d(-302.7px, -43.3px, -51.96px) scale(0.7682)"
+      },
+      {
+        "id": 5,
+        "angle": 297.23,
+        "depth": 0.4575,
+        "transform": "translate3d(-50%, -50%, 0px) translate3d(-320.11px, 36.6px, 43.92px) scale(0.873)"
+      }
+    ],
+    "after": [
+      {
+        "id": 20,
+        "angle": 349.31,
+        "depth": 0.9826,
+        "transform": "translate3d(-50%, -50%, 0px) translate3d(-66.79px, 78.61px, 94.33px) scale(0.9282)"
+      },
+      {
+        "id": 2,
+        "angle": 49.31,
+        "depth": 0.652,
+        "transform": "translate3d(-50%, -50%, 0px) translate3d(272.96px, 52.16px, 62.59px) scale(0.8935)"
+      },
+      {
+        "id": 3,
+        "angle": 109.31,
+        "depth": -0.3307,
+        "transform": "translate3d(-50%, -50%, 0px) translate3d(339.75px, -26.45px, -31.74px) scale(0.7903)"
+      },
+      {
+        "id": 1,
+        "angle": 169.31,
+        "depth": -0.9826,
+        "transform": "translate3d(-50%, -50%, 0px) translate3d(66.79px, -78.61px, -94.33px) scale(0.7218)"
+      },
+      {
+        "id": 8,
+        "angle": 229.31,
+        "depth": -0.652,
+        "transform": "translate3d(-50%, -50%, 0px) translate3d(-272.96px, -52.16px, -62.59px) scale(0.7565)"
+      },
+      {
+        "id": 5,
+        "angle": 289.31,
+        "depth": 0.3307,
+        "transform": "translate3d(-50%, -50%, 0px) translate3d(-339.75px, 26.45px, 31.74px) scale(0.8597)"
+      }
+    ],
+    "depths": [
+      [
+        {
+          "id": 20,
+          "angle": 357.32,
+          "depth": 0.9989,
+          "transform": "translate3d(-50%, -50%, 0px) translate3d(-16.84px, 79.91px, 95.89px) scale(0.9299)"
+        },
+        {
+          "id": 2,
+          "angle": 57.32,
+          "depth": 0.54,
+          "transform": "translate3d(-50%, -50%, 0px) translate3d(303.01px, 43.2px, 51.84px) scale(0.8817)"
+        },
+        {
+          "id": 3,
+          "angle": 117.32,
+          "depth": -0.459,
+          "transform": "translate3d(-50%, -50%, 0px) translate3d(319.85px, -36.72px, -44.06px) scale(0.7768)"
+        },
+        {
+          "id": 1,
+          "angle": 177.32,
+          "depth": -0.9989,
+          "transform": "translate3d(-50%, -50%, 0px) translate3d(16.84px, -79.91px, -95.89px) scale(0.7201)"
+        },
+        {
+          "id": 8,
+          "angle": 237.32,
+          "depth": -0.54,
+          "transform": "translate3d(-50%, -50%, 0px) translate3d(-303.01px, -43.2px, -51.84px) scale(0.7683)"
+        },
+        {
+          "id": 5,
+          "angle": 297.32,
+          "depth": 0.459,
+          "transform": "translate3d(-50%, -50%, 0px) translate3d(-319.85px, 36.72px, 44.06px) scale(0.8732)"
+        }
+      ],
+      [
+        {
+          "id": 20,
+          "angle": 301.25,
+          "depth": 0.5187,
+          "transform": "translate3d(-50%, -50%, 0px) translate3d(-307.78px, 41.5px, 49.8px) scale(0.8795)"
+        },
+        {
+          "id": 2,
+          "angle": 1.25,
+          "depth": 0.9998,
+          "transform": "translate3d(-50%, -50%, 0px) translate3d(7.83px, 79.98px, 95.98px) scale(0.93)"
+        },
+        {
+          "id": 3,
+          "angle": 61.25,
+          "depth": 0.481,
+          "transform": "translate3d(-50%, -50%, 0px) translate3d(315.61px, 38.48px, 46.18px) scale(0.8755)"
+        },
+        {
+          "id": 1,
+          "angle": 121.25,
+          "depth": -0.5187,
+          "transform": "translate3d(-50%, -50%, 0px) translate3d(307.78px, -41.5px, -49.8px) scale(0.7705)"
+        },
+        {
+          "id": 8,
+          "angle": 181.25,
+          "depth": -0.9998,
+          "transform": "translate3d(-50%, -50%, 0px) translate3d(-7.83px, -79.98px, -95.98px) scale(0.72)"
+        },
+        {
+          "id": 5,
+          "angle": 241.25,
+          "depth": -0.481,
+          "transform": "translate3d(-50%, -50%, 0px) translate3d(-315.61px, -38.48px, -46.18px) scale(0.7745)"
+        }
+      ],
+      [
+        {
+          "id": 20,
+          "angle": 241.51,
+          "depth": -0.477,
+          "transform": "translate3d(-50%, -50%, 0px) translate3d(-316.4px, -38.16px, -45.79px) scale(0.7749)"
+        },
+        {
+          "id": 2,
+          "angle": 301.51,
+          "depth": 0.5226,
+          "transform": "translate3d(-50%, -50%, 0px) translate3d(-306.92px, 41.81px, 50.17px) scale(0.8799)"
+        },
+        {
+          "id": 3,
+          "angle": 1.51,
+          "depth": 0.9997,
+          "transform": "translate3d(-50%, -50%, 0px) translate3d(9.48px, 79.97px, 95.97px) scale(0.93)"
+        },
+        {
+          "id": 1,
+          "angle": 61.51,
+          "depth": 0.477,
+          "transform": "translate3d(-50%, -50%, 0px) translate3d(316.4px, 38.16px, 45.79px) scale(0.8751)"
+        },
+        {
+          "id": 8,
+          "angle": 121.51,
+          "depth": -0.5226,
+          "transform": "translate3d(-50%, -50%, 0px) translate3d(306.92px, -41.81px, -50.17px) scale(0.7701)"
+        },
+        {
+          "id": 5,
+          "angle": 181.51,
+          "depth": -0.9997,
+          "transform": "translate3d(-50%, -50%, 0px) translate3d(-9.48px, -79.97px, -95.97px) scale(0.72)"
+        }
+      ],
+      [
+        {
+          "id": 20,
+          "angle": 181.34,
+          "depth": -0.9997,
+          "transform": "translate3d(-50%, -50%, 0px) translate3d(-8.42px, -79.98px, -95.97px) scale(0.72)"
+        },
+        {
+          "id": 2,
+          "angle": 241.34,
+          "depth": -0.4796,
+          "transform": "translate3d(-50%, -50%, 0px) translate3d(-315.89px, -38.37px, -46.04px) scale(0.7746)"
+        },
+        {
+          "id": 3,
+          "angle": 301.34,
+          "depth": 0.5201,
+          "transform": "translate3d(-50%, -50%, 0px) translate3d(-307.48px, 41.61px, 49.93px) scale(0.8796)"
+        },
+        {
+          "id": 1,
+          "angle": 1.34,
+          "depth": 0.9997,
+          "transform": "translate3d(-50%, -50%, 0px) translate3d(8.42px, 79.98px, 95.97px) scale(0.93)"
+        },
+        {
+          "id": 8,
+          "angle": 61.34,
+          "depth": 0.4796,
+          "transform": "translate3d(-50%, -50%, 0px) translate3d(315.89px, 38.37px, 46.04px) scale(0.8754)"
+        },
+        {
+          "id": 5,
+          "angle": 121.34,
+          "depth": -0.5201,
+          "transform": "translate3d(-50%, -50%, 0px) translate3d(307.48px, -41.61px, -49.93px) scale(0.7704)"
+        }
+      ],
+      [
+        {
+          "id": 20,
+          "angle": 121.34,
+          "depth": -0.5201,
+          "transform": "translate3d(-50%, -50%, 0px) translate3d(307.49px, -41.6px, -49.93px) scale(0.7704)"
+        },
+        {
+          "id": 2,
+          "angle": 181.34,
+          "depth": -0.9997,
+          "transform": "translate3d(-50%, -50%, 0px) translate3d(-8.39px, -79.98px, -95.97px) scale(0.72)"
+        },
+        {
+          "id": 3,
+          "angle": 241.34,
+          "depth": -0.4797,
+          "transform": "translate3d(-50%, -50%, 0px) translate3d(-315.88px, -38.37px, -46.05px) scale(0.7746)"
+        },
+        {
+          "id": 1,
+          "angle": 301.34,
+          "depth": 0.5201,
+          "transform": "translate3d(-50%, -50%, 0px) translate3d(-307.49px, 41.6px, 49.93px) scale(0.8796)"
+        },
+        {
+          "id": 8,
+          "angle": 1.34,
+          "depth": 0.9997,
+          "transform": "translate3d(-50%, -50%, 0px) translate3d(8.39px, 79.98px, 95.97px) scale(0.93)"
+        },
+        {
+          "id": 5,
+          "angle": 61.34,
+          "depth": 0.4797,
+          "transform": "translate3d(-50%, -50%, 0px) translate3d(315.88px, 38.37px, 46.05px) scale(0.8754)"
+        }
+      ],
+      [
+        {
+          "id": 20,
+          "angle": 61.51,
+          "depth": 0.477,
+          "transform": "translate3d(-50%, -50%, 0px) translate3d(316.4px, 38.16px, 45.79px) scale(0.8751)"
+        },
+        {
+          "id": 2,
+          "angle": 121.51,
+          "depth": -0.5226,
+          "transform": "translate3d(-50%, -50%, 0px) translate3d(306.92px, -41.81px, -50.17px) scale(0.7701)"
+        },
+        {
+          "id": 3,
+          "angle": 181.51,
+          "depth": -0.9997,
+          "transform": "translate3d(-50%, -50%, 0px) translate3d(-9.48px, -79.97px, -95.97px) scale(0.72)"
+        },
+        {
+          "id": 1,
+          "angle": 241.51,
+          "depth": -0.477,
+          "transform": "translate3d(-50%, -50%, 0px) translate3d(-316.4px, -38.16px, -45.79px) scale(0.7749)"
+        },
+        {
+          "id": 8,
+          "angle": 301.51,
+          "depth": 0.5226,
+          "transform": "translate3d(-50%, -50%, 0px) translate3d(-306.92px, 41.81px, 50.17px) scale(0.8799)"
+        },
+        {
+          "id": 5,
+          "angle": 1.51,
+          "depth": 0.9997,
+          "transform": "translate3d(-50%, -50%, 0px) translate3d(9.48px, 79.97px, 95.97px) scale(0.93)"
+        }
+      ],
+      [
+        {
+          "id": 20,
+          "angle": 1.34,
+          "depth": 0.9997,
+          "transform": "translate3d(-50%, -50%, 0px) translate3d(8.42px, 79.98px, 95.97px) scale(0.93)"
+        },
+        {
+          "id": 2,
+          "angle": 61.34,
+          "depth": 0.4796,
+          "transform": "translate3d(-50%, -50%, 0px) translate3d(315.89px, 38.37px, 46.04px) scale(0.8754)"
+        },
+        {
+          "id": 3,
+          "angle": 121.34,
+          "depth": -0.5201,
+          "transform": "translate3d(-50%, -50%, 0px) translate3d(307.48px, -41.61px, -49.93px) scale(0.7704)"
+        },
+        {
+          "id": 1,
+          "angle": 181.34,
+          "depth": -0.9997,
+          "transform": "translate3d(-50%, -50%, 0px) translate3d(-8.42px, -79.98px, -95.97px) scale(0.72)"
+        },
+        {
+          "id": 8,
+          "angle": 241.34,
+          "depth": -0.4796,
+          "transform": "translate3d(-50%, -50%, 0px) translate3d(-315.89px, -38.37px, -46.04px) scale(0.7746)"
+        },
+        {
+          "id": 5,
+          "angle": 301.34,
+          "depth": 0.5201,
+          "transform": "translate3d(-50%, -50%, 0px) translate3d(-307.48px, 41.61px, 49.93px) scale(0.8796)"
+        }
+      ]
+    ]
+  },
+  "adsBefore": 20,
+  "adsAfter": 20,
+  "errors": []
+}

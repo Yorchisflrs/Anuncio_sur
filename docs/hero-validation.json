@@ -1,0 +1,220 @@
+{
+  "date": "2026-10-20",
+  "server": "http://127.0.0.1:3001",
+  "scope": "Fondo y composición de portada",
+  "assetBytes": 97466,
+  "pages": [
+    {
+      "url": "/",
+      "width": 1440,
+      "scrollWidth": 1425,
+      "overflow": false,
+      "cards": 0,
+      "clipped": 0,
+      "maxOverlap": 0,
+      "badImages": [],
+      "height": 900,
+      "hero": {
+        "backgroundLoaded": true,
+        "headingVisible": true,
+        "lineBreakVisible": true,
+        "imageAnimation": "none",
+        "cards": 3,
+        "cardsClipped": false,
+        "maxCardOverlap": 0,
+        "total": "20 anuncios para descubrir",
+        "logoLoaded": true
+      }
+    },
+    {
+      "url": "/",
+      "width": 1280,
+      "scrollWidth": 1265,
+      "overflow": false,
+      "cards": 0,
+      "clipped": 0,
+      "maxOverlap": 0,
+      "badImages": [],
+      "height": 800,
+      "hero": {
+        "backgroundLoaded": true,
+        "headingVisible": true,
+        "lineBreakVisible": true,
+        "imageAnimation": "none",
+        "cards": 3,
+        "cardsClipped": false,
+        "maxCardOverlap": 0,
+        "total": "20 anuncios para descubrir",
+        "logoLoaded": true
+      }
+    },
+    {
+      "url": "/",
+      "width": 1100,
+      "scrollWidth": 1085,
+      "overflow": false,
+      "cards": 0,
+      "clipped": 0,
+      "maxOverlap": 0,
+      "badImages": [],
+      "height": 850,
+      "hero": {
+        "backgroundLoaded": true,
+        "headingVisible": true,
+        "lineBreakVisible": true,
+        "imageAnimation": "none",
+        "cards": 3,
+        "cardsClipped": false,
+        "maxCardOverlap": 0,
+        "total": "20 anuncios para descubrir",
+        "logoLoaded": true
+      }
+    },
+    {
+      "url": "/",
+      "width": 1024,
+      "scrollWidth": 1009,
+      "overflow": false,
+      "cards": 0,
+      "clipped": 0,
+      "maxOverlap": 0,
+      "badImages": [],
+      "height": 768,
+      "hero": {
+        "backgroundLoaded": true,
+        "headingVisible": true,
+        "lineBreakVisible": true,
+        "imageAnimation": "none",
+        "cards": 3,
+        "cardsClipped": false,
+        "maxCardOverlap": 0,
+        "total": "20 anuncios para descubrir",
+        "logoLoaded": true
+      }
+    },
+    {
+      "url": "/",
+      "width": 900,
+      "scrollWidth": 885,
+      "overflow": false,
+      "cards": 0,
+      "clipped": 0,
+      "maxOverlap": 0,
+      "badImages": [],
+      "height": 900,
+      "hero": {
+        "backgroundLoaded": true,
+        "headingVisible": true,
+        "lineBreakVisible": true,
+        "imageAnimation": "none",
+        "cards": 3,
+        "cardsClipped": false,
+        "maxCardOverlap": 0,
+        "total": "20 anuncios para descubrir",
+        "logoLoaded": true
+      }
+    },
+    {
+      "url": "/",
+      "width": 768,
+      "scrollWidth": 753,
+      "overflow": false,
+      "cards": 0,
+      "clipped": 0,
+      "maxOverlap": 0,
+      "badImages": [],
+      "height": 1024,
+      "hero": {
+        "backgroundLoaded": true,
+        "headingVisible": true,
+        "lineBreakVisible": true,
+        "imageAnimation": "none",
+        "cards": 3,
+        "cardsClipped": false,
+        "maxCardOverlap": 0,
+        "total": "20 anuncios para descubrir",
+        "logoLoaded": true
+      }
+    },
+    {
+      "url": "/",
+      "width": 601,
+      "scrollWidth": 586,
+      "overflow": false,
+      "cards": 0,
+      "clipped": 0,
+      "maxOverlap": 0,
+      "badImages": [],
+      "height": 960,
+      "hero": {
+        "backgroundLoaded": true,
+        "headingVisible": true,
+        "lineBreakVisible": true,
+        "imageAnimation": "none",
+        "cards": 3,
+        "cardsClipped": false,
+        "maxCardOverlap": 0,
+        "total": "20 anuncios para descubrir",
+        "logoLoaded": true
+      }
+    },
+    {
+      "url": "/",
+      "width": 390,
+      "scrollWidth": 390,
+      "overflow": false,
+      "cards": 0,
+      "clipped": 0,
+      "maxOverlap": 0,
+      "badImages": [],
+      "height": 844,
+      "hero": {
+        "backgroundLoaded": true,
+        "headingVisible": true,
+        "lineBreakVisible": true,
+        "imageAnimation": "none",
+        "cards": 3,
+        "cardsClipped": false,
+        "maxCardOverlap": 0,
+        "total": "20 anuncios para descubrir",
+        "logoLoaded": true
+      }
+    },
+    {
+      "url": "/",
+      "width": 375,
+      "scrollWidth": 375,
+      "overflow": false,
+      "cards": 0,
+      "clipped": 0,
+      "maxOverlap": 0,
+      "badImages": [],
+      "height": 812,
+      "hero": {
+        "backgroundLoaded": true,
+        "headingVisible": true,
+        "lineBreakVisible": true,
+        "imageAnimation": "none",
+        "cards": 3,
+        "cardsClipped": false,
+        "maxCardOverlap": 0,
+        "total": "20 anuncios para descubrir",
+        "logoLoaded": true
+      }
+    }
+  ],
+  "checks": {
+    "search": true,
+    "cardOpensRealListing": true,
+    "explore": true,
+    "publishLink": true,
+    "reducedMotion": true,
+    "mobileMenu": true,
+    "mobileNavigation": true,
+    "catalogUnchanged": true,
+    "localImage": true
+  },
+  "adsBefore": 20,
+  "adsAfter": 20,
+  "errors": []
+}

@@ -1,0 +1,708 @@
+{
+  "date": "2026-10-20",
+  "pages": [
+    {
+      "name": "home",
+      "size": [
+        1440,
+        900
+      ],
+      "url": "/",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "overflow": false,
+      "cards": 0,
+      "clipped": 0,
+      "maxOverlap": 0,
+      "badImages": []
+    },
+    {
+      "name": "anuncios",
+      "size": [
+        1440,
+        900
+      ],
+      "url": "/anuncios",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "overflow": false,
+      "cards": 6,
+      "clipped": 0,
+      "maxOverlap": 0,
+      "badImages": []
+    },
+    {
+      "name": "categorias",
+      "size": [
+        1440,
+        900
+      ],
+      "url": "/categorias",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "overflow": false,
+      "cards": 0,
+      "clipped": 0,
+      "maxOverlap": 0,
+      "badImages": []
+    },
+    {
+      "name": "login",
+      "size": [
+        1440,
+        900
+      ],
+      "url": "/login",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "overflow": false,
+      "cards": 0,
+      "clipped": 0,
+      "maxOverlap": 0,
+      "badImages": []
+    },
+    {
+      "name": "registro",
+      "size": [
+        1440,
+        900
+      ],
+      "url": "/registro",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "overflow": false,
+      "cards": 0,
+      "clipped": 0,
+      "maxOverlap": 0,
+      "badImages": []
+    },
+    {
+      "name": "detalle",
+      "size": [
+        1440,
+        900
+      ],
+      "url": "/anuncios/20",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "overflow": false,
+      "cards": 0,
+      "clipped": 0,
+      "maxOverlap": 0,
+      "badImages": []
+    },
+    {
+      "name": "publicar",
+      "size": [
+        1440,
+        900
+      ],
+      "url": "/publicar",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "overflow": false,
+      "cards": 0,
+      "clipped": 0,
+      "maxOverlap": 0,
+      "badImages": []
+    },
+    {
+      "name": "perfil",
+      "size": [
+        1440,
+        900
+      ],
+      "url": "/perfil",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "overflow": false,
+      "cards": 0,
+      "clipped": 0,
+      "maxOverlap": 0,
+      "badImages": []
+    },
+    {
+      "name": "home",
+      "size": [
+        1280,
+        800
+      ],
+      "url": "/",
+      "width": 1280,
+      "scrollWidth": 1280,
+      "overflow": false,
+      "cards": 0,
+      "clipped": 0,
+      "maxOverlap": 0,
+      "badImages": []
+    },
+    {
+      "name": "anuncios",
+      "size": [
+        1280,
+        800
+      ],
+      "url": "/anuncios",
+      "width": 1280,
+      "scrollWidth": 1280,
+      "overflow": false,
+      "cards": 6,
+      "clipped": 0,
+      "maxOverlap": 0,
+      "badImages": []
+    },
+    {
+      "name": "categorias",
+      "size": [
+        1280,
+        800
+      ],
+      "url": "/categorias",
+      "width": 1280,
+      "scrollWidth": 1280,
+      "overflow": false,
+      "cards": 0,
+      "clipped": 0,
+      "maxOverlap": 0,
+      "badImages": []
+    },
+    {
+      "name": "login",
+      "size": [
+        1280,
+        800
+      ],
+      "url": "/login",
+      "width": 1280,
+      "scrollWidth": 1280,
+      "overflow": false,
+      "cards": 0,
+      "clipped": 0,
+      "maxOverlap": 0,
+      "badImages": []
+    },
+    {
+      "name": "registro",
+      "size": [
+        1280,
+        800
+      ],
+      "url": "/registro",
+      "width": 1280,
+      "scrollWidth": 1280,
+      "overflow": false,
+      "cards": 0,
+      "clipped": 0,
+      "maxOverlap": 0,
+      "badImages": []
+    },
+    {
+      "name": "detalle",
+      "size": [
+        1280,
+        800
+      ],
+      "url": "/anuncios/20",
+      "width": 1280,
+      "scrollWidth": 1280,
+      "overflow": false,
+      "cards": 0,
+      "clipped": 0,
+      "maxOverlap": 0,
+      "badImages": []
+    },
+    {
+      "name": "publicar",
+      "size": [
+        1280,
+        800
+      ],
+      "url": "/publicar",
+      "width": 1280,
+      "scrollWidth": 1280,
+      "overflow": false,
+      "cards": 0,
+      "clipped": 0,
+      "maxOverlap": 0,
+      "badImages": []
+    },
+    {
+      "name": "perfil",
+      "size": [
+        1280,
+        800
+      ],
+      "url": "/perfil",
+      "width": 1280,
+      "scrollWidth": 1280,
+      "overflow": false,
+      "cards": 0,
+      "clipped": 0,
+      "maxOverlap": 0,
+      "badImages": []
+    },
+    {
+      "name": "home",
+      "size": [
+        768,
+        1024
+      ],
+      "url": "/",
+      "width": 768,
+      "scrollWidth": 768,
+      "overflow": false,
+      "cards": 0,
+      "clipped": 0,
+      "maxOverlap": 0,
+      "badImages": []
+    },
+    {
+      "name": "anuncios",
+      "size": [
+        768,
+        1024
+      ],
+      "url": "/anuncios",
+      "width": 768,
+      "scrollWidth": 768,
+      "overflow": false,
+      "cards": 4,
+      "clipped": 0,
+      "maxOverlap": 0,
+      "badImages": []
+    },
+    {
+      "name": "categorias",
+      "size": [
+        768,
+        1024
+      ],
+      "url": "/categorias",
+      "width": 768,
+      "scrollWidth": 768,
+      "overflow": false,
+      "cards": 0,
+      "clipped": 0,
+      "maxOverlap": 0,
+      "badImages": []
+    },
+    {
+      "name": "login",
+      "size": [
+        768,
+        1024
+      ],
+      "url": "/login",
+      "width": 768,
+      "scrollWidth": 768,
+      "overflow": false,
+      "cards": 0,
+      "clipped": 0,
+      "maxOverlap": 0,
+      "badImages": []
+    },
+    {
+      "name": "registro",
+      "size": [
+        768,
+        1024
+      ],
+      "url": "/registro",
+      "width": 768,
+      "scrollWidth": 768,
+      "overflow": false,
+      "cards": 0,
+      "clipped": 0,
+      "maxOverlap": 0,
+      "badImages": []
+    },
+    {
+      "name": "detalle",
+      "size": [
+        768,
+        1024
+      ],
+      "url": "/anuncios/20",
+      "width": 768,
+      "scrollWidth": 768,
+      "overflow": false,
+      "cards": 0,
+      "clipped": 0,
+      "maxOverlap": 0,
+      "badImages": []
+    },
+    {
+      "name": "publicar",
+      "size": [
+        768,
+        1024
+      ],
+      "url": "/publicar",
+      "width": 768,
+      "scrollWidth": 768,
+      "overflow": false,
+      "cards": 0,
+      "clipped": 0,
+      "maxOverlap": 0,
+      "badImages": []
+    },
+    {
+      "name": "perfil",
+      "size": [
+        768,
+        1024
+      ],
+      "url": "/perfil",
+      "width": 768,
+      "scrollWidth": 768,
+      "overflow": false,
+      "cards": 0,
+      "clipped": 0,
+      "maxOverlap": 0,
+      "badImages": []
+    },
+    {
+      "name": "home",
+      "size": [
+        390,
+        844
+      ],
+      "url": "/",
+      "width": 390,
+      "scrollWidth": 390,
+      "overflow": false,
+      "cards": 0,
+      "clipped": 0,
+      "maxOverlap": 0,
+      "badImages": []
+    },
+    {
+      "name": "anuncios",
+      "size": [
+        390,
+        844
+      ],
+      "url": "/anuncios",
+      "width": 390,
+      "scrollWidth": 390,
+      "overflow": false,
+      "cards": 4,
+      "clipped": 0,
+      "maxOverlap": 0,
+      "badImages": []
+    },
+    {
+      "name": "categorias",
+      "size": [
+        390,
+        844
+      ],
+      "url": "/categorias",
+      "width": 390,
+      "scrollWidth": 390,
+      "overflow": false,
+      "cards": 0,
+      "clipped": 0,
+      "maxOverlap": 0,
+      "badImages": []
+    },
+    {
+      "name": "login",
+      "size": [
+        390,
+        844
+      ],
+      "url": "/login",
+      "width": 390,
+      "scrollWidth": 390,
+      "overflow": false,
+      "cards": 0,
+      "clipped": 0,
+      "maxOverlap": 0,
+      "badImages": []
+    },
+    {
+      "name": "registro",
+      "size": [
+        390,
+        844
+      ],
+      "url": "/registro",
+      "width": 390,
+      "scrollWidth": 390,
+      "overflow": false,
+      "cards": 0,
+      "clipped": 0,
+      "maxOverlap": 0,
+      "badImages": []
+    },
+    {
+      "name": "detalle",
+      "size": [
+        390,
+        844
+      ],
+      "url": "/anuncios/20",
+      "width": 390,
+      "scrollWidth": 390,
+      "overflow": false,
+      "cards": 0,
+      "clipped": 0,
+      "maxOverlap": 0,
+      "badImages": []
+    },
+    {
+      "name": "publicar",
+      "size": [
+        390,
+        844
+      ],
+      "url": "/publicar",
+      "width": 390,
+      "scrollWidth": 390,
+      "overflow": false,
+      "cards": 0,
+      "clipped": 0,
+      "maxOverlap": 0,
+      "badImages": []
+    },
+    {
+      "name": "perfil",
+      "size": [
+        390,
+        844
+      ],
+      "url": "/perfil",
+      "width": 390,
+      "scrollWidth": 390,
+      "overflow": false,
+      "cards": 0,
+      "clipped": 0,
+      "maxOverlap": 0,
+      "badImages": []
+    },
+    {
+      "name": "home",
+      "size": [
+        375,
+        812
+      ],
+      "url": "/",
+      "width": 375,
+      "scrollWidth": 375,
+      "overflow": false,
+      "cards": 0,
+      "clipped": 0,
+      "maxOverlap": 0,
+      "badImages": []
+    },
+    {
+      "name": "anuncios",
+      "size": [
+        375,
+        812
+      ],
+      "url": "/anuncios",
+      "width": 375,
+      "scrollWidth": 375,
+      "overflow": false,
+      "cards": 4,
+      "clipped": 0,
+      "maxOverlap": 0,
+      "badImages": []
+    },
+    {
+      "name": "categorias",
+      "size": [
+        375,
+        812
+      ],
+      "url": "/categorias",
+      "width": 375,
+      "scrollWidth": 375,
+      "overflow": false,
+      "cards": 0,
+      "clipped": 0,
+      "maxOverlap": 0,
+      "badImages": []
+    },
+    {
+      "name": "login",
+      "size": [
+        375,
+        812
+      ],
+      "url": "/login",
+      "width": 375,
+      "scrollWidth": 375,
+      "overflow": false,
+      "cards": 0,
+      "clipped": 0,
+      "maxOverlap": 0,
+      "badImages": []
+    },
+    {
+      "name": "registro",
+      "size": [
+        375,
+        812
+      ],
+      "url": "/registro",
+      "width": 375,
+      "scrollWidth": 375,
+      "overflow": false,
+      "cards": 0,
+      "clipped": 0,
+      "maxOverlap": 0,
+      "badImages": []
+    },
+    {
+      "name": "detalle",
+      "size": [
+        375,
+        812
+      ],
+      "url": "/anuncios/20",
+      "width": 375,
+      "scrollWidth": 375,
+      "overflow": false,
+      "cards": 0,
+      "clipped": 0,
+      "maxOverlap": 0,
+      "badImages": []
+    },
+    {
+      "name": "publicar",
+      "size": [
+        375,
+        812
+      ],
+      "url": "/publicar",
+      "width": 375,
+      "scrollWidth": 375,
+      "overflow": false,
+      "cards": 0,
+      "clipped": 0,
+      "maxOverlap": 0,
+      "badImages": []
+    },
+    {
+      "name": "perfil",
+      "size": [
+        375,
+        812
+      ],
+      "url": "/perfil",
+      "width": 375,
+      "scrollWidth": 375,
+      "overflow": false,
+      "cards": 0,
+      "clipped": 0,
+      "maxOverlap": 0,
+      "badImages": []
+    }
+  ],
+  "checks": {
+    "registrationValidation1440": true,
+    "login1440": true,
+    "publicationValidation1440": true,
+    "photoPreview1440": true,
+    "registrationValidation1280": true,
+    "login1280": true,
+    "publicationValidation1280": true,
+    "photoPreview1280": true,
+    "registrationValidation768": true,
+    "login768": true,
+    "publicationValidation768": true,
+    "photoPreview768": true,
+    "registrationValidation390": true,
+    "login390": true,
+    "publicationValidation390": true,
+    "photoPreview390": true,
+    "mobileMenu390": true,
+    "mobileFiltersOpen390": true,
+    "mobileFiltersClose390": true,
+    "mobileModal390": true,
+    "registrationValidation375": true,
+    "login375": true,
+    "publicationValidation375": true,
+    "photoPreview375": true,
+    "mobileMenu375": true,
+    "mobileFiltersOpen375": true,
+    "mobileFiltersClose375": true,
+    "mobileModal375": true,
+    "autoMotion": true,
+    "pause": true,
+    "dragNoAccidentalModal": true,
+    "drag": true,
+    "dragLayout": {
+      "url": "/anuncios",
+      "width": 1440,
+      "scrollWidth": 1425,
+      "overflow": false,
+      "cards": 6,
+      "clipped": 0,
+      "maxOverlap": 0,
+      "badImages": []
+    },
+    "whatsappLink": true,
+    "modalFocusTrap": true,
+    "modalEscape": true,
+    "categoryFilter": true,
+    "listView": true,
+    "textSearch": true,
+    "reducedMotion": true
+  },
+  "errors": [],
+  "finalAuthRefresh": {
+    "results": [
+      {
+        "route": "login",
+        "url": "/login",
+        "width": 375,
+        "scrollWidth": 375,
+        "overflow": false,
+        "cards": 0,
+        "clipped": 0,
+        "maxOverlap": 0,
+        "badImages": []
+      },
+      {
+        "route": "registro",
+        "url": "/registro",
+        "width": 375,
+        "scrollWidth": 375,
+        "overflow": false,
+        "cards": 0,
+        "clipped": 0,
+        "maxOverlap": 0,
+        "badImages": []
+      },
+      {
+        "route": "login",
+        "url": "/login",
+        "width": 390,
+        "scrollWidth": 390,
+        "overflow": false,
+        "cards": 0,
+        "clipped": 0,
+        "maxOverlap": 0,
+        "badImages": []
+      },
+      {
+        "route": "registro",
+        "url": "/registro",
+        "width": 390,
+        "scrollWidth": 390,
+        "overflow": false,
+        "cards": 0,
+        "clipped": 0,
+        "maxOverlap": 0,
+        "badImages": []
+      }
+    ],
+    "authSubmitLogicUnchanged": true,
+    "publicationSubmitLogicUnchanged": true,
+    "errors": []
+  }
+}

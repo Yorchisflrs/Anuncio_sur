@@ -1,0 +1,36 @@
+{
+  "fecha": "2026-10-13T22:35:06.424Z",
+  "requisito": "RNF-01",
+  "entorno": {
+    "node": "v24.16.0",
+    "sistema": "win32 10.0.26200",
+    "cpu": "12th Gen Intel(R) Core(TM) i5-1235U",
+    "red": "HTTP loopback en 127.0.0.1; cliente y servidor en la misma computadora"
+  },
+  "anunciosActivos": 500,
+  "usuariosConcurrentes": 50,
+  "solicitudesPorUsuario": 10,
+  "solicitudes": 500,
+  "calentamiento": 25,
+  "errores": 0,
+  "latenciaMs": {
+    "minimo": 18.28,
+    "mediana": 51.77,
+    "p95": 73.6,
+    "p99": 80.49,
+    "maximo": 82.59
+  },
+  "duracionTotalMs": 557.37,
+  "solicitudesPorSegundo": 897.07,
+  "objetivoMs": 2000,
+  "objetivoCumplidoEnEsteEntorno": true,
+  "alcance": "Prueba de la API con 50 clientes virtuales, 10 búsquedas secuenciales por cliente. No mide navegador, red 3G, tráfico público ni disponibilidad.",
+  "planDeConsulta": [
+    {
+      "id": 2,
+      "parent": 0,
+      "notused": 46,
+      "detail": "SEARCH anuncios USING COVERING INDEX idx_catalogo (estado=? AND categoria_id=? AND precio_centimos>? AND precio_centimos<?)"
+    }
+  ]
+}

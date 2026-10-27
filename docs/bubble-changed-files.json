@@ -1,0 +1,14 @@
+[
+  "frontend/src/components/balancedListings.ts",
+  "frontend/src/components/HeroShowcase.tsx",
+  "frontend/src/components/Layout.tsx",
+  "frontend/src/components/ListingPreviewModal.tsx",
+  "frontend/src/components/OrbitGallery.css",
+  "frontend/src/components/OrbitGallery.tsx",
+  "frontend/src/detail-publish.css",
+  "frontend/src/pages/ExplorePage.tsx",
+  "frontend/src/pages/HomePage.tsx",
+  "frontend/src/pages/PublishPage.tsx",
+  "frontend/src/site-landscape.css",
+  "frontend/src/styles.css"
+]

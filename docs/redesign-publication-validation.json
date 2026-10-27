@@ -1,0 +1,11 @@
+{
+  "environment": "API real y frontend compilado, SQLite y fotos temporales aislados; MySQL no se modifica",
+  "before": 16,
+  "after": 17,
+  "savedOnce": true,
+  "priceSaved": true,
+  "photoSaved": true,
+  "confirmation": "Tu anuncio se publicó correctamente.",
+  "buttonDisabled": true,
+  "detailWorks": true
+}

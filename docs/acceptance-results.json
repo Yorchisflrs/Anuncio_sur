@@ -1,0 +1,95 @@
+{
+  "fecha": "2026-10-26T16:38:08.982Z",
+  "node": "v24.16.0",
+  "entorno": "HTTP local, base de datos y archivos temporales aislados",
+  "escenarios": [
+    {
+      "escenario": "Datos iniciales: 16 anuncios y tres categorías",
+      "resultado": "correcto",
+      "duracionMs": 31
+    },
+    {
+      "escenario": "Registro, hash bcrypt y cookie HttpOnly",
+      "resultado": "correcto",
+      "duracionMs": 675
+    },
+    {
+      "escenario": "Registro inválido y datos duplicados",
+      "resultado": "correcto",
+      "duracionMs": 251
+    },
+    {
+      "escenario": "Inicio de sesión por correo y celular; errores comprensibles",
+      "resultado": "correcto",
+      "duracionMs": 784
+    },
+    {
+      "escenario": "Publicación y perfil protegidos; rechazo de origen ajeno",
+      "resultado": "correcto",
+      "duracionMs": 4
+    },
+    {
+      "escenario": "Publicación por S/ 1, tres fotografías y objetivo de cinco segundos",
+      "resultado": "correcto",
+      "duracionMs": 78
+    },
+    {
+      "escenario": "Precio S/ 0 y categoría vacía no guardan anuncios ni fotos",
+      "resultado": "correcto",
+      "duracionMs": 4
+    },
+    {
+      "escenario": "Fotografía, descripción y zona obligatorias",
+      "resultado": "correcto",
+      "duracionMs": 3
+    },
+    {
+      "escenario": "Rechazo de archivos falsos, cuatro fotos y más de dos MB",
+      "resultado": "correcto",
+      "duracionMs": 23
+    },
+    {
+      "escenario": "Rango inclusivo: Vehículos entre S/ 0 y S/ 5000",
+      "resultado": "correcto",
+      "duracionMs": 39
+    },
+    {
+      "escenario": "Filtros combinados, subcategoría y búsqueda sin tildes",
+      "resultado": "correcto",
+      "duracionMs": 7
+    },
+    {
+      "escenario": "Sin coincidencias y texto SQL tratado como dato",
+      "resultado": "correcto",
+      "duracionMs": 4
+    },
+    {
+      "escenario": "WhatsApp: prefijo 51 y mensaje exacto, sin enviar mensajes",
+      "resultado": "correcto",
+      "duracionMs": 2
+    },
+    {
+      "escenario": "Baja exclusiva del propietario y conservación del registro",
+      "resultado": "correcto",
+      "duracionMs": 300
+    },
+    {
+      "escenario": "Persistencia al reiniciar y seed idempotente",
+      "resultado": "correcto",
+      "duracionMs": 18
+    },
+    {
+      "escenario": "Cerrar sesión revoca el token y protege el perfil",
+      "resultado": "correcto",
+      "duracionMs": 7
+    },
+    {
+      "escenario": "Las publicaciones de la cuenta demo mantienen su identificación ficticia",
+      "resultado": "correcto",
+      "duracionMs": 317
+    }
+  ],
+  "mediciones": {
+    "publicacionMs": 64.52
+  }
+}

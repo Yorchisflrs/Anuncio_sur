@@ -1,0 +1,79 @@
+{
+  "modal": {
+    "descriptionMatches": true,
+    "descriptionUnclipped": true,
+    "titleMatches": true,
+    "whatsappMatches": true,
+    "closeText": "Cerrar",
+    "close48": true,
+    "rootInert": true,
+    "bodyLocked": true,
+    "focusInside": true,
+    "overflow": false,
+    "forwardTrap": true,
+    "backwardTrap": true,
+    "escapeClosed": true,
+    "fixture": {
+      "environment": "Solo respuesta en este navegador; sin modificar API ni base",
+      "longDescription": {
+        "length": 2805,
+        "unclipped": true,
+        "maxHeight": "none"
+      },
+      "nextPhoto": true,
+      "previousPhoto": true,
+      "photoControls48": true
+    },
+    "mobileOverflow": false
+  },
+  "publication": {
+    "390": {
+      "width": 390,
+      "overflow": false,
+      "smallControls": [],
+      "badImages": []
+    },
+    "768": {
+      "width": 768,
+      "overflow": false,
+      "smallControls": [],
+      "badImages": []
+    },
+    "1280": {
+      "width": 1280,
+      "overflow": false,
+      "smallControls": [],
+      "badImages": []
+    },
+    "1440": {
+      "width": 1440,
+      "overflow": false,
+      "smallControls": [],
+      "badImages": []
+    },
+    "sections": [
+      "1. Fotos *",
+      "2. Datos del anuncio",
+      "3. Contacto"
+    ],
+    "contact": {
+      "phone": "+51 900000000",
+      "email": "demo@avisosur.local",
+      "demo": true
+    },
+    "validation": {
+      "alertFocused": true,
+      "fieldErrors": 6
+    },
+    "photoPreview": {
+      "dataUrl": true,
+      "naturalWidth": 600,
+      "remove48": true
+    },
+    "removePhoto": true
+  },
+  "screens": [
+    "usabilidad-modal-1280x800.png"
+  ],
+  "errors": []
+}

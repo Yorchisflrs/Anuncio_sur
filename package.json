@@ -1,0 +1,23 @@
+{
+  "name": "avisosur",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "frontend",
+    "backend"
+  ],
+  "engines": {
+    "node": ">=24.0.0"
+  },
+  "scripts": {
+    "dev": "node scripts/dev.mjs",
+    "build": "npm run build --workspace=frontend",
+    "start": "npm run start --workspace=backend",
+    "test": "npm run test --workspace=backend",
+    "benchmark": "node scripts/benchmark.mjs",
+    "check": "npm run check --workspace=frontend",
+    "migrate:mysql": "node scripts/migrate-sqlite-to-mysql.mjs",
+    "assets": "node scripts/generate-demo-assets.mjs"
+  }
+}

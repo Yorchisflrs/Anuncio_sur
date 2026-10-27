@@ -1,0 +1,12 @@
+{
+  "date": "2026-10-26",
+  "checks": {
+    "mouseCanResume": true,
+    "hoverPauses": true,
+    "leavingHoverResumes": true,
+    "cardFocusPauses": true,
+    "keyboardArrowTurns": true,
+    "pausePersistsAfterLeaving": true
+  },
+  "errors": []
+}
