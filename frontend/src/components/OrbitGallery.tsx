@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import type { CSSProperties, KeyboardEvent, MouseEvent, PointerEvent } from 'react';
+import type { CSSProperties, KeyboardEvent } from 'react';
 import { ArrowUpRight, ChevronLeft, ChevronRight, Hand, Layers3, List, Pause, Play } from 'lucide-react';
 import type { Listing } from '../types';
 import { price } from '../services/api';
@@ -7,26 +7,27 @@ import { ListingCardContent } from './ProductCard';
 import { balancedListings } from './balancedListings';
 import './OrbitGallery.css';
 
-type PointerGesture = { id: number; x: number; y: number; lastX: number; startAngle: number; dragging: boolean; scrolling: boolean };
-type Motion = { angle: number; target: number | null; hovered: boolean; focused: boolean; visible: boolean; holdUntil: number; pointer: PointerGesture | null };
+/** One card drifting freely: position from the stage centre, a heading that wanders and a breathing depth. */
+type Floater = { x: number; y: number; heading: number; turn: number; speed: number; phase: number; pulse: number; scale: number };
+type Motion = { floaters: Floater[]; seededFor: string; visible: boolean; front: number };
 type Props = { listings: Listing[]; paused: boolean; onSelect: (id: number) => void; compact?: boolean; balanceCategories?: boolean };
 const wrap = (value: number, length: number) => ((value % length) + length) % length;
+const clamp = (value: number, limit: number) => Math.max(-limit, Math.min(limit, value));
+const angleDiff = (to: number, from: number) => Math.atan2(Math.sin(to - from), Math.cos(to - from));
 
-/** A circular trajectory in three dimensions; cards face the reader throughout the turn. */
+/** Cards float without a fixed path anywhere inside the stage and keep moving under the pointer. */
 export function OrbitGallery({ listings, paused, onSelect, compact = false, balanceCategories = true }: Props) {
   const rootRef = useRef<HTMLElement>(null);
   const sceneRef = useRef<HTMLDivElement>(null);
   const cardsRef = useRef<(HTMLButtonElement | null)[]>([]);
   const drawRef = useRef<() => void>(() => {});
-  const suppressClickUntil = useRef(0);
-  const motion = useRef<Motion>({ angle: 0, target: null, hovered: false, focused: false, visible: true, holdUntil: 0, pointer: null });
+  const motion = useRef<Motion>({ floaters: [], seededFor: '', visible: true, front: 0 });
   const [width, setWidth] = useState(900);
   const [group, setGroup] = useState(0);
   const [view, setView] = useState<'bubble' | 'simple'>('bubble');
-  // null follows the initial desktop/mobile choice. An explicit pause survives other interactions.
-  const [rotationChoice, setRotationChoice] = useState<boolean | null>(null);
+  // null keeps the default (moving). An explicit pause survives other interactions.
+  const [motionChoice, setMotionChoice] = useState<boolean | null>(null);
   const [reducedMotion, setReducedMotion] = useState(() => matchMedia('(prefers-reduced-motion: reduce)').matches);
-  const [phone, setPhone] = useState(() => matchMedia('(max-width: 600px)').matches);
   const [front, setFront] = useState(0);
   const [announcement, setAnnouncement] = useState('');
 
@@ -40,20 +41,13 @@ export function OrbitGallery({ listings, paused, onSelect, compact = false, bala
   const visibleIds = visible.map(item => item.id).join(',');
   const listingIds = listings.map(item => item.id).join(',');
   const count = visible.length;
-  const step = count > 0 ? 360 / count : 360;
-  const autoEnabled = !reducedMotion && (rotationChoice ?? !phone);
-  const cardWidth = narrow ? Math.min(268, width * .76) : compact ? 218 : Math.min(264, Math.max(228, width * .29));
-  const stageHeight = narrow ? 390 : compact ? 458 : 550;
+  const autoEnabled = !reducedMotion && (motionChoice ?? true);
+  const cardWidth = narrow ? Math.min(230, width * .62) : compact ? 214 : Math.min(250, Math.max(220, width * .25));
+  const stageHeight = narrow ? 430 : compact ? 470 : 580;
 
   useEffect(() => {
     const query = matchMedia('(prefers-reduced-motion: reduce)');
     const change = () => setReducedMotion(query.matches);
-    query.addEventListener('change', change);
-    return () => query.removeEventListener('change', change);
-  }, []);
-  useEffect(() => {
-    const query = matchMedia('(max-width: 600px)');
-    const change = () => setPhone(query.matches);
     query.addEventListener('change', change);
     return () => query.removeEventListener('change', change);
   }, []);
@@ -68,147 +62,143 @@ export function OrbitGallery({ listings, paused, onSelect, compact = false, bala
   }, [Boolean(count)]);
   useEffect(() => { setGroup(0); }, [listingIds, perGroup, view, balanceCategories]);
   useLayoutEffect(() => {
-    motion.current.angle = 0; motion.current.target = null;
     cardsRef.current.length = count;
+    motion.current.front = 0;
     setFront(0);
   }, [visibleIds, count]);
 
   useLayoutEffect(() => {
     const state = motion.current;
-    // Horizontal circles tilt gently upward at the back. translateZ changes actual
-    // perspective; scale also keeps the foremost card comfortably readable.
-    const radiusX = narrow ? width * .42 : Math.max(70, (width - cardWidth) / 2 - 26);
-    const radiusY = narrow ? 8 : compact ? 48 : 80;
-    const radiusZ = narrow ? 38 : 96;
-    const draw = () => {
-      if (view !== 'bubble') return;
-      let closest = 0;
-      let greatestDepth = -Infinity;
-      cardsRef.current.forEach((card, index) => {
-        if (!card) return;
-        const degrees = wrap(state.angle + index * step, 360);
-        const radians = degrees * Math.PI / 180;
-        const depth = count === 1 ? 1 : Math.cos(radians);
-        const x = count === 1 ? 0 : Math.sin(radians) * radiusX;
-        const y = count === 1 ? 0 : depth * radiusY;
-        const scale = narrow ? .79 + (depth + 1) * .105 : .72 + (depth + 1) * .105;
-        card.style.transform = `translate3d(-50%, -50%, 0) translate3d(${x.toFixed(2)}px, ${y.toFixed(2)}px, ${(depth * radiusZ).toFixed(2)}px) scale(${scale.toFixed(4)})`;
-        card.style.zIndex = String(100 + Math.round(depth * 50));
-        card.style.opacity = '1';
-        card.dataset.angle = degrees.toFixed(2);
-        card.dataset.depth = depth.toFixed(4);
-        if (depth > greatestDepth) { greatestDepth = depth; closest = index; }
+    const stage = sceneRef.current;
+    if (view !== 'bubble' || !stage) return;
+    const baseScale = narrow ? .76 : compact ? .78 : .86;
+    const frontScale = narrow ? .88 : compact ? .9 : 1;
+    // How far a card centre may travel from the stage centre without leaving the stage.
+    const limits = (index: number, scale: number) => {
+      const card = cardsRef.current[index];
+      const halfW = (card?.offsetWidth ?? cardWidth) * scale / 2;
+      const halfH = (card?.offsetHeight ?? 300) * scale / 2;
+      return { x: Math.max(0, stage.clientWidth / 2 - halfW - 10), y: Math.max(0, stage.clientHeight / 2 - halfH - 10) };
+    };
+
+    // New group of cards: spread them over a loose grid so they start apart.
+    if (state.seededFor !== visibleIds || state.floaters.length !== count) {
+      const columns = Math.max(1, Math.round(Math.sqrt(count * stage.clientWidth / Math.max(1, stage.clientHeight))));
+      const rows = Math.ceil(count / columns);
+      state.floaters = visible.map((_, index) => {
+        const { x: limitX, y: limitY } = limits(index, baseScale);
+        const column = index % columns;
+        const row = Math.floor(index / columns);
+        return {
+          x: columns > 1 ? -limitX + (2 * limitX) * (column / (columns - 1)) * .9 + limitX * .05 : 0,
+          y: rows > 1 ? -limitY + (2 * limitY) * (row / (rows - 1)) : (Math.random() - .5) * limitY,
+          heading: Math.random() * Math.PI * 2,
+          turn: 0,
+          speed: (narrow ? 16 : 24) + Math.random() * 14,
+          phase: Math.random() * Math.PI * 2,
+          pulse: .35 + Math.random() * .4,
+          scale: baseScale,
+        };
       });
-      cardsRef.current.forEach((card, index) => { if (card) card.dataset.front = String(index === closest); });
-      // React is updated only when the foremost item changes, never on each frame.
-      setFront(previous => previous === closest ? previous : closest);
+      state.seededFor = visibleIds;
+    }
+
+    const draw = () => {
+      cardsRef.current.forEach((card, index) => {
+        const floater = state.floaters[index];
+        if (!card || !floater) return;
+        const { x: limitX, y: limitY } = limits(index, floater.scale);
+        floater.x = clamp(floater.x, limitX);
+        floater.y = clamp(floater.y, limitY);
+        card.style.transform = `translate3d(-50%, -50%, 0) translate3d(${floater.x.toFixed(2)}px, ${floater.y.toFixed(2)}px, 0) scale(${floater.scale.toFixed(4)})`;
+        card.style.zIndex = String(index === state.front ? 400 : 100 + Math.round(floater.scale * 100));
+        card.style.opacity = '1';
+        card.dataset.front = String(index === state.front);
+      });
     };
     drawRef.current = draw;
     draw();
-    if (view !== 'bubble') return;
+
     let frameId = 0;
     let previous = performance.now();
     const frame = (now: number) => {
-      const delta = Math.min(48, now - previous); previous = now;
+      const seconds = Math.min(48, now - previous) / 1000; previous = now;
       const isVisible = document.visibilityState === 'visible' && state.visible;
-      const canRotate = isVisible && autoEnabled && !paused && !state.hovered && !state.focused && !state.pointer && now > state.holdUntil && count > 1;
-      let changed = false;
-      if (state.target !== null && !paused) {
-        const remaining = state.target - state.angle;
-        state.angle = reducedMotion || Math.abs(remaining) < .05 ? state.target : state.angle + remaining * (1 - Math.exp(-delta / 135));
-        if (Math.abs(state.target - state.angle) < .05) { state.angle = state.target; state.target = null; }
-        changed = true;
-      } else if (canRotate) { state.angle -= delta * .0072; changed = true; }
-      if (sceneRef.current) sceneRef.current.dataset.moving = String(canRotate || state.target !== null);
-      if (changed) draw();
+      if (isVisible) {
+        const moving = autoEnabled && !paused;
+        state.floaters.forEach((floater, index) => {
+          // Depth breathes slowly; the highlighted card stays in front and larger.
+          const breathing = moving ? Math.sin(now / 1000 * floater.pulse + floater.phase) * .045 : 0;
+          const target = (index === state.front ? frontScale : baseScale) + breathing;
+          floater.scale += (target - floater.scale) * (1 - Math.exp(-seconds * 5));
+          if (!moving) return;
+          // The turning rate itself wanders at random, so the path never repeats.
+          floater.turn += (Math.random() - .5) * 3.2 * seconds;
+          floater.turn = Math.max(-1.1, Math.min(1.1, floater.turn * (1 - .5 * seconds)));
+          floater.heading += floater.turn * seconds;
+          const { x: limitX, y: limitY } = limits(index, floater.scale);
+          // Near an edge, steer gently back towards the open space.
+          const nearEdge = Math.max(limitX ? Math.abs(floater.x) / limitX : 1, limitY ? Math.abs(floater.y) / limitY : 1);
+          if (nearEdge > .8) floater.heading += angleDiff(Math.atan2(-floater.y, -floater.x), floater.heading) * Math.min(1, (nearEdge - .8) * 6 * seconds);
+          floater.x += Math.cos(floater.heading) * floater.speed * seconds;
+          floater.y += Math.sin(floater.heading) * floater.speed * seconds;
+          if (Math.abs(floater.x) > limitX) { floater.x = clamp(floater.x, limitX); floater.heading = Math.PI - floater.heading; }
+          if (Math.abs(floater.y) > limitY) { floater.y = clamp(floater.y, limitY); floater.heading = -floater.heading; }
+        });
+        // Soft separation keeps cards from piling up: overlapping boxes drift apart
+        // along the axis where they overlap least, allowing only a light touch.
+        if (moving) {
+          for (let a = 0; a < state.floaters.length; a++) for (let b = a + 1; b < state.floaters.length; b++) {
+            const one = state.floaters[a]; const two = state.floaters[b];
+            const cardA = cardsRef.current[a]; const cardB = cardsRef.current[b];
+            if (!cardA || !cardB) continue;
+            const dx = two.x - one.x; const dy = two.y - one.y;
+            const overlapX = (cardA.offsetWidth * one.scale + cardB.offsetWidth * two.scale) / 2 * .8 - Math.abs(dx);
+            const overlapY = (cardA.offsetHeight * one.scale + cardB.offsetHeight * two.scale) / 2 * .8 - Math.abs(dy);
+            if (overlapX <= 0 || overlapY <= 0) continue;
+            const push = Math.min(overlapX, overlapY) * 2.5 * seconds;
+            if (overlapX < overlapY) { const side = Math.sign(dx) || 1; one.x -= side * push; two.x += side * push; }
+            else { const side = Math.sign(dy) || 1; one.y -= side * push; two.y += side * push; }
+          }
+        }
+        draw();
+      }
+      if (sceneRef.current) sceneRef.current.dataset.moving = String(isVisible && autoEnabled && !paused);
       frameId = requestAnimationFrame(frame);
     };
     frameId = requestAnimationFrame(frame);
     return () => cancelAnimationFrame(frameId);
-  }, [visibleIds, count, width, cardWidth, narrow, compact, view, step, reducedMotion, paused, autoEnabled]);
+  }, [visibleIds, count, width, cardWidth, narrow, compact, view, paused, autoEnabled]);
 
-  function turn(direction: -1 | 1) {
+  /** Anterior / Siguiente bring another card to the front of the floating group. */
+  function highlight(direction: -1 | 1) {
     if (count < 2) return;
-    const state = motion.current;
-    const aligned = Math.round((state.target ?? state.angle) / step) * step;
-    state.target = aligned - direction * step;
-    state.holdUntil = performance.now() + 5500;
-    const index = wrap(Math.round(-state.target / step), count);
+    const index = wrap(motion.current.front + direction, count);
+    motion.current.front = index;
+    setFront(index);
     setAnnouncement(`Anuncio ${index + 1} de ${count}: ${visible[index].titulo}`);
-    if (reducedMotion) { state.angle = state.target; state.target = null; drawRef.current(); }
+    drawRef.current();
   }
   function changeGroup(direction: -1 | 1) {
     setGroup(value => wrap(value + direction, groups));
-    motion.current.holdUntil = performance.now() + 5500;
     setAnnouncement('Mostrando otro grupo de anuncios.');
-  }
-  function pointerDown(event: PointerEvent<HTMLDivElement>) {
-    if (view !== 'bubble' || paused || (event.pointerType === 'mouse' && event.button !== 0)) return;
-    motion.current.target = null;
-    motion.current.pointer = { id: event.pointerId, x: event.clientX, y: event.clientY, lastX: event.clientX, startAngle: motion.current.angle, dragging: false, scrolling: false };
-  }
-  function pointerMove(event: PointerEvent<HTMLDivElement>) {
-    const state = motion.current;
-    const pointer = state.pointer;
-    if (!pointer || pointer.id !== event.pointerId || pointer.scrolling) return;
-    const dx = event.clientX - pointer.x;
-    const dy = event.clientY - pointer.y;
-    if (!pointer.dragging) {
-      if (Math.abs(dy) > 9 && Math.abs(dy) > Math.abs(dx) * 1.15) { pointer.scrolling = true; return; }
-      if (Math.abs(dx) < 9 || Math.abs(dx) <= Math.abs(dy)) return;
-      pointer.dragging = true;
-      sceneRef.current?.setPointerCapture(event.pointerId);
-      sceneRef.current?.classList.add('bubble-dragging');
-    }
-    state.angle += (event.clientX - pointer.lastX) * (narrow ? .5 : .28);
-    pointer.lastX = event.clientX;
-    drawRef.current();
-    if (event.cancelable) event.preventDefault();
-  }
-  function pointerEnd(event: PointerEvent<HTMLDivElement>) {
-    const state = motion.current;
-    const pointer = state.pointer;
-    if (!pointer || pointer.id !== event.pointerId) return;
-    if (pointer.dragging) {
-      suppressClickUntil.current = performance.now() + 350;
-      const travel = event.clientX - pointer.x;
-      const nearest = Math.round(state.angle / step) * step;
-      // A modest phone swipe reliably advances one card, even below half a turn.
-      state.target = narrow && Math.abs(travel) > 30
-        ? Math.round(pointer.startAngle / step) * step + (travel < 0 ? -step : step) : nearest;
-      if (reducedMotion) { state.angle = state.target; state.target = null; drawRef.current(); }
-      if (sceneRef.current?.hasPointerCapture(event.pointerId)) sceneRef.current.releasePointerCapture(event.pointerId);
-    }
-    state.pointer = null;
-    state.holdUntil = performance.now() + 5500;
-    sceneRef.current?.classList.remove('bubble-dragging');
-  }
-  function preventDraggedClick(event: MouseEvent<HTMLDivElement>) {
-    if (performance.now() < suppressClickUntil.current) { event.preventDefault(); event.stopPropagation(); }
   }
   function keyboard(event: KeyboardEvent<HTMLDivElement>) {
     if (view !== 'bubble') return;
-    if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') { event.preventDefault(); turn(event.key === 'ArrowLeft' ? -1 : 1); }
+    if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') { event.preventDefault(); highlight(event.key === 'ArrowLeft' ? -1 : 1); }
   }
 
   if (!count) return <div className="bubble-empty" role="status">Preparando los anuncios de tu comunidad…</div>;
 
-  return <section ref={rootRef} className="bubble-gallery" data-view={view} data-compact={compact} data-group={currentGroup + 1} data-groups={groups} data-auto={autoEnabled} aria-label="Burbuja interactiva de anuncios"
-    onPointerEnter={event => { if (event.pointerType === 'mouse') motion.current.hovered = true; }}
-    onPointerLeave={event => { if (event.pointerType === 'mouse') motion.current.hovered = false; }}
-    onFocusCapture={event => { const target = event.target; motion.current.focused = target instanceof HTMLElement && (target.matches(':focus-visible') || Boolean(target.closest('.bubble-stage'))); }}
-    onBlurCapture={event => { if (!event.currentTarget.contains(event.relatedTarget)) motion.current.focused = false; }}>
-    <header className="bubble-heading"><div><span className="bubble-label"><Layers3 size={17}/>{compact ? 'DESCUBRE EL SUR' : 'ANUNCIOS EN MOVIMIENTO'}</span><p>{view === 'bubble' ? 'Gira, elige y descubre cada detalle.' : 'Todos los detalles, a tu ritmo.'}</p></div><div className="bubble-view-switch" aria-label="Presentación de anuncios"><button type="button" data-action="bubble-view" aria-pressed={view === 'bubble'} onClick={() => setView('bubble')}><Layers3 size={16}/><span>Burbuja</span></button><button type="button" data-action="simple-view" aria-pressed={view === 'simple'} onClick={() => setView('simple')}><List size={17}/><span>{compact ? 'Sencilla' : 'Vista sencilla'}</span></button></div></header>
-    <div ref={sceneRef} className="bubble-stage" data-moving="false" style={{ '--bubble-card-width': cardWidth + 'px', '--bubble-stage-height': stageHeight + 'px' } as CSSProperties}
-      onPointerDown={pointerDown} onPointerMove={pointerMove} onPointerUp={pointerEnd} onPointerCancel={pointerEnd}
-      onClickCapture={preventDraggedClick} onDragStart={event => event.preventDefault()} onKeyDown={keyboard}>
-      {view === 'bubble' && <div className="bubble-glass" aria-hidden="true"><span className="bubble-glass-shine"/></div>}
+  return <section ref={rootRef} className="bubble-gallery" data-view={view} data-compact={compact} data-group={currentGroup + 1} data-groups={groups} data-auto={autoEnabled} aria-label="Anuncios flotantes">
+    <header className="bubble-heading"><div><span className="bubble-label"><Layers3 size={17}/>{compact ? 'DESCUBRE EL SUR' : 'ANUNCIOS EN MOVIMIENTO'}</span><p>{view === 'bubble' ? 'Elige y descubre cada detalle.' : 'Todos los detalles, a tu ritmo.'}</p></div><div className="bubble-view-switch" aria-label="Presentación de anuncios"><button type="button" data-action="bubble-view" aria-pressed={view === 'bubble'} onClick={() => setView('bubble')}><Layers3 size={16}/><span>Flotante</span></button><button type="button" data-action="simple-view" aria-pressed={view === 'simple'} onClick={() => setView('simple')}><List size={17}/><span>{compact ? 'Lista' : 'Vista sencilla'}</span></button></div></header>
+    <div ref={sceneRef} className="bubble-stage" data-moving="false" style={{ '--bubble-card-width': cardWidth + 'px', '--bubble-stage-height': stageHeight + 'px' } as CSSProperties} onKeyDown={keyboard}>
       {visible.map((listing, index) => <button ref={element => { cardsRef.current[index] = element; }} key={listing.id} type="button" className="bubble-card" data-listing-id={listing.id} data-category={listing.categoriaId}
         onClick={() => onSelect(listing.id)} aria-label={`Ver anuncio: ${listing.titulo}, ${price(listing.precio)}, ${listing.zona}`}><ListingCardContent listing={listing} eager/><span className="bubble-card-open">Ver detalles <ArrowUpRight size={16}/></span></button>)}
     </div>
-    {view === 'bubble' && <div className="bubble-navigation" aria-label="Girar los anuncios"><button type="button" data-action="previous" onClick={() => turn(-1)} disabled={count < 2}><ChevronLeft size={19}/><span>Anterior</span></button><button type="button" data-action="motion" className="bubble-motion" onClick={event => { if (event.detail > 0) motion.current.focused = false; setRotationChoice(!autoEnabled); }} aria-pressed={!autoEnabled} disabled={reducedMotion} title={reducedMotion ? 'Movimiento reducido activado. Usa Anterior y Siguiente.' : undefined}>{autoEnabled ? <Pause size={17}/> : <Play size={17}/>}<span>{autoEnabled ? 'Pausar' : 'Girar'}</span></button><button type="button" data-action="next" onClick={() => turn(1)} disabled={count < 2}><span>Siguiente</span><ChevronRight size={19}/></button></div>}
-    <footer className="bubble-footer"><span className="bubble-instruction"><Hand size={16}/>{reducedMotion ? 'Sin giro automático. Usa las flechas.' : narrow ? 'Desliza o toca un anuncio para abrirlo.' : 'Arrastra para girar. Toca un anuncio para abrirlo.'}</span><div className="bubble-groups"><span>{first + 1}–{Math.min(first + perGroup, presentation.length)} de {presentation.length}</span>{groups > 1 && <><button type="button" data-action="previous-group" aria-label="Grupo anterior de anuncios" onClick={() => changeGroup(-1)}><ChevronLeft size={18}/></button><button type="button" data-action="next-group" onClick={() => changeGroup(1)}>Más anuncios <ChevronRight size={17}/></button></>}</div></footer>
-    {view === 'bubble' && <span className="bubble-current">{front + 1} de {count} en esta burbuja</span>}
+    {view === 'bubble' && <div className="bubble-navigation" aria-label="Destacar anuncios"><button type="button" data-action="previous" onClick={() => highlight(-1)} disabled={count < 2}><ChevronLeft size={19}/><span>Anterior</span></button><button type="button" data-action="motion" className="bubble-motion" onClick={() => setMotionChoice(!autoEnabled)} aria-pressed={!autoEnabled} disabled={reducedMotion} title={reducedMotion ? 'Movimiento reducido activado. Usa Anterior y Siguiente.' : undefined}>{autoEnabled ? <Pause size={17}/> : <Play size={17}/>}<span>{autoEnabled ? 'Pausar' : 'Mover'}</span></button><button type="button" data-action="next" onClick={() => highlight(1)} disabled={count < 2}><span>Siguiente</span><ChevronRight size={19}/></button></div>}
+    <footer className="bubble-footer"><span className="bubble-instruction"><Hand size={16}/>{reducedMotion ? 'Sin movimiento automático. Usa Anterior y Siguiente.' : 'Toca un anuncio para abrirlo.'}</span><div className="bubble-groups"><span>{first + 1}–{Math.min(first + perGroup, presentation.length)} de {presentation.length}</span>{groups > 1 && <><button type="button" data-action="previous-group" aria-label="Grupo anterior de anuncios" onClick={() => changeGroup(-1)}><ChevronLeft size={18}/></button><button type="button" data-action="next-group" onClick={() => changeGroup(1)}>Más anuncios <ChevronRight size={17}/></button></>}</div></footer>
+    {view === 'bubble' && <span className="bubble-current">Destacado: {front + 1} de {count}</span>}
     <span className="sr-only" aria-live="polite" aria-atomic="true">{announcement}</span>
   </section>;
 }
