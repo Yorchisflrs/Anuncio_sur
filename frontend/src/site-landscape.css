@@ -1,21 +1,78 @@
-/* One fixed regional landscape belongs to Layout; route content stays above it. */
-:root {
-  --landscape-text: #F6F9FF;
-  --landscape-muted: #D3E0F5;
-  --landscape-highlight: #91EEE7;
-  --landscape-panel: #103F3ADD;
-  --landscape-panel-hover: #18564DE8;
-  --landscape-border: #FFFFFF30;
-  --landscape-line: #FFFFFF24;
-  --landscape-soft: #FFFFFF12;
-  --landscape-soft-hover: #FFFFFF16;
-  --landscape-softest: #FFFFFF08;
-  --landscape-header: #F8FBFFF2;
-  --landscape-menu: #103F3AFA;
-  --landscape-footer: #082F2AE8;
-  --landscape-error: #FFB4B9;
-  --landscape-overlay: linear-gradient(100deg, #062B26E8 0%, #125347C4 48%, #28786780 100%), linear-gradient(180deg, #0B473A3D 0%, #052A25A8 100%);
-  --landscape-shadow: 0 16px 40px #05162B2B;
+/* Paleta del logo: azul, gris y blanco, en colores planos y sin degradados.
+   Declared on .site-shell too so it wins over the :root values of other stylesheets. */
+:root, .site-shell {
+  --logo-blue: #224199;
+  --logo-blue-dark: #1A3480;
+  --logo-navy: #12275E;
+  --logo-gray: #6D6F75;
+  --logo-gray-dark: #4C4F56;
+  --gray-line: #DDE1E8;
+  --gray-soft: #F1F3F7;
+  --blue-soft: #E9EEF9;
+  --blue-soft-hover: #DCE4F5;
+  --color-primary: var(--logo-blue);
+  --color-brand: var(--logo-blue);
+  --color-electric: var(--logo-blue);
+  --color-navy: var(--logo-navy);
+  --color-ink: #172447;
+  --color-muted: #5B5F68;
+  --color-subtle: #6D6F75;
+  --color-accent: var(--logo-gray);
+  --color-teal: var(--logo-blue);
+  --color-teal-ink: var(--logo-blue);
+  --color-teal-soft: var(--blue-soft);
+  --color-warm-soft: var(--gray-soft);
+  --color-warm-ink: var(--logo-gray-dark);
+  --color-success: var(--logo-blue);
+  --color-success-soft: var(--blue-soft);
+  --color-blue-soft: var(--blue-soft);
+  --color-blue-panel: var(--blue-soft-hover);
+  --color-border: var(--gray-line);
+  --color-line: #E8EBF0;
+  --color-inset-line: #C9D1E0;
+  --color-surface-alt: #F8F9FB;
+  --color-page: #F7F8FA;
+  --color-glow: #2241992E;
+  --color-footer-muted: #C3C8D4;
+  --color-footer-light: #FFFFFF;
+  --color-footer-line: #2C3F75;
+  --landscape-text: #172447;
+  --landscape-muted: #2B3140;
+  --landscape-highlight: var(--logo-blue);
+  --landscape-panel: #FFFFFFEB;
+  --landscape-panel-hover: #FFFFFF;
+  --landscape-border: var(--gray-line);
+  --landscape-line: #E3E6EC;
+  --landscape-soft: var(--blue-soft);
+  --landscape-soft-hover: var(--blue-soft-hover);
+  --landscape-softest: var(--gray-soft);
+  --landscape-header: var(--logo-blue);
+  --landscape-menu: #FFFFFF;
+  --landscape-footer: var(--logo-navy);
+  --landscape-error: #B3261E;
+  --landscape-shadow: 0 10px 28px #12275E14;
+  /* Velo blanco transparente: el paisaje de Puno se ve con claridad detrás del contenido. */
+  --landscape-overlay: #FFFFFF8C;
+  --hero-base: #F7F8FA;
+  --hero-text: #172447;
+  --hero-muted: #2B3140;
+  --hero-highlight: var(--logo-blue);
+  --hero-line: var(--gray-line);
+  --hero-glass: #FFFFFFE6;
+  --hero-shadow: #12275E26;
+  --bubble-glass-start: #FFFFFFB8;
+  --bubble-glass-end: #FFFFFFB8;
+  --bubble-cover-start: #FFFFFFB8;
+  --bubble-cover-end: #FFFFFFB8;
+  --bubble-shadow-panel: #12275E14;
+  --bubble-control-muted: var(--gray-soft);
+  --bubble-selected: #FFFFFF;
+  --bubble-outline: var(--gray-line);
+  --bubble-control: #FFFFFF;
+  --bubble-control-hover: var(--blue-soft);
+  --bubble-action: var(--logo-blue);
+  --bubble-action-hover: var(--logo-blue-dark);
+  --bubble-focus-glow: #2241994D;
 }
 
 .site-shell { min-height: 100dvh; position: relative; isolation: isolate; color: var(--landscape-text); background: var(--hero-base); }
@@ -24,68 +81,96 @@
 .site-landscape::after { content: ''; position: absolute; inset: 0; background: var(--landscape-overlay); }
 .site-shell #contenido { min-height: 65vh; }
 .site-shell .home-page { background: transparent; }
+.site-shell .bubble-navigation .bubble-motion { color: #FFFFFF; }
+.site-shell ::selection { background: var(--blue-soft-hover); }
+.site-shell :focus-visible { outline-color: var(--logo-blue); }
 
-/* Navigation keeps a light, compact surface for the official blue/gray logo. */
-.site-shell .site-header { background: var(--landscape-header); border-bottom-color: var(--landscape-border); }
+/* Header in the logo blue with the logo and links in white. */
+.site-shell .topbar { background: var(--logo-navy); color: #FFFFFF; font-size: 13px; }
+.site-shell .topbar svg { color: #FFFFFF; }
+.site-shell .site-header { background: var(--landscape-header); border-bottom: 1px solid var(--logo-blue-dark); backdrop-filter: none; box-shadow: 0 6px 18px #12275E26; }
 .site-shell .nav-inner { gap: 28px; }
-.site-shell .desktop-nav a { display: inline-flex; align-items: center; justify-content: center; gap: 7px; min-height: 48px; font-size: 13px; }
-.site-shell .nav-login { min-height: 48px; font-size: 13px; color: var(--color-navy); }
-.site-shell .nav-publish { min-height: 48px; font-size: 13px; }
-.site-shell .mobile-menu-button { min-width: 48px; min-height: 48px; align-items: center; justify-content: center; gap: 8px; font-size: 13px; font-weight: 650; }
+.site-shell .desktop-nav a { display: inline-flex; align-items: center; justify-content: center; gap: 7px; min-height: 48px; font-size: 13px; color: #FFFFFFE0; }
+.site-shell .desktop-nav a:hover, .site-shell .desktop-nav a.active { color: #FFFFFF; background: #FFFFFF26; }
+.site-shell .nav-login { min-height: 48px; font-size: 13px; color: #FFFFFF; max-width: 200px; }
+.site-shell .button.nav-publish { min-height: 48px; font-size: 15px; color: var(--logo-blue); background: #FFFFFF; box-shadow: none; }
+.site-shell .button.nav-publish:hover:not(:disabled) { color: var(--logo-blue-dark); background: var(--blue-soft); }
+.site-shell .header-logo :is(.logo-accent,.logo-dot) { color: #FFFFFF; }
+.site-shell .logo-light img { background: none; border-radius: 0; padding: 0; }
+.site-shell .mobile-menu-button { min-width: 48px; min-height: 48px; align-items: center; justify-content: center; gap: 8px; font-size: 13px; font-weight: 650; color: #FFFFFF; background: #FFFFFF26; }
+
+/* Buttons and accents. */
+.site-shell .button-primary { background: var(--logo-blue); box-shadow: 0 6px 16px #22419933; }
+.site-shell .button-primary:hover:not(:disabled) { background: var(--logo-blue-dark); }
+.site-shell .live-dot { background: var(--logo-blue); box-shadow: 0 0 0 4px var(--blue-soft-hover); }
+.site-shell .hero .eyebrow { background: #FFFFFF; border-color: var(--gray-line); color: var(--logo-blue); box-shadow: 0 4px 12px #12275E0F; }
+.site-shell .search-input svg, .site-shell .search-zone svg { color: var(--logo-blue); }
+.site-shell .hero-search { border-color: var(--gray-line); box-shadow: 0 14px 34px #12275E1A; }
 .site-shell .mobile-nav-label { display: inline-flex; align-items: center; gap: 12px; }
 .site-shell .mobile-nav { color: var(--landscape-text); background: var(--landscape-menu); border-color: var(--landscape-border); }
 .site-shell .mobile-nav>a:not(.mobile-register) { min-height: 48px; color: var(--landscape-text); }
 .site-shell .mobile-nav>a.active { background: var(--landscape-soft-hover); color: var(--landscape-highlight); }
 .site-shell .mobile-nav-auth { border-color: var(--landscape-border); }
-.site-shell .mobile-register { display: inline-flex; min-height: 48px; align-items: center; justify-content: center; color: var(--landscape-highlight); }
+.site-shell .mobile-register { display: inline-flex; min-height: 48px; align-items: center; justify-content: center; color: var(--landscape-highlight); font-size: 15px; }
 .site-shell .button, .site-shell .icon-button { min-height: 48px; }
 .site-shell .icon-button { min-width: 48px; }
 .site-shell .text-link { color: var(--landscape-highlight); min-height: 48px; align-items: center; }
 .site-shell .text-link:hover { color: var(--landscape-text); }
 
-/* Clear headings and secondary text on the landscape, shared across routes. */
+/* Clear headings and secondary text, shared across routes. */
 .site-shell :is(.page-heading h1,.explore-intro h1,.directory-hero h1,.section-heading h2,.coverage-copy h2,.steps-grid h3) { color: var(--landscape-text); }
-.site-shell :is(.section-kicker,.eyebrow,.explore-intro h1>span,.directory-hero h1>span,.coverage-copy h2>span) { color: var(--landscape-highlight); }
+.site-shell :is(.section-kicker,.eyebrow) { color: var(--logo-blue); }
+.site-shell .section-kicker::before { content: ''; width: 18px; height: 3px; border-radius: 3px; background: var(--logo-gray); }
+.site-shell :is(.explore-intro h1>span,.directory-hero h1>span,.coverage-copy h2>span) { color: var(--logo-blue); }
 .site-shell :is(.page-heading p,.explore-intro p,.directory-hero p,.section-heading p,.section-aside,.coverage-copy>p,.steps-grid p,.recent-footer,.explore-region,.upcoming-label,.loading-state) { color: var(--landscape-muted); }
 .site-shell .breadcrumb { color: var(--landscape-muted); font-size: 12px; }
 .site-shell .breadcrumb a { min-height: 36px; display: inline-flex; align-items: center; }
 .site-shell .breadcrumb a:hover, .site-shell .breadcrumb>span:last-child { color: var(--landscape-text); }
 .site-shell .recent-footer strong { color: var(--landscape-text); }
-.site-shell .demo-strip { background: #102E5880; border-block: 1px solid var(--landscape-line); }
+.site-shell .demo-strip { background: var(--gray-soft); border-block: 1px solid var(--gray-line); color: var(--logo-gray-dark); }
+.site-shell .demo-dot { background: var(--logo-gray); }
+.site-shell .hero-links .button { color: #FFFFFF; background: var(--logo-blue); }
+.site-shell .hero-links .button:hover { color: #FFFFFF; background: var(--logo-blue-dark); }
 .site-shell :is(.benefits-section,.how-section) { background: transparent; border-block: 1px solid var(--landscape-line); }
 
-/* Compact panels let the landscape remain visible between each block. */
-.site-shell :is(.directory-tile,.recent-toolbar,.trust-card,.coverage-directory,.cta-section,.filters-panel,.directory-summary,.category-panel,.upcoming-card,.auth-layout,.form-section,.publish-actions,.publish-tip,.publish-checklist,.description-panel,.listing-summary,.detail-tip,.profile-heading,.profile-info,.profile-stats>div,.info-nav,.info-article,.state-box) {
+/* White panels on the light page; the call to action keeps the solid logo blue. */
+.site-shell :is(.directory-tile,.recent-toolbar,.trust-card,.coverage-directory,.filters-panel,.directory-summary,.category-panel,.upcoming-card,.auth-layout,.form-section,.publish-actions,.publish-tip,.publish-checklist,.description-panel,.listing-summary,.detail-tip,.profile-heading,.profile-info,.profile-stats>div,.info-nav,.info-article,.state-box) {
   color: var(--landscape-text);
   background: var(--landscape-panel);
   border-color: var(--landscape-border);
   box-shadow: var(--landscape-shadow);
 }
-.site-shell :is(.directory-tile,.trust-card):hover { background: var(--landscape-panel-hover); border-color: var(--landscape-highlight); }
+.site-shell :is(.directory-tile,.trust-card):hover { background: var(--landscape-panel-hover); border-color: var(--landscape-category,var(--landscape-highlight)); box-shadow: 0 16px 36px #12275E1F; }
+.site-shell .directory-tile { border-top: 4px solid var(--landscape-category,var(--logo-blue)); }
 .site-shell :is(.directory-tile>strong,.trust-card h3,.zone-name>strong,.category-panel h2,.upcoming-card h3,.auth-form-panel h1,.form-section-heading h2,.publish-tip h3,.publish-checklist strong,.description-panel h2,.listing-summary h1,.seller strong,.profile-heading h1,.profile-person strong,.info-article h1,.state-box h2) { color: var(--landscape-text); }
 .site-shell :is(.directory-tile>p,.trust-card p,.benefit-top small,.coverage-directory-head,.zone-index,.zone-name>small,.coverage-footnote,.category-panel-content>p,.upcoming-card p,.upcoming-label,.directory-summary>span,.auth-form-panel>p,.demo-login>span,.form-section-heading p,.field-hint,.publish-actions>span,.publish-tip p,.publish-checklist>span,.description-panel>p,.detail-facts span,.detail-location,.seller div>span,.seller-since,.contact-hint,.detail-tip p,.profile-heading p,.profile-person div>span,.profile-data>span,.profile-stats div>span,.info-intro,.info-note,.state-box p) { color: var(--landscape-muted); }
 .site-shell :is(.directory-count,.directory-detail,.benefit-arrow,.coverage-directory-head>span:first-child,.zone-total,.coverage-list a:hover .zone-name>strong,.directory-summary strong,.directory-summary>svg,.directory-summary>a,.category-panel-count,.detail-price,.profile-stats strong,.publish-checklist>span.is-complete,.detail-facts>div,.detail-tip>svg,.publish-tip>svg) { color: var(--landscape-highlight); }
 .site-shell :is(.directory-icon,.benefit-top>span,.step-icon,.profile-avatar,.form-section-heading>span) { background: var(--landscape-soft); border-color: var(--landscape-border); color: var(--landscape-highlight); }
 .site-shell :is(.coverage-list a,.coverage-footnote,.coverage-directory-head,.detail-facts,.summary-divider,.publish-checklist,.auth-tabs,.demo-login) { border-color: var(--landscape-line); }
 .site-shell .summary-divider { background: var(--landscape-line); }
-.site-shell .step-icon small { border-color: var(--hero-base); }
-.site-shell .cta-section::after { border-color: var(--landscape-border); }
+.site-shell .step-icon small { border-color: var(--hero-base); background: var(--logo-blue); color: #FFFFFF; }
+.site-shell .cta-section { background: var(--logo-blue); box-shadow: 0 18px 40px #12275E33; }
+.site-shell .cta-section::after { border-color: #FFFFFF33; }
+.site-shell .cta-section p { color: #FFFFFFE0; }
+.site-shell .cta-badge { color: #FFFFFF; }
+.site-shell .cta-section .button-white { color: var(--logo-blue); background: #FFFFFF; }
+.site-shell .cta-section .button-white:hover { background: var(--blue-soft); color: var(--logo-blue-dark); }
 .site-shell .detail-facts strong { color: var(--landscape-text); }
 
-/* Category color helps orientation without replacing labels and icons. */
-.site-shell [data-category="1"] { --landscape-category: #B6C9FF; }
-.site-shell [data-category="2"] { --landscape-category: #91EEE7; }
-.site-shell [data-category="3"] { --landscape-category: #FFD59A; }
+/* Categories are told apart with logo tones: blue, dark blue and gray. */
+.site-shell [data-category="1"] { --landscape-category: var(--logo-blue); }
+.site-shell [data-category="2"] { --landscape-category: var(--logo-navy); }
+.site-shell [data-category="3"] { --landscape-category: var(--logo-gray-dark); }
 .site-shell .directory-tile :is(.directory-icon,.directory-count,.directory-detail),.site-shell .category-panel-count { color: var(--landscape-category,var(--landscape-highlight)); }
-.site-shell .category-panel-cover { background: #FFFFFF0C; color: var(--landscape-category,var(--landscape-highlight)); border-bottom: 1px solid var(--landscape-border); }
+.site-shell .category-panel-cover { background: var(--landscape-softest); color: var(--landscape-category,var(--landscape-highlight)); border-bottom: 1px solid var(--landscape-border); }
 .site-shell .category-panel-cover::after { border-color: currentColor; }
 .site-shell .category-cover-link { color: var(--color-navy); }
 .site-shell .subcategory-list a { background: var(--landscape-softest); border-color: var(--landscape-border); color: var(--landscape-muted); min-height: 48px; font-size: 12px; }
 .site-shell .subcategory-list a:hover { background: var(--landscape-soft-hover); color: var(--landscape-text); }
 .site-shell .upcoming-badge { color: var(--landscape-muted); background: var(--landscape-soft); }
-.site-shell .upcoming-card .directory-icon { background: #FFFFFF10; color: var(--landscape-muted); }
+.site-shell .upcoming-card .directory-icon { background: var(--landscape-softest); color: var(--landscape-muted); }
 
-/* Filters and fields have familiar light inputs inside blue panels. */
+/* Filters and fields. */
 .site-shell :is(.toolbar-label,.quick-filters select,.filters-title h2,.field-label,.form-field) { color: var(--landscape-text); }
 .site-shell .quick-filters label { border-color: var(--landscape-border); }
 .site-shell .quick-filters label>span { color: var(--landscape-muted); font-size: 11px; }
@@ -104,7 +189,7 @@
 .site-shell .results-bar strong { color: var(--landscape-highlight); }
 .site-shell .results-bar select { color: var(--landscape-text); min-height: 48px; font-size: 12px; }
 .site-shell .explore-categories>button { min-height: 48px; background: var(--landscape-panel); color: var(--landscape-muted); border-color: var(--landscape-border); font-size: 12px; }
-.site-shell .explore-categories>button[aria-pressed=true] { color: var(--color-navy); background: var(--landscape-highlight); border-color: var(--landscape-highlight); }
+.site-shell .explore-categories>button[aria-pressed=true] { color: #FFFFFF; background: var(--landscape-highlight); border-color: var(--landscape-highlight); }
 .site-shell .explore-categories>button:hover:not([aria-pressed=true]) { color: var(--landscape-text); border-color: var(--landscape-highlight); }
 .site-shell .filter-chips button { min-height: 48px; color: var(--landscape-text); background: var(--landscape-panel); border-color: var(--landscape-border); font-size: 12px; }
 .site-shell .filter-chips .clear-chip { color: var(--landscape-highlight); }
@@ -114,9 +199,11 @@
 .site-shell .field-hint { font-size: 12px; }
 .site-shell .field-error { color: var(--landscape-error); font-size: 12px; }
 
-/* Account and guidance pages share the same atmosphere and readable controls. */
-.site-shell .auth-aside { background: #0A234AD9; }
-.site-shell .auth-form-panel { background: #17365A66; }
+/* Account and guidance pages. */
+.site-shell .auth-aside { background: var(--logo-blue); }
+.site-shell .auth-aside h2>span { color: #C9D3EC; }
+.site-shell .auth-aside>p { color: #FFFFFFD9; }
+.site-shell .auth-form-panel { background: var(--landscape-panel); }
 .site-shell .auth-tabs a { display: inline-flex; align-items: center; min-height: 48px; color: var(--landscape-muted); font-size: 13px; }
 .site-shell .auth-tabs a[aria-current=page] { color: var(--landscape-highlight); border-bottom-color: var(--landscape-highlight); }
 .site-shell :is(.auth-switch a,.secure-note a,.demo-login button) { color: var(--landscape-highlight); }
@@ -132,9 +219,13 @@
 .site-shell .publish-progress>a>span { color: var(--color-ink); }
 .site-shell .own-listing { color: var(--color-ink); }
 .site-shell .own-listing-actions button { min-height: 48px; font-size: 11px; }
-.site-shell .site-footer { background: var(--landscape-footer); border-top: 1px solid var(--landscape-border); }
+.site-shell .site-footer { background: var(--landscape-footer); border-top: 0; }
+.site-shell .footer-lead h2>span { color: #C9D3EC; }
+.site-shell :is(.footer-explore svg,.footer-region svg) { color: #FFFFFF; }
 .site-shell .footer-links a { display: inline-flex; align-items: center; min-height: 40px; }
 .site-shell .footer-links { gap: 5px; }
+.site-shell .skeleton { background: var(--color-line); }
+.site-shell .showcase-scene { background: var(--gray-soft); }
 
 @media(max-width:1100px) {
   .site-shell .desktop-nav,.site-shell .nav-actions { display: none; }
@@ -148,14 +239,15 @@
 @media(max-width:800px) { .site-shell .mobile-nav { top: 70px; } }
 @media(max-width:600px) {
   .site-landscape img { object-position: 82% center; }
+  .site-shell .topbar { font-size: 12px; }
   .site-shell .mobile-nav { top: 68px; padding-inline: 16px; }
   .site-shell .quick-filters select { min-height: 40px; font-size: 13px; }
   .site-shell .section-heading .text-link { font-size: 12px; }
   .site-shell .hero-search .button { min-height: 48px; }
   .site-shell .hero-links .button { min-height: 48px; }
-  .site-shell .explore-categories>button { font-size: 11px; padding-inline: 9px; }
+  .site-shell .explore-categories>button { font-size: 11px; padding-inline: 10px; }
   .site-shell .results-bar { font-size: 11px; }
-  .site-shell .results-bar select { font-size: 11px; max-width: 106px; }
+  .site-shell .results-bar select { font-size: 11px; max-width: 120px; }
   .site-shell .filter-toggle { font-size: 11px; padding-inline: 8px; }
   .site-shell .breadcrumb { font-size: 11px; }
   .site-shell .info-nav a { font-size: 12px; }
