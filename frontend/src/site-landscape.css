@@ -3,18 +3,18 @@
   --landscape-text: #F6F9FF;
   --landscape-muted: #D3E0F5;
   --landscape-highlight: #91EEE7;
-  --landscape-panel: #102E58DD;
-  --landscape-panel-hover: #173E6BE8;
+  --landscape-panel: #103F3ADD;
+  --landscape-panel-hover: #18564DE8;
   --landscape-border: #FFFFFF30;
   --landscape-line: #FFFFFF24;
   --landscape-soft: #FFFFFF12;
   --landscape-soft-hover: #FFFFFF16;
   --landscape-softest: #FFFFFF08;
   --landscape-header: #F8FBFFF2;
-  --landscape-menu: #102E58FA;
-  --landscape-footer: #081E41E8;
+  --landscape-menu: #103F3AFA;
+  --landscape-footer: #082F2AE8;
   --landscape-error: #FFB4B9;
-  --landscape-overlay: linear-gradient(100deg, #071B40E8 0%, #0D2F62C4 48%, #123F6B80 100%), linear-gradient(180deg, #0C27553D 0%, #071B40A8 100%);
+  --landscape-overlay: linear-gradient(100deg, #062B26E8 0%, #125347C4 48%, #28786780 100%), linear-gradient(180deg, #0B473A3D 0%, #052A25A8 100%);
   --landscape-shadow: 0 16px 40px #05162B2B;
 }
 
