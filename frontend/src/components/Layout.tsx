@@ -35,7 +35,7 @@ export function Layout() {
     </div></div>
     <header className="site-header">
       <div className="container nav-inner">
-        <Logo/>
+        <Logo light className="header-logo"/>
         <nav className="desktop-nav" aria-label="Navegación principal">
           {NAV_ITEMS.map(({ icon: Icon, ...item }) => <NavLink key={item.to} to={item.to} end={item.end}><Icon size={17} aria-hidden="true"/>{item.label}</NavLink>)}
         </nav>
