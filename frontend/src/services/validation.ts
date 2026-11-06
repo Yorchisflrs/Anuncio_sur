@@ -14,5 +14,10 @@ export function validatePublication(data: Record<string, string>, photoCount: nu
   if (!/^\d+(\.\d{1,2})?$/.test(data.precio) || Number(data.precio) <= 0 || Number(data.precio) > 99999999.99) fields.precio = 'Escribe un precio mayor que S/ 0, con hasta dos decimales.';
   if (!data.zona) fields.zona = 'Selecciona una zona.';
   if (!photoCount) fields.fotos = 'Añade al menos una fotografía principal.';
+  if (photoCount > 7) fields.fotos = 'Puedes añadir hasta siete fotografías.';
+  if (!data.planId) fields.planId = 'Elige un plan de publicación.';
+  if (!/^9\d{8}$/.test(data.contacto || '')) fields.contacto = 'Escribe un celular de 9 dígitos que comience con 9.';
+  if ((data.direccion || '').length > 200) fields.direccion = 'La dirección admite hasta 200 caracteres.';
+  if ((data.referencia || '').length > 200) fields.referencia = 'La referencia admite hasta 200 caracteres.';
   return fields;
 }

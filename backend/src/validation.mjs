@@ -28,6 +28,9 @@ export async function validateListing(body, db, photoCount) {
   const subcategoria = String(body.subcategoria || '').trim();
   const zona = String(body.zona || '').trim();
   const precio = Number(body.precio);
+  const direccion = String(body.direccion || '').trim();
+  const referencia = String(body.referencia || '').trim();
+  const contacto = String(body.contacto || '').trim();
   const fields = {};
   if (titulo.length < 5 || titulo.length > 100) fields.titulo = 'El título debe tener entre 5 y 100 caracteres.';
   if (!descripcion || descripcion.length > 3000) fields.descripcion = 'Escribe una descripción de hasta 3000 caracteres.';
@@ -37,8 +40,12 @@ export async function validateListing(body, db, photoCount) {
   if (!Number.isFinite(precio) || precio <= 0 || precio > 99999999.99 || !/^\d+(\.\d{1,2})?$/.test(String(body.precio || ''))) fields.precio = 'El precio debe ser mayor que S/ 0 y tener como máximo dos decimales.';
   if (!ZONES.includes(zona)) fields.zona = 'Selecciona una zona.';
   if (!photoCount) fields.fotos = 'Añade al menos una fotografía principal.';
+  if (photoCount > 7) fields.fotos = 'Puedes añadir hasta siete fotografías.';
+  if (direccion.length > 200) fields.direccion = 'Usa hasta 200 caracteres.';
+  if (referencia.length > 300) fields.referencia = 'Usa hasta 300 caracteres.';
+  if (contacto && !/^9\d{8}$/.test(contacto)) fields.contacto = 'Escribe un celular peruano de nueve dígitos que comience con 9.';
   if (Object.keys(fields).length) throw new ApiError(422, 'Revisa los datos antes de publicar.', fields);
-  return { titulo, descripcion, categoriaId, subcategoria, zona, precioCentimos: Math.round(precio * 100) };
+  return { titulo, descripcion, categoriaId, subcategoria, zona, direccion, referencia, contacto, precioCentimos: Math.round(precio * 100) };
 }
 
 export function parseFilters(query) {

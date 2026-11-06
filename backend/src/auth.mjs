@@ -3,7 +3,7 @@ import { ApiError } from './validation.mjs';
 
 const SESSION_DAYS = 7;
 const digest = token => createHash('sha256').update(token).digest('hex');
-export const publicUser = user => ({ id: user.id, correo: user.correo, celular: user.celular, fechaRegistro: user.fecha_registro, demo: Boolean(user.es_demo) });
+export const publicUser = user => ({ id: user.id, correo: user.correo, celular: user.celular, fechaRegistro: user.fecha_registro, demo: Boolean(user.es_demo), rol: user.rol === 'admin' ? 'admin' : 'usuario' });
 
 export function authServices(db, config) {
   const cookieOptions = { httpOnly: true, sameSite: 'strict', secure: config.secureCookie, path: '/', maxAge: SESSION_DAYS * 86400000 };
@@ -17,6 +17,11 @@ export function authServices(db, config) {
     },
     requireUser(req, _res, next) {
       if (!req.user) return next(new ApiError(401, 'Inicia sesión para continuar.'));
+      next();
+    },
+    requireAdmin(req, _res, next) {
+      if (!req.user) return next(new ApiError(401, 'Inicia sesión para continuar.'));
+      if (req.user.rol !== 'admin') return next(new ApiError(403, 'Esta acción está reservada para administración.'));
       next();
     },
     async createSession(userId, res, previousToken) {
