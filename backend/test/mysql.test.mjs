@@ -19,7 +19,12 @@ test('consultas MySQL usan precio decimal y parámetros, sin sintaxis SQLite', a
   assert.match(calls[0].sql, /LOCATE\(\?, CONCAT\(/);
   assert.match(calls[0].sql, /a\.precio >= \?/);
   assert.doesNotMatch(calls[0].sql, /normalizar|precio_centimos/);
-  assert.deepEqual(calls[0].values, ['moto', '1.00', '5000.00']);
+  assert.match(calls[0].sql, /moderacion\s*=\s*'aprobado'/);
+  assert.match(calls[0].sql, /estado_pago\s*=\s*'confirmado'/);
+  assert.match(calls[0].sql, /fecha_vencimiento\s*>\s*\?/);
+  assert(Number.isFinite(Date.parse(calls[0].values[0])));
+  assert(Math.abs(Date.parse(calls[0].values[0]) - Date.now()) < 5000);
+  assert.deepEqual(calls[0].values.slice(1), ['moto', '1.00', '5000.00']);
   assert.match(calls[1].sql, /ORDER BY a\.precio ASC/);
 });
 

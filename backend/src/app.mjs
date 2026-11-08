@@ -10,8 +10,9 @@ import { defaultConfig, projectRoot } from './config.mjs';
 import { openDatabase } from './database.mjs';
 import { authServices, publicUser } from './auth.mjs';
 import { ApiError, validateRegistration, validateListing } from './validation.mjs';
-import { getCatalog, getListing, getOwnListings } from './listings.mjs';
+import { getCatalog, getListing, getOwnListings, publicCondition } from './listings.mjs';
 import { upload, preparePhotos, persistPhotos } from './uploads.mjs';
+import { publicationPlan, registerModerationRoutes } from './moderation.mjs';
 
 export async function createApp(overrides = {}) {
   const config = { ...defaultConfig, ...overrides };
@@ -19,7 +20,7 @@ export async function createApp(overrides = {}) {
   const app = express();
   const auth = authServices(db, config);
   app.disable('x-powered-by');
-  app.use(helmet({ contentSecurityPolicy: { directives: { upgradeInsecureRequests: null, frameSrc: ["'self'", 'https://www.openstreetmap.org'] } } }));
+  app.use(helmet({ contentSecurityPolicy: { directives: { upgradeInsecureRequests: null, imgSrc: ["'self'", 'data:', 'blob:', 'https:'], frameSrc: ["'self'", 'https://www.openstreetmap.org'] } } }));
   app.use(express.json({ limit: '16kb' }));
   app.use(cookieParser());
   app.use('/api', (_req, res, next) => { res.set('Cache-Control', 'no-store'); next(); });
@@ -28,13 +29,18 @@ export async function createApp(overrides = {}) {
     next();
   });
   app.use('/api', auth.loadUser);
+  const privatePath = path.resolve(config.privateUploadDir || path.join(config.uploadDir, '.privado'));
+  const privateRelative = path.relative(path.resolve(config.uploadDir), privatePath);
+  if (!privateRelative) throw new Error('PRIVATE_UPLOAD_DIR no puede coincidir con UPLOAD_DIR.');
+  if (privateRelative !== '..' && !privateRelative.startsWith('..' + path.sep) && !path.isAbsolute(privateRelative) && !privateRelative.split(path.sep)[0].startsWith('.')) throw new Error('Si PRIVATE_UPLOAD_DIR está dentro de UPLOAD_DIR, debe estar en una carpeta oculta que comience con punto.');
+  if (!privateRelative.startsWith('..') && !path.isAbsolute(privateRelative)) app.use('/uploads/' + privateRelative.split(path.sep).join('/'), (_req,_res,next)=>next(new ApiError(404,'No encontramos este recurso.')));
   app.use('/uploads', express.static(config.uploadDir, { dotfiles: 'deny', index: false, maxAge: '7d' }));
   app.use('/demo', express.static(path.join(projectRoot, 'frontend', 'public', 'demo'), { maxAge: '7d' }));
 
   const loginLimit = rateLimit({ windowMs: 15 * 60 * 1000, limit: 30, standardHeaders: 'draft-8', legacyHeaders: false, message: { message: 'Has realizado varios intentos. Espera unos minutos y vuelve a intentarlo.' } });
   app.get('/api/health', (_req, res) => res.json({ status: 'ok', nombre: 'AvisoSur' }));
   app.get('/api/categorias', async (_req, res) => {
-    const rows = await db.all("SELECT c.*, (SELECT COUNT(*) FROM anuncios a WHERE a.categoria_id = c.id AND a.estado = 'activo') AS total FROM categorias c WHERE c.activa = 1 ORDER BY c.id");
+    const rows = await db.all(`SELECT c.*, (SELECT COUNT(*) FROM anuncios a WHERE a.categoria_id = c.id AND ${publicCondition()}) AS total FROM categorias c WHERE c.activa = 1 ORDER BY c.id`,new Date().toISOString());
     res.json(rows.map(row => ({ id: row.id, nombre: row.nombre, subcategorias: typeof row.subcategorias === 'string' ? JSON.parse(row.subcategorias) : row.subcategorias, total: row.total })));
   });
   app.get('/api/auth/me', (req, res) => res.json({ usuario: req.user ? publicUser(req.user) : null }));
@@ -73,6 +79,7 @@ export async function createApp(overrides = {}) {
   app.get('/api/anuncios/:id', async (req, res) => res.json(await getListing(db, Number(req.params.id), req.user)));
   app.post('/api/anuncios', auth.requireUser, upload, async (req, res) => {
     const data = await validateListing(req.body || {}, db, req.files?.length || 0);
+    const plan = await publicationPlan(db, req.body?.planId);
     const photos = await preparePhotos(req.files);
     const saved = await persistPhotos(photos, config.uploadDir);
     let listingId;
@@ -81,9 +88,14 @@ export async function createApp(overrides = {}) {
         const date = new Date().toISOString();
         const priceColumn = tx.kind === 'mysql' ? 'precio' : 'precio_centimos';
         const price = tx.kind === 'mysql' ? (data.precioCentimos / 100).toFixed(2) : data.precioCentimos;
-        const result = await tx.run(`INSERT INTO anuncios (usuario_id, titulo, descripcion, ${priceColumn}, zona, categoria_id, subcategoria, es_demo, fecha_publicacion) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`, req.user.id, data.titulo, data.descripcion, price, data.zona, data.categoriaId, data.subcategoria, Number(req.user.es_demo), date);
+        const result = await tx.run(`INSERT INTO anuncios (usuario_id, titulo, descripcion, ${priceColumn}, zona, categoria_id, subcategoria, es_demo, fecha_publicacion, plan_id, dias_vigencia, monto_publicacion_centimos, bono_primer_snapshot, destacado, direccion, referencia, contacto) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`, req.user.id, data.titulo, data.descripcion, price, data.zona, data.categoriaId, data.subcategoria, Number(req.user.es_demo), date, plan.id, plan.dias, plan.precio_centimos, plan.bono_primer_anuncio, plan.destacado, data.direccion, data.referencia, data.contacto || req.user.celular);
         const id = Number(result.lastInsertRowid);
-        for (const [index, photo] of photos.entries()) await tx.run('INSERT INTO fotos (anuncio_id, archivo, orden, fecha_subida) VALUES (?, ?, ?, ?)', id, '/uploads/' + photo.filename, index, date);
+        for (const [index, token] of data.photoOrder.entries()) {
+          const [kind, rawPhotoIndex] = token.split(':');
+          const photoIndex = Number(rawPhotoIndex);
+          const filename = kind === 'f' ? '/uploads/' + photos[photoIndex].filename : data.photoUrls[photoIndex];
+          await tx.run('INSERT INTO fotos (anuncio_id, archivo, orden, fecha_subida) VALUES (?, ?, ?, ?)', id, filename, index, date);
+        }
         return id;
       });
     } catch (error) {
@@ -93,12 +105,15 @@ export async function createApp(overrides = {}) {
     res.status(201).json(await getListing(db, listingId, req.user));
   });
   app.patch('/api/anuncios/:id/baja', auth.requireUser, async (req, res) => {
-    const row = await db.get('SELECT usuario_id FROM anuncios WHERE id = ?', Number(req.params.id));
+    const id=Number(req.params.id);
+    if(!Number.isSafeInteger(id)||id<1)throw new ApiError(404,'No encontramos este anuncio.');
+    const row = await db.get('SELECT usuario_id FROM anuncios WHERE id = ?', id);
     if (!row) throw new ApiError(404, 'No encontramos este anuncio.');
     if (row.usuario_id !== req.user.id) throw new ApiError(403, 'Solo puedes dar de baja tus propios anuncios.');
-    await db.run("UPDATE anuncios SET estado = 'dado_de_baja' WHERE id = ?", Number(req.params.id));
+    await db.run("UPDATE anuncios SET estado = 'dado_de_baja' WHERE id = ?", id);
     res.json({ message: 'Anuncio dado de baja. El registro se conserva.' });
   });
+  registerModerationRoutes(app,db,auth,config);
   app.use('/api', (_req, _res, next) => next(new ApiError(404, 'No encontramos este recurso.')));
   if (fs.existsSync(path.join(config.frontendDist, 'index.html'))) {
     app.use(express.static(config.frontendDist));
@@ -106,8 +121,9 @@ export async function createApp(overrides = {}) {
   }
   app.use((error, _req, res, _next) => {
     if (error.name === 'MulterError') {
-      const message = error.code === 'LIMIT_FILE_SIZE' ? 'Cada fotografía debe pesar como máximo 2 MB.' : 'Puedes subir hasta 3 fotografías JPG o PNG.';
-      return res.status(422).json({ message, fields: { fotos: message } });
+      const field = _req.path.endsWith('/comprobante') ? 'comprobante' : _req.path.endsWith('/qr') ? 'qr' : 'fotos';
+      const message = error.code === 'LIMIT_FILE_SIZE' ? 'Cada imagen debe pesar como máximo 2 MB.' : field === 'fotos' ? 'Puedes subir hasta siete fotografías JPG o PNG.' : 'Selecciona una sola imagen JPG o PNG.';
+      return res.status(422).json({ message, fields: { [field]: message } });
     }
     if (error.type === 'entity.parse.failed') return res.status(400).json({ message: 'La solicitud no tiene un formato válido.' });
     if (error.type === 'entity.too.large') return res.status(413).json({ message: 'La solicitud es demasiado grande.' });

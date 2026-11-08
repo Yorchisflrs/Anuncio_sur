@@ -8,3 +8,8 @@ export function ProtectedRoute() {
   if (loading || (!user && endingSession)) return <Loading label="Comprobando tu sesión…"/>;
   return user ? <Outlet/> : <Navigate to={'/login?next=' + encodeURIComponent(location.pathname)} replace/>;
 }
+
+export function AdminRoute() {
+  const { user } = useAuth();
+  return user?.rol === 'admin' ? <Outlet/> : <Navigate to="/perfil" replace/>;
+}

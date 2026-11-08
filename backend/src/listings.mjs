@@ -1,17 +1,23 @@
 import { ApiError, parseFilters } from './validation.mjs';
 
-const listingSelect = `SELECT a.*, c.nombre AS categoria,
+export const listingSelect = `SELECT a.*, c.nombre AS categoria, c.activa AS categoria_activa,
   (SELECT archivo FROM fotos WHERE anuncio_id = a.id ORDER BY orden LIMIT 1) AS imagen
   FROM anuncios a JOIN categorias c ON c.id = a.categoria_id`;
 
 export function serializeListing(row) {
-  return { id: row.id, usuarioId: row.usuario_id, titulo: row.titulo, descripcion: row.descripcion, precio: row.precio === undefined ? row.precio_centimos / 100 : Number(row.precio), zona: row.zona, categoriaId: row.categoria_id, categoria: row.categoria, subcategoria: row.subcategoria, estado: row.estado, fechaPublicacion: row.fecha_publicacion, imagen: row.imagen, demo: Boolean(row.es_demo) };
+  return { id: row.id, usuarioId: row.usuario_id, titulo: row.titulo, descripcion: row.descripcion, precio: row.precio === undefined ? row.precio_centimos / 100 : Number(row.precio), zona: row.zona, categoriaId: row.categoria_id, categoria: row.categoria, subcategoria: row.subcategoria, estado: row.estado, fechaPublicacion: row.fecha_publicacion, imagen: row.imagen, demo: Boolean(row.es_demo),
+    moderacion: row.moderacion, estadoPago: row.estado_pago, fechaAprobacion: row.fecha_aprobacion || null, fechaVencimiento: row.fecha_vencimiento || null,
+    diasVigencia: Number(row.dias_vigencia), diasPromocion: Number(row.dias_promocion), montoPublicacion: row.monto_publicacion_centimos / 100,
+    planId: row.plan_id, destacado: Boolean(row.destacado), motivoRevision: row.motivo_revision || '', direccion: row.direccion || '', referencia: row.referencia || '', contacto: row.contacto || '',
+  };
 }
+
+export const publicCondition = (alias = 'a') => `${alias}.estado = 'activo' AND ${alias}.moderacion = 'aprobado' AND ${alias}.estado_pago = 'confirmado' AND ${alias}.fecha_aprobacion IS NOT NULL AND ${alias}.fecha_vencimiento > ?`;
 
 export async function getCatalog(db, query) {
   const filters = parseFilters(query);
-  const conditions = ["a.estado = 'activo'", 'c.activa = 1'];
-  const values = [];
+  const conditions = [publicCondition(), 'c.activa = 1'];
+  const values = [new Date().toISOString()];
   if (filters.q) {
     if (db.kind === 'mysql') {
       conditions.push("LOCATE(?, CONCAT(a.titulo, ' ', a.descripcion)) > 0");
@@ -35,12 +41,17 @@ export async function getCatalog(db, query) {
 }
 
 export async function getListing(db, id, user) {
+  if (!Number.isSafeInteger(id) || id < 1) throw new ApiError(404,'Este anuncio no está disponible.');
   const row = await db.get(listingSelect + ' WHERE a.id = ?', id);
-  if (!row || (row.estado !== 'activo' && row.usuario_id !== user?.id)) throw new ApiError(404, 'Este anuncio no está disponible.');
+  const privileged = row && (row.usuario_id === user?.id || user?.rol === 'admin');
+  const visible = row && row.estado === 'activo' && row.moderacion === 'aprobado' && row.estado_pago === 'confirmado' && row.fecha_aprobacion && Date.parse(row.fecha_vencimiento) > Date.now() && row.categoria_activa;
+  if (!row || (!visible && !privileged)) throw new ApiError(404, 'Este anuncio no está disponible.');
   const seller = await db.get('SELECT id, correo, celular, fecha_registro, es_demo FROM usuarios WHERE id = ?', row.usuario_id);
-  const vendedor = { id: seller.id, nombre: seller.es_demo ? 'Vendedor de demostración' : seller.correo.split('@')[0], celular: seller.celular, fechaRegistro: seller.fecha_registro, demo: Boolean(seller.es_demo) };
+  const vendedor = { id: seller.id, nombre: seller.es_demo ? 'Vendedor de demostración' : seller.correo.split('@')[0], celular: row.contacto || seller.celular, fechaRegistro: seller.fecha_registro, demo: Boolean(seller.es_demo) };
   const mensaje = 'Hola, vi tu anuncio de ' + row.titulo + ' en AvisoSur y quisiera saber si todavía está disponible';
-  return { ...serializeListing(row), fotos: await db.all('SELECT id, archivo, orden FROM fotos WHERE anuncio_id = ? ORDER BY orden', row.id), vendedor, whatsappUrl: 'https://wa.me/51' + vendedor.celular + '?text=' + encodeURIComponent(mensaje) };
+  return { ...serializeListing(row), fotos: await db.all('SELECT id, archivo, orden FROM fotos WHERE anuncio_id = ? ORDER BY orden', row.id), vendedor, whatsappUrl: 'https://wa.me/51' + vendedor.celular + '?text=' + encodeURIComponent(mensaje),
+    ...(privileged ? { pago: { comprobanteUrl: row.comprobante_archivo ? `/api/anuncios/${row.id}/comprobante` : null, referenciaPago: row.referencia_pago || '', fechaComprobante: row.fecha_comprobante || null, fechaConfirmacion: row.fecha_confirmacion || null } } : {}),
+  };
 }
 
 export async function getOwnListings(db, userId) {

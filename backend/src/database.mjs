@@ -3,6 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { seedDatabase } from './seed.mjs';
 import { openMysqlDatabase } from './mysql.mjs';
+import { migrateSqlite } from './migrations.mjs';
 
 export async function openDatabase(config) {
   if (config.databaseClient === 'mysql') return openMysqlDatabase(config);
@@ -68,25 +69,34 @@ export async function openDatabase(config) {
     CREATE INDEX IF NOT EXISTS idx_sesiones_expira ON sesiones(expira);
   `);
   db.function('normalizar', { deterministic: true }, value => String(value || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase());
+  migrateSqlite(db);
   db.prepare('DELETE FROM sesiones WHERE expira <= ?').run(new Date().toISOString());
   if (config.seed !== false) await seedDatabase(db);
-  return {
+  const raw = {
     kind: 'sqlite',
     prepare: sql => db.prepare(sql), // Disponible para las pruebas existentes.
     get: async (sql, ...values) => db.prepare(sql).get(...values),
     all: async (sql, ...values) => db.prepare(sql).all(...values),
     run: async (sql, ...values) => db.prepare(sql).run(...values),
-    async transaction(work) {
-      db.exec('BEGIN');
+  };
+  let queue = Promise.resolve();
+  const exclusive = work => { const result = queue.then(work); queue = result.catch(() => {}); return result; };
+  return {
+    kind: 'sqlite', prepare: raw.prepare,
+    get: (...args) => exclusive(() => raw.get(...args)),
+    all: (...args) => exclusive(() => raw.all(...args)),
+    run: (...args) => exclusive(() => raw.run(...args)),
+    transaction(work) { return exclusive(async () => {
+      db.exec('BEGIN IMMEDIATE');
       try {
-        const result = await work(this);
+        const result = await work(raw);
         db.exec('COMMIT');
         return result;
       } catch (error) {
         db.exec('ROLLBACK');
         throw error;
       }
-    },
+    }); },
     close: () => db.close(),
   };
 }

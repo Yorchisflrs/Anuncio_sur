@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "node --watch src/server.mjs",
     "start": "node src/server.mjs",
-    "test": "node --test test/api.test.mjs test/mysql.test.mjs"
+    "test": "node --test test/*.test.mjs"
   },
   "dependencies": {
     "bcryptjs": "^3.0.2",

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, NavLink, Outlet, useLocation } from 'react-router-dom';
-import { ArrowUpRight, MapPin, Menu, X, UserRound, FlaskConical, Handshake, Plus, LogIn, House, Compass, LayoutGrid } from 'lucide-react';
+import { ArrowUpRight, MapPin, Menu, X, UserRound, ShieldCheck, Handshake, Plus, LogIn, House, Compass, LayoutGrid } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { Logo } from './Logo';
 import '../site-landscape.css';
@@ -40,7 +40,7 @@ export function Layout() {
           {NAV_ITEMS.map(({ icon: Icon, ...item }) => <NavLink key={item.to} to={item.to} end={item.end}><Icon size={17} aria-hidden="true"/>{item.label}</NavLink>)}
         </nav>
         <div className="nav-actions">
-          <Link className="nav-login" to={user ? '/perfil' : '/login'}><UserRound size={18}/>{user ? userName : 'Ingresar'}</Link>
+          <Link className="nav-login" to={user?.rol==='admin'?'/admin':user?'/perfil':'/login'}>{user?.rol==='admin'?<ShieldCheck size={18}/>:<UserRound size={18}/>} {user?.rol==='admin'?'Administración':user?userName:'Ingresar / Crear cuenta'}</Link>
           <Link className="button button-primary nav-publish" to="/publicar"><Plus size={18}/>Publicar anuncio</Link>
         </div>
         <button className="mobile-menu-button" aria-expanded={menu} aria-controls="mobile-nav" aria-label={menu ? 'Cerrar menú' : 'Abrir menú'} onClick={() => setMenu(value => !value)}>{menu ? <X/> : <Menu/>}<span>{menu ? 'Cerrar' : 'Menú'}</span></button>
@@ -48,6 +48,7 @@ export function Layout() {
       {menu && <nav id="mobile-nav" className="mobile-nav" aria-label="Navegación móvil">
         {NAV_ITEMS.map(({ icon: Icon, ...item }) => <NavLink key={item.to} to={item.to} end={item.end}><span className="mobile-nav-label"><Icon size={19} aria-hidden="true"/>{item.label}</span><ArrowUpRight size={16}/></NavLink>)}
         <NavLink to="/perfil">Mi cuenta<UserRound size={16}/></NavLink>
+        {user?.rol==='admin'&&<NavLink to="/admin">Administración<ShieldCheck size={18}/></NavLink>}
         <div className="mobile-nav-auth"><Link className="button button-outline" to={user ? '/perfil' : '/login'}><LogIn size={16}/>{user ? userName : 'Ingresar'}</Link><Link className="button button-primary" to="/publicar"><Plus size={17}/>Publicar anuncio</Link></div>
         {!user && <Link className="mobile-register" to="/registro">¿Nuevo por aquí? Crea tu cuenta gratis</Link>}
       </nav>}
@@ -62,7 +63,7 @@ export function Layout() {
         <div className="footer-links"><strong>Cerca de ti</strong><Link to="/anuncios?zona=Puno">Puno</Link><Link to="/anuncios?zona=Juliaca">Juliaca</Link><Link to={'/anuncios?zona=' + encodeURIComponent('Otras localidades del sur del Perú')}>Otras localidades del sur</Link><Link to="/publicar">Publica tu anuncio</Link></div>
         <div className="footer-links"><strong>Estamos para orientarte</strong><Link to="/ayuda/seguridad">Consejos para comprar y vender</Link><Link to="/ayuda/terminos">Términos de publicación</Link><Link to="/ayuda/privacidad">Privacidad</Link><Link to="/ayuda/soporte">Ayuda y soporte</Link><Link to="/ayuda/reclamaciones">Reclamaciones · Prototipo</Link></div>
       </div>
-      <div className="container footer-bottom"><span>© {new Date().getFullYear()} AvisoSur · UNA Puno</span><span className="footer-demo"><FlaskConical size={14}/>Prototipo académico. Los anuncios DEMO son ficticios.</span></div>
+      <div className="container footer-bottom"><span>© {new Date().getFullYear()} AvisoSur · UNA Puno</span><span className="footer-demo"><ShieldCheck size={14}/>Publicación sujeta a revisión, pago confirmado y vigencia.</span></div>
     </footer>
   </div>;
 }

@@ -11,6 +11,7 @@
     "node": ">=24.0.0"
   },
   "scripts": {
+    "admin:user": "node scripts/admin-user.mjs",
     "dev": "node scripts/dev.mjs",
     "build": "npm run build --workspace=frontend",
     "start": "npm run start --workspace=backend",

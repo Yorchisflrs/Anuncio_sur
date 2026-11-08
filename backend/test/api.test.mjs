@@ -18,7 +18,7 @@ test('Escenarios de aceptación de AvisoSur y controles de seguridad', async t =
   let server = context.app.listen(0, '127.0.0.1'); await once(server, 'listening');
   let base = 'http://127.0.0.1:' + server.address().port;
   const records = []; const measurements = {};
-  const password = 'PruebaSegura2026!'; let cookie = ''; let created; let boundary;
+  const password = 'PruebaSegura2026!'; let cookie = ''; let adminCookie = ''; let created; let boundary;
   const png = await sharp({ create: { width: 1024, height: 768, channels: 3, background: '#0db6b2' } }).png().toBuffer();
   const jpeg = await sharp({ create: { width: 800, height: 600, channels: 3, background: '#1465b8' } }).jpeg().toBuffer();
   async function request(endpoint, options = {}) {
@@ -28,10 +28,17 @@ test('Escenarios de aceptación de AvisoSur y controles de seguridad', async t =
   const json = (body, auth = '') => ({ method: 'POST', headers: { 'Content-Type': 'application/json', ...(auth ? { Cookie: auth } : {}) }, body: JSON.stringify(body) });
   const multipart = (overrides = {}, files = [{ buffer: png, name: 'principal.png', type: 'image/png' }]) => {
     const form = new FormData();
-    Object.entries({ titulo: 'Producto de prueba a un sol', descripcion: 'Producto ficticio usado para verificar el flujo de publicación.', categoriaId: '1', subcategoria: 'Motos', precio: '1', zona: 'Puno', ...overrides }).forEach(([key, value]) => form.append(key, value));
+    Object.entries({ titulo: 'Producto de prueba a un sol', descripcion: 'Producto ficticio usado para verificar el flujo de publicación.', categoriaId: '1', subcategoria: 'Motos', precio: '1', zona: 'Puno', planId: '1', ...overrides }).forEach(([key, value]) => form.append(key, value));
     files.forEach(file => form.append('fotos', new Blob([file.buffer], { type: file.type }), file.name));
     return { method: 'POST', headers: { Cookie: cookie }, body: form };
   };
+  // La aplicación ya no publica al guardar: las pruebas aprueban sus propios datos
+  // mediante el mismo endpoint administrativo y una referencia ficticia explícita.
+  async function approveFixture(id) {
+    const result = await request('/admin/anuncios/' + id + '/aprobar', json({ confirmarPago: true, referenciaPago: 'Pago ficticio de la prueba aislada ' + id }, adminCookie));
+    assert.equal(result.response.status, 200, JSON.stringify(result.body));
+    return result.body;
+  }
   async function check(name, action) {
     await t.test(name, async () => {
       const start = performance.now();
@@ -41,7 +48,7 @@ test('Escenarios de aceptación de AvisoSur y controles de seguridad', async t =
   }
   t.after(async () => {
     if (server.listening) await new Promise(resolve => server.close(resolve));
-    context.db.close();
+    await context.db.close();
     // Solo borrar el directorio temporal creado por esta prueba, verificado dentro de tmp.
     const resolved = path.resolve(temporary);
     if (resolved.startsWith(path.resolve(os.tmpdir()) + path.sep + 'avisosur-test-')) await fs.rm(resolved, { recursive: true, force: true });
@@ -49,7 +56,14 @@ test('Escenarios de aceptación de AvisoSur y controles de seguridad', async t =
     await fs.writeFile(path.join(project, 'docs', 'acceptance-results.json'), JSON.stringify({ fecha: new Date().toISOString(), node: process.version, entorno: 'HTTP local, base de datos y archivos temporales aislados', escenarios: records, mediciones: measurements }, null, 2) + '\n');
   });
 
-  await check('Datos iniciales: 16 anuncios y tres categorías', async () => {
+  await check('Seed pendiente privado; datos de prueba aprobados explícitamente para comprobar el catálogo', async () => {
+    const initial = await request('/anuncios'); assert.equal(initial.response.status, 200); assert.equal(initial.body.total, 0);
+    assert.equal(context.db.prepare("SELECT COUNT(*) AS n FROM anuncios WHERE moderacion = 'pendiente'").get().n, 16);
+    const admin = await request('/auth/registro', json({ correo: 'admin-aceptacion@avisosur-test.local', celular: '900000099', password, confirmacion: password, rol: 'admin' }));
+    assert.equal(admin.response.status, 201); assert.equal(admin.body.usuario.rol, 'usuario');
+    context.db.prepare("UPDATE usuarios SET rol = 'admin' WHERE id = ?").run(admin.body.usuario.id);
+    adminCookie = admin.response.headers.get('set-cookie').split(';')[0];
+    for (const row of context.db.prepare('SELECT id FROM anuncios ORDER BY id').all()) await approveFixture(row.id);
     const { response, body } = await request('/anuncios'); assert.equal(response.status, 200); assert.equal(body.total, 16);
     assert.equal(new Set(body.anuncios.map(ad => ad.categoria)).size, 3); assert(body.anuncios.every(ad => ad.demo));
     assert(body.anuncios.some(ad => ad.zona === 'Puno')); assert(body.anuncios.some(ad => ad.zona === 'Juliaca'));
@@ -81,13 +95,17 @@ test('Escenarios de aceptación de AvisoSur y controles de seguridad', async t =
     const profile = await request('/perfil/anuncios'); assert.equal(profile.response.status, 401);
     const csrf = await request('/auth/logout', { method: 'POST', headers: { Origin: 'https://sitio-ajeno.invalid', Cookie: cookie } }); assert.equal(csrf.response.status, 403);
   });
-  await check('Publicación por S/ 1, tres fotografías y objetivo de cinco segundos', async () => {
+  await check('Solicitud por S/ 1 y tres fotografías privada hasta aprobar el pago', async () => {
     const started = performance.now();
     const result = await request('/anuncios', multipart({}, [{ buffer: png, name: 'uno.png', type: 'image/png' }, { buffer: jpeg, name: 'dos.jpg', type: 'image/jpeg' }, { buffer: png, name: 'tres.png', type: 'image/png' }]));
     measurements.publicacionMs = Math.round((performance.now() - started) * 100) / 100;
     assert.equal(result.response.status, 201); created = result.body; assert.equal(created.precio, 1); assert.equal(created.fotos.length, 3);
     assert.deepEqual(created.fotos.map(photo => photo.orden), [0, 1, 2]); assert(created.fotos.every(photo => photo.archivo.endsWith('.webp')));
+    assert.equal(created.moderacion, 'pendiente');
+    assert.equal((await request('/anuncios/' + created.id)).response.status, 404);
     const image = await fetch(base + created.fotos[0].archivo); assert.equal(image.status, 200); assert.match(image.headers.get('content-type'), /image\/webp/);
+    assert.equal((await request('/anuncios?q=Producto%20de%20prueba')).body.total, 0);
+    await approveFixture(created.id);
     const catalog = await request('/anuncios?q=Producto%20de%20prueba'); assert(catalog.body.anuncios.some(ad => ad.id === created.id));
     assert(measurements.publicacionMs < 5000, 'Publicación tardó ' + measurements.publicacionMs + ' ms');
   });
@@ -99,13 +117,14 @@ test('Escenarios de aceptación de AvisoSur y controles de seguridad', async t =
   await check('Fotografía, descripción y zona obligatorias', async () => {
     const result = await request('/anuncios', multipart({ descripcion: '', zona: '' }, [])); assert.equal(result.response.status, 422); assert(result.body.fields.descripcion); assert(result.body.fields.zona); assert(result.body.fields.fotos);
   });
-  await check('Rechazo de archivos falsos, cuatro fotos y más de dos MB', async () => {
+  await check('Rechazo de archivos falsos, ocho fotos y más de dos MB', async () => {
     const fake = await request('/anuncios', multipart({}, [{ buffer: Buffer.from('no es una imagen'), name: 'falsa.png', type: 'image/png' }])); assert.equal(fake.response.status, 422);
-    const four = await request('/anuncios', multipart({}, Array.from({ length: 4 }, (_, index) => ({ buffer: png, name: index + '.png', type: 'image/png' })))); assert.equal(four.response.status, 422);
+    const eight = await request('/anuncios', multipart({}, Array.from({ length: 8 }, (_, index) => ({ buffer: png, name: index + '.png', type: 'image/png' })))); assert.equal(eight.response.status, 422);
     const large = await request('/anuncios', multipart({}, [{ buffer: Buffer.alloc(2 * 1024 * 1024 + 1), name: 'grande.png', type: 'image/png' }])); assert.equal(large.response.status, 422); assert.match(large.body.fields.fotos, /2 MB/);
   });
   await check('Rango inclusivo: Vehículos entre S/ 0 y S/ 5000', async () => {
     const result = await request('/anuncios', multipart({ titulo: 'Moto de prueba en el límite', precio: '5000' })); assert.equal(result.response.status, 201); boundary = result.body;
+    await approveFixture(boundary.id);
     const filtered = await request('/anuncios?categoriaId=1&min=0&max=5000'); assert.equal(filtered.response.status, 200);
     assert(filtered.body.anuncios.every(ad => ad.categoriaId === 1 && ad.precio >= 0 && ad.precio <= 5000));
     assert(filtered.body.anuncios.some(ad => ad.id === 1 && ad.precio === 5000)); assert(filtered.body.anuncios.some(ad => ad.id === boundary.id));
@@ -136,7 +155,7 @@ test('Escenarios de aceptación de AvisoSur y controles de seguridad', async t =
     assert.equal((await request('/anuncios/' + created.id)).response.status, 404); assert.equal((await request('/anuncios/' + created.id, { headers: { Cookie: cookie } })).response.status, 200);
   });
   await check('Persistencia al reiniciar y seed idempotente', async () => {
-    await new Promise(resolve => server.close(resolve)); context.db.close(); context = await createApp(settings);
+    await new Promise(resolve => server.close(resolve)); await context.db.close(); context = await createApp(settings);
     server = context.app.listen(0, '127.0.0.1'); await once(server, 'listening'); base = 'http://127.0.0.1:' + server.address().port;
     const profile = await request('/perfil/anuncios', { headers: { Cookie: cookie } }); assert.equal(profile.body.length, 2);
     assert.equal(context.db.prepare('SELECT COUNT(*) AS n FROM anuncios').get().n, 18);
@@ -153,6 +172,7 @@ test('Escenarios de aceptación de AvisoSur y controles de seguridad', async t =
     const demoCookie = login.response.headers.get('set-cookie').split(';')[0];
     const publication = await request('/anuncios', { ...multipart({ titulo: 'Anuncio ficticio desde la cuenta demo' }), headers: { Cookie: demoCookie } });
     assert.equal(publication.response.status, 201); assert.equal(publication.body.demo, true); assert.equal(publication.body.vendedor.demo, true);
-    assert.equal(publication.body.fotos.length, 1);
+    assert.equal(publication.body.fotos.length, 1); assert.equal(publication.body.moderacion, 'pendiente');
+    assert.equal((await request('/anuncios/' + publication.body.id)).response.status, 404);
   });
 });
