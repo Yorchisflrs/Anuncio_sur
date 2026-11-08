@@ -105,6 +105,16 @@ CREATE TABLE IF NOT EXISTS reportes (
   CONSTRAINT ck_reportes_estado CHECK (estado IN ('pendiente', 'revisado'))
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+CREATE TABLE IF NOT EXISTS contactos_anuncio (
+  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  anuncio_id BIGINT UNSIGNED NOT NULL,
+  visitante CHAR(64) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  fecha DATETIME(3) NOT NULL,
+  PRIMARY KEY (id),
+  UNIQUE KEY uq_contactos_anuncio_visitante (anuncio_id, visitante),
+  CONSTRAINT fk_contactos_anuncio FOREIGN KEY (anuncio_id) REFERENCES anuncios (id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 CREATE TABLE IF NOT EXISTS sesiones (
   token_hash CHAR(64) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
   usuario_id BIGINT UNSIGNED NOT NULL,

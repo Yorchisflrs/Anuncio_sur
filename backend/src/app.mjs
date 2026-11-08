@@ -13,6 +13,7 @@ import { ApiError, validateRegistration, validateListing, validateDisplayName } 
 import { getCatalog, getListing, getOwnListings, publicCondition } from './listings.mjs';
 import { upload, preparePhotos, persistPhotos, MAX_IMAGE_MB } from './uploads.mjs';
 import { publicationPlan, registerModerationRoutes } from './moderation.mjs';
+import { registerContactRoutes } from './contact.mjs';
 
 export async function createApp(overrides = {}) {
   const config = { ...defaultConfig, ...overrides };
@@ -82,6 +83,7 @@ export async function createApp(overrides = {}) {
   app.get('/api/anuncios', async (req, res) => res.json(await getCatalog(db, req.query)));
   app.get('/api/perfil/anuncios', auth.requireUser, async (req, res) => res.json(await getOwnListings(db, req.user.id)));
   app.get('/api/anuncios/:id', async (req, res) => res.json(await getListing(db, Number(req.params.id), req.user)));
+  registerContactRoutes(app, db, config);
   app.post('/api/anuncios', auth.requireUser, upload, async (req, res) => {
     const data = await validateListing(req.body || {}, db, req.files?.length || 0);
     const plan = await publicationPlan(db, req.body?.planId);

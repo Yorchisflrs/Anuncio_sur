@@ -8,12 +8,13 @@ export interface Listing {
   estadoPago: 'pendiente' | 'en_revision' | 'confirmado' | 'rechazado';
   fechaAprobacion: string | null; fechaVencimiento: string | null;
   diasVigencia: number; diasPromocion: number; montoPublicacion: number; planId: number | null;
-  destacado: boolean; motivoRevision: string; direccion: string; referencia: string; contacto: string;
+  destacado: boolean; motivoRevision: string; direccion: string; referencia: string;
+  /** Solo en vistas privadas (propietario y administración). */
+  contacto?: string; contactos?: number;
 }
 export interface ListingDetail extends Listing {
   fotos: { id: number; archivo: string; orden: number }[];
-  vendedor: { id: number; nombre: string; celular: string; fechaRegistro: string; demo: boolean };
-  whatsappUrl: string;
+  vendedor: { id: number; nombre: string; celular?: string; fechaRegistro: string; demo: boolean };
   pago?: { comprobanteUrl: string | null; referenciaPago: string; fechaComprobante: string | null; fechaConfirmacion: string | null };
 }
 export interface PlanPublicacion { id: number; nombre: string; precio: number | null; dias: number; bonoPrimerAnuncio: number; destacado: boolean; activo: boolean }

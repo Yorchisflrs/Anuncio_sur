@@ -25,3 +25,10 @@ UPDATE anuncios SET tipo_operacion='alquiler' WHERE es_demo=1 AND tipo_operacion
   AND titulo IN ('Departamento luminoso de 2 habitaciones','Habitación cerca de la UNA Puno','Local comercial cerca del mercado')
   AND NOT EXISTS(SELECT 1 FROM metadata WHERE clave='tipo_operacion_demo_v1');
 INSERT IGNORE INTO metadata(clave,valor) VALUES('tipo_operacion_demo_v1','1');
+-- Pedidos de contacto: una fila por persona y aviso (la persona se guarda como hash).
+CREATE TABLE IF NOT EXISTS contactos_anuncio (
+ id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY, anuncio_id BIGINT UNSIGNED NOT NULL,
+ visitante CHAR(64) CHARACTER SET ascii COLLATE ascii_bin NOT NULL, fecha DATETIME(3) NOT NULL,
+ UNIQUE KEY uq_contactos_anuncio_visitante (anuncio_id, visitante),
+ CONSTRAINT fk_contactos_anuncio FOREIGN KEY (anuncio_id) REFERENCES anuncios (id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

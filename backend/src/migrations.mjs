@@ -45,6 +45,11 @@ export function migrateSqlite(db) {
       (1,'Semanal',500,7,0,0,1),(2,'Diario',NULL,1,0,0,0),(3,'Mensual',NULL,30,0,0,0);
       CREATE INDEX IF NOT EXISTS idx_moderacion_vigencia ON anuncios(moderacion,estado_pago,fecha_vencimiento);
       INSERT OR IGNORE INTO metadata (clave,valor) VALUES ('moderacion_v1','1');`);
+    // Quién pidió el contacto de cada aviso: una fila por persona (cuenta o IP con hash).
+    db.exec(`CREATE TABLE IF NOT EXISTS contactos_anuncio (
+      id INTEGER PRIMARY KEY, anuncio_id INTEGER NOT NULL REFERENCES anuncios(id),
+      visitante TEXT NOT NULL, fecha TEXT NOT NULL, UNIQUE(anuncio_id, visitante)
+    )`);
     if (!db.prepare("SELECT 1 FROM metadata WHERE clave = 'tipo_operacion_demo_v1'").get()) {
       db.prepare(demoRentalsSql).run(...DEMO_RENTALS);
       db.exec("INSERT INTO metadata (clave,valor) VALUES ('tipo_operacion_demo_v1','1')");
@@ -96,6 +101,12 @@ export async function migrateMysql(pool) {
   if(!indexes.length)await pool.query('CREATE INDEX idx_moderacion_vigencia ON anuncios(moderacion,estado_pago,fecha_vencimiento)');
   await pool.query("INSERT IGNORE INTO planes_publicacion (id,nombre,precio_centimos,dias,bono_primer_anuncio,destacado,activo) VALUES (1,'Semanal',500,7,0,0,1),(2,'Diario',NULL,1,0,0,0),(3,'Mensual',NULL,30,0,0,0)");
   await pool.query("INSERT IGNORE INTO metadata (clave,valor) VALUES ('moderacion_v1','1')");
+  await pool.query(`CREATE TABLE IF NOT EXISTS contactos_anuncio (
+    id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY, anuncio_id BIGINT UNSIGNED NOT NULL,
+    visitante CHAR(64) CHARACTER SET ascii COLLATE ascii_bin NOT NULL, fecha DATETIME(3) NOT NULL,
+    UNIQUE KEY uq_contactos_anuncio_visitante (anuncio_id, visitante),
+    CONSTRAINT fk_contactos_anuncio FOREIGN KEY (anuncio_id) REFERENCES anuncios (id)
+  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`);
   const [rentalFix] = await pool.query("SELECT clave FROM metadata WHERE clave = 'tipo_operacion_demo_v1'");
   if (!rentalFix.length) {
     await pool.query(demoRentalsSql, DEMO_RENTALS);

@@ -55,7 +55,8 @@ export const INFO_TOPICS: Record<string, InfoTopic> = {
     points: [
       'Pedimos un nombre para mostrar, correo, celular y contraseña para crear tu cuenta.',
       'En tus avisos solo aparece tu nombre para mostrar; tu correo no se publica.',
-      'Tu celular se muestra a los compradores únicamente para el contacto por WhatsApp de tus anuncios.',
+      'El celular de tus avisos no aparece en el catálogo: se muestra solo a quien pulsa «Ver contacto del vendedor», con un límite de pedidos por persona.',
+      'En Mi cuenta ves cuántas personas pidieron tu contacto. De quienes lo piden sin cuenta solo guardamos un código cifrado, no su dirección.',
       'Las contraseñas nunca se muestran a otros usuarios.',
       'Puedes dar de baja tus anuncios en cualquier momento desde Mi cuenta.'
     ]
