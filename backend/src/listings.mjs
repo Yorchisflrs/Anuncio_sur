@@ -1,7 +1,8 @@
 import { ApiError, parseFilters } from './validation.mjs';
 
 export const listingSelect = `SELECT a.*, c.nombre AS categoria, c.activa AS categoria_activa,
-  (SELECT archivo FROM fotos WHERE anuncio_id = a.id ORDER BY orden LIMIT 1) AS imagen
+  (SELECT archivo FROM fotos WHERE anuncio_id = a.id ORDER BY orden LIMIT 1) AS imagen,
+  (SELECT celular_verificado FROM usuarios WHERE id = a.usuario_id) AS vendedor_verificado
   FROM anuncios a JOIN categorias c ON c.id = a.categoria_id`;
 
 /** El celular de contacto solo viaja en vistas privadas (propietario y administración). */
@@ -10,6 +11,7 @@ export function serializeListing(row, { privado = false } = {}) {
     moderacion: row.moderacion, estadoPago: row.estado_pago, fechaAprobacion: row.fecha_aprobacion || null, fechaVencimiento: row.fecha_vencimiento || null,
     diasVigencia: Number(row.dias_vigencia), diasPromocion: Number(row.dias_promocion), montoPublicacion: row.monto_publicacion_centimos / 100,
     planId: row.plan_id, destacado: Boolean(row.destacado), motivoRevision: row.motivo_revision || '', direccion: row.direccion || '', referencia: row.referencia || '',
+    vendedorVerificado: Boolean(Number(row.vendedor_verificado)),
     ...(privado ? { contacto: row.contacto || '' } : {}),
   };
 }
@@ -50,9 +52,12 @@ export async function getListing(db, id, user) {
   const row = await db.get(listingSelect + ' WHERE a.id = ?', id);
   const privileged = row && (row.usuario_id === user?.id || user?.rol === 'admin');
   if (!row || (!isPublicRow(row) && !privileged)) throw new ApiError(404, 'Este anuncio no está disponible.');
-  const seller = await db.get('SELECT id, nombre, celular, fecha_registro, es_demo FROM usuarios WHERE id = ?', row.usuario_id);
+  const seller = await db.get('SELECT id, nombre, celular, fecha_registro, es_demo, celular_verificado FROM usuarios WHERE id = ?', row.usuario_id);
+  // Insignia de confianza: celular verificado y su historial de avisos publicados y dados de baja.
+  const history = await db.get("SELECT SUM(CASE WHEN fecha_aprobacion IS NOT NULL THEN 1 ELSE 0 END) AS publicados, SUM(CASE WHEN estado = 'dado_de_baja' THEN 1 ELSE 0 END) AS bajas FROM anuncios WHERE usuario_id = ?", seller.id);
   // El nombre público es el que eligió el vendedor; nunca se deriva de su correo.
-  const vendedor = { id: seller.id, nombre: seller.es_demo ? 'Vendedor de demostración' : seller.nombre || 'Vendedor de AvisoSur', fechaRegistro: seller.fecha_registro, demo: Boolean(seller.es_demo) };
+  const vendedor = { id: seller.id, nombre: seller.es_demo ? 'Vendedor de demostración' : seller.nombre || 'Vendedor de AvisoSur', fechaRegistro: seller.fecha_registro, demo: Boolean(seller.es_demo),
+    verificado: Boolean(Number(seller.celular_verificado)), avisosPublicados: Number(history.publicados || 0), avisosDadosDeBaja: Number(history.bajas || 0) };
   const fotos = await db.all('SELECT id, archivo, orden FROM fotos WHERE anuncio_id = ? ORDER BY orden', row.id);
   if (!privileged) return { ...serializeListing(row), fotos, vendedor };
   // El celular público se pide aparte (GET /api/anuncios/:id/contacto); aquí solo lo ven propietario y administración.

@@ -108,6 +108,20 @@ describe('Novedad · Celular verificado', () => {
     assert.equal((await app.request('/admin/verificaciones/' + other.id + '/codigo', jsonRequest({}))).response.status, 401);
   });
 
+  it('La insignia aparece en el catálogo y el detalle muestra avisos publicados y dados de baja', async () => {
+    const seller = await app.register('vendedor-con-insignia');
+    const first = await app.publish(seller.cookie, { titulo: 'Primer aviso con insignia' });
+    const second = await app.publish(seller.cookie, { titulo: 'Segundo aviso que se dará de baja' });
+    assert.equal((await app.request('/anuncios/' + second.id + '/baja', { method: 'PATCH', headers: { Cookie: seller.cookie } })).response.status, 200);
+    const catalog = await app.request('/anuncios?q=' + encodeURIComponent(first.titulo));
+    assert.equal(catalog.body.anuncios[0].vendedorVerificado, true);
+    const { body } = await app.request('/anuncios/' + first.id);
+    assert.equal(body.vendedor.verificado, true); assert.equal(body.vendedor.avisosPublicados, 2); assert.equal(body.vendedor.avisosDadosDeBaja, 1);
+    assert.equal((await app.approve(admin.cookie, 1)).response.status, 200);
+    const demo = await app.request('/anuncios/1');
+    assert.equal(demo.body.vendedorVerificado, false); assert.equal(demo.body.vendedor.verificado, false, 'Un número ficticio nunca se muestra como verificado.');
+  });
+
   it('La cuenta demo, con un número ficticio, no se puede verificar', async () => {
     const cookie = await app.login(DEMO_USER.correo, DEMO_USER.password);
     assert.equal((await app.request('/perfil/verificacion', jsonRequest({}, cookie))).response.status, 403);

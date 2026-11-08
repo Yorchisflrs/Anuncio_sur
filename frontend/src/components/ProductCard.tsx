@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { MapPin, ArrowUpRight } from 'lucide-react';
+import { MapPin, ArrowUpRight, BadgeCheck } from 'lucide-react';
 import type { Listing } from '../types';
 import { date, listingPrice } from '../services/api';
 
@@ -16,6 +16,7 @@ export function ListingCardContent({ listing, eager = false }: { listing: Listin
       <span className="product-category">{listing.tipoOperacion === 'alquiler' ? 'Alquiler · ' : ''}{listing.categoria}{listing.subcategoria ? ' / ' + listing.subcategoria : ''}</span>
       <span className="product-title">{listing.titulo}</span>
       <span className="product-price">{listingPrice(listing)}</span>
+      {listing.vendedorVerificado && <span className="verified-badge"><BadgeCheck size={14} aria-hidden="true"/>Celular verificado</span>}
       <span className="product-location"><span><MapPin size={13}/>{listing.zona.startsWith('Otras localidades') ? 'Sur del Perú' : listing.zona}</span><time dateTime={listing.fechaPublicacion}>{date(listing.fechaPublicacion)}</time></span>
     </span>
   </>;
@@ -32,7 +33,7 @@ export function ListingRow({ listing }: { listing: Listing }) {
     <span className="listing-row-body">
       <span className="product-category">{listing.tipoOperacion === 'alquiler' ? 'Alquiler · ' : ''}{listing.categoria}{listing.subcategoria ? ' / ' + listing.subcategoria : ''}</span>
       <span className="listing-row-title">{listing.titulo}</span>
-      <span className="listing-row-meta"><span><MapPin size={13}/>{listing.zona.startsWith('Otras localidades') ? 'Sur del Perú' : listing.zona}</span><time dateTime={listing.fechaPublicacion}>{date(listing.fechaPublicacion)}</time></span>
+      <span className="listing-row-meta"><span><MapPin size={13}/>{listing.zona.startsWith('Otras localidades') ? 'Sur del Perú' : listing.zona}</span><time dateTime={listing.fechaPublicacion}>{date(listing.fechaPublicacion)}</time>{listing.vendedorVerificado && <span className="verified-badge"><BadgeCheck size={14} aria-hidden="true"/>Celular verificado</span>}</span>
     </span>
     <span className="listing-row-price">{listingPrice(listing)}{listing.destacado && <small>Destacado</small>}</span>
   </Link>;
