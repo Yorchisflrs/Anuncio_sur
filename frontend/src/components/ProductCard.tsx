@@ -6,7 +6,7 @@ import { date, price } from '../services/api';
 export function ListingCardContent({ listing, eager = false }: { listing: Listing; eager?: boolean }) {
   return <>
     <span className="product-image" data-category={listing.categoriaId}>
-      <img src={listing.imagen} alt={listing.titulo} loading={eager ? 'eager' : 'lazy'} width="600" height="440" draggable={false}/>
+      <img src={listing.imagen} alt={listing.titulo} referrerPolicy="no-referrer" loading={eager ? 'eager' : 'lazy'} width="600" height="440" draggable={false}/>
       {listing.demo && <span className="image-badge">Ejemplo</span>}
       {listing.destacado && <span className="featured-badge">Destacado</span>}
       {listing.estado === 'dado_de_baja' && <span className="inactive-badge">Dado de baja</span>}

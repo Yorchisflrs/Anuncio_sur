@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import type { FormEvent } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, ChevronRight, ImagePlus, X, MapPin, CheckCircle2, Lightbulb, MessageCircle, Package, Mail, UserRound, CalendarDays, ShieldCheck, CreditCard } from 'lucide-react';
+import { ArrowRight, ChevronRight, ImagePlus, X, MapPin, CheckCircle2, Lightbulb, MessageCircle, Package, Mail, UserRound, CalendarDays, ShieldCheck, CreditCard, Link2, LoaderCircle } from 'lucide-react';
 import type { Category, ListingDetail, PublicacionConfig } from '../types';
 import { ZONES } from '../types';
 import { useResource } from '../hooks/useResource';
@@ -12,14 +12,43 @@ import { useAuth } from '../context/AuthContext';
 import '../detail-publish.css';
 import '../publication-commerce.css';
 
-interface SelectedPhoto { file: File; url: string }
+interface SelectedPhoto { file: File | null; url: string; source: 'archivo' | 'enlace' }
+
+function publicImageLink(value: string) {
+  const url = new URL(value.trim());
+  const host = url.hostname.toLowerCase().replace(/^\[|\]$/g, '').replace(/\.$/, '');
+  const octets = host.split('.').map(Number);
+  const privateIpv4 = octets.length === 4 && octets.every(Number.isInteger)
+    && (octets[0] === 0 || octets[0] === 10 || octets[0] === 127 || octets[0] >= 224
+      || (octets[0] === 100 && octets[1] >= 64 && octets[1] <= 127)
+      || (octets[0] === 169 && octets[1] === 254)
+      || (octets[0] === 172 && octets[1] >= 16 && octets[1] <= 31)
+      || (octets[0] === 192 && octets[1] === 168));
+  if (url.protocol !== 'https:' || url.username || url.password || url.port || host === 'localhost'
+    || host.endsWith('.localhost') || host.endsWith('.local') || privateIpv4
+    || host === '::1' || host.startsWith('fc') || host.startsWith('fd') || host.startsWith('fe80:') || host.startsWith('::ffff:')
+    || url.href.length > 2048) throw new Error('Pega un enlace HTTPS público y directo a la imagen. Los enlaces a perfiles, publicaciones o álbumes no muestran la foto por sí solos.');
+  return url.href;
+}
+
+function checkRemoteImage(url: string) {
+  return new Promise<void>((resolve, reject) => {
+    const image = new Image();
+    image.referrerPolicy = 'no-referrer';
+    const timeout = window.setTimeout(() => { image.src = ''; reject(new Error('La imagen no respondió. Revisa que el enlace sea público y vuelve a intentar.')); }, 10000);
+    image.onload = () => { window.clearTimeout(timeout); image.naturalWidth > 0 ? resolve() : reject(new Error('Ese enlace no contiene una imagen visible.')); };
+    image.onerror = () => { window.clearTimeout(timeout); reject(new Error('No se pudo cargar la imagen. Usa un enlace público directo o descarga la foto y súbela desde tu equipo.')); };
+    image.src = url;
+  });
+}
+
 export function PublishPage() {
   const categories = useResource<Category[]>('/categorias');
   const publication = useResource<PublicacionConfig>('/publicacion');
   const { user } = useAuth();
   const successRef = useRef<HTMLDivElement>(null);
   const [data, setData] = useState({ titulo: '', descripcion: '', categoriaId: '', subcategoria: '', precio: '', zona: '', direccion: '', referencia: '', contacto: '', planId: '' });
-  const [photos, setPhotos] = useState<SelectedPhoto[]>([]); const fileInput = useRef<HTMLInputElement>(null); const errorRef = useRef<HTMLDivElement>(null);
+  const [photos, setPhotos] = useState<SelectedPhoto[]>([]); const [photoLink, setPhotoLink] = useState(''); const [checkingPhotoLink, setCheckingPhotoLink] = useState(false); const fileInput = useRef<HTMLInputElement>(null); const errorRef = useRef<HTMLDivElement>(null);
   const [fields, setFields] = useState<Record<string, string>>({}); const [message, setMessage] = useState(''); const [busy, setBusy] = useState(false); const [dragging, setDragging] = useState(false);
   const [published, setPublished] = useState<ListingDetail | null>(null);
   const submissionInFlight = useRef(false);
@@ -41,13 +70,28 @@ export function PublishPage() {
     try {
       const previews = await Promise.all(selected.map(file => new Promise<SelectedPhoto>((resolve, reject) => {
         const reader = new FileReader();
-        reader.onload = () => typeof reader.result === 'string' ? resolve({ file, url: reader.result }) : reject(new Error('No se pudo preparar la vista previa.'));
+        reader.onload = () => typeof reader.result === 'string' ? resolve({ file, url: reader.result, source: 'archivo' }) : reject(new Error('No se pudo preparar la vista previa.'));
         reader.onerror = () => reject(new Error('No se pudo leer la fotografía. Inténtalo de nuevo.'));
         reader.readAsDataURL(file);
       })));
       setPhotos(previous => [...previous, ...previews].slice(0, 7));
       setFields(previous => ({ ...previous, fotos: '' }));
     } catch (error) { setFields(previous => ({ ...previous, fotos: errorMessage(error) })); }
+  }
+  async function addPhotoLink() {
+    if (photos.length >= 7 || checkingPhotoLink || busy || published) return;
+    let url: string;
+    try { url = publicImageLink(photoLink); }
+    catch (error) { setFields(previous => ({ ...previous, fotos: error instanceof Error ? error.message : 'Revisa el enlace de la foto.' })); return; }
+    if (photos.some(photo => photo.url === url)) { setFields(previous => ({ ...previous, fotos: 'Ese enlace ya está añadido.' })); return; }
+    setCheckingPhotoLink(true);
+    setFields(previous => ({ ...previous, fotos: '' }));
+    try {
+      await checkRemoteImage(url);
+      setPhotos(previous => [...previous, { file: null, url, source: 'enlace' as const }].slice(0, 7));
+      setPhotoLink('');
+    } catch (error) { setFields(previous => ({ ...previous, fotos: errorMessage(error) })); }
+    finally { setCheckingPhotoLink(false); }
   }
   function removePhoto(index: number) { setPhotos(previous => previous.filter((_, item) => item !== index)); }
   async function submit(event: FormEvent) {
@@ -58,7 +102,13 @@ export function PublishPage() {
     if (Object.keys(errors).length) { setMessage('Completa los campos señalados. Conservamos lo que ya escribiste.'); return; }
     submissionInFlight.current = true;
     setBusy(true);
-    const form = new FormData(); Object.entries(data).forEach(([key, value]) => form.append(key, value)); photos.forEach(photo => form.append('fotos', photo.file));
+    const form = new FormData(); Object.entries(data).forEach(([key, value]) => form.append(key, value));
+    let fileIndex = 0; let urlIndex = 0;
+    const photoOrder = photos.map(photo => {
+      if (photo.file) { form.append('fotos', photo.file); return 'f:' + fileIndex++; }
+      form.append('fotosUrl', photo.url); return 'u:' + urlIndex++;
+    });
+    form.append('ordenFotos', JSON.stringify(photoOrder));
     try {
       const listing = await api<ListingDetail>('/anuncios', { method: 'POST', body: form });
       setPublished(listing);
@@ -88,9 +138,10 @@ export function PublishPage() {
           <section className="form-section" id="publicar-paso-1" aria-labelledby="publish-photos-title">
             <div className="form-section-heading"><span><ImagePlus size={25} aria-hidden="true"/></span><div><h2 id="publish-photos-title">1. Fotos <span className="required">*</span></h2><p>Muestra lo que ofreces. La primera foto será la principal.</p></div></div>
             <input ref={fileInput} type="file" accept="image/jpeg,image/png,.jpg,.jpeg,.png" multiple hidden aria-label="Seleccionar fotos del anuncio" onChange={event => { addFiles(event.target.files); event.target.value = ''; }}/>
-            <button type="button" className={'upload-zone' + (dragging ? ' dragging' : '')} disabled={photos.length >= 7 || busy || Boolean(published)} aria-describedby="publish-photo-hint fotos-error" onClick={() => fileInput.current?.click()} onDragOver={event => { event.preventDefault(); setDragging(true); }} onDragLeave={() => setDragging(false)} onDrop={event => { event.preventDefault(); setDragging(false); if (!busy && !published) addFiles(event.dataTransfer.files); }}><span><ImagePlus size={30} aria-hidden="true"/></span><strong>{photos.length >= 7 ? 'Ya añadiste 7 fotos' : 'Añadir mis fotos'}</strong><small id="publish-photo-hint">Elige de 1 a 7 fotos propias JPG o PNG, de hasta 2 MB cada una.<br/>La primera será la portada. También puedes arrastrarlas aquí.</small></button>
+            <button type="button" className={'upload-zone' + (dragging ? ' dragging' : '')} disabled={photos.length >= 7 || busy || Boolean(published)} aria-describedby="publish-photo-hint fotos-error" onClick={() => fileInput.current?.click()} onDragOver={event => { event.preventDefault(); setDragging(true); }} onDragLeave={() => setDragging(false)} onDrop={event => { event.preventDefault(); setDragging(false); if (!busy && !published) addFiles(event.dataTransfer.files); }}><span><ImagePlus size={30} aria-hidden="true"/></span><strong>{photos.length >= 7 ? 'Ya añadiste 7 fotos' : 'Subir fotos desde mi equipo'}</strong><small id="publish-photo-hint">Elige de 1 a 7 fotos JPG o PNG, de hasta 2 MB cada una.<br/>La primera será la portada. También puedes arrastrarlas aquí.</small></button>
+            <div className="photo-link-box"><div className="photo-link-heading"><Link2 size={22} aria-hidden="true"/><div><strong>¿La foto ya está en internet?</strong><span>Pega aquí el enlace público directo a la imagen.</span></div></div><div className="photo-link-row"><input type="url" inputMode="url" autoComplete="url" value={photoLink} onChange={event => { setPhotoLink(event.target.value); setFields(previous => ({ ...previous, fotos: '' })); }} onKeyDown={event => { if (event.key === 'Enter') { event.preventDefault(); void addPhotoLink(); } }} placeholder="https://sitio.com/imagen.jpg" aria-label="Enlace público directo a la foto" disabled={photos.length >= 7 || busy || Boolean(published) || checkingPhotoLink}/><button type="button" className="button button-outline photo-link-add" onClick={addPhotoLink} disabled={!photoLink.trim() || photos.length >= 7 || busy || Boolean(published) || checkingPhotoLink}>{checkingPhotoLink ? <LoaderCircle size={19} className="spin" aria-hidden="true"/> : <Link2 size={19} aria-hidden="true"/>}{checkingPhotoLink ? 'Comprobando foto…' : 'Añadir enlace'}</button></div><p>Usa una dirección HTTPS que abra la foto directamente. Los enlaces a perfiles, publicaciones o álbumes de Facebook no son enlaces de imagen.</p></div>
             <FieldError id="fotos-error" message={fields.fotos}/>
-            {photos.length > 0 && <><p className="publish-photo-count" role="status">{photos.length} de 7 fotos añadidas</p><div className="photo-previews">{photos.map((photo, index) => <div key={photo.url}><img src={photo.url} alt={'Vista previa de fotografía ' + (index + 1)}/><span>{index === 0 ? 'Principal' : 'Foto ' + (index + 1)}</span><button type="button" aria-label={'Quitar foto ' + (index + 1)} onClick={() => removePhoto(index)} disabled={busy || Boolean(published)}><X size={18} aria-hidden="true"/>Quitar</button></div>)}</div></>}
+            {photos.length > 0 && <><p className="publish-photo-count" role="status">{photos.length} de 7 fotos añadidas</p><div className="photo-previews">{photos.map((photo, index) => <div key={photo.url}><img src={photo.url} referrerPolicy="no-referrer" alt={'Vista previa de fotografía ' + (index + 1)}/><span>{index === 0 ? 'Principal' : 'Foto ' + (index + 1)} · {photo.source === 'enlace' ? 'Enlace' : 'Archivo'}</span><button type="button" aria-label={'Quitar foto ' + (index + 1)} onClick={() => removePhoto(index)} disabled={busy || Boolean(published)}><X size={18} aria-hidden="true"/>Quitar</button></div>)}</div></>}
           </section>
           <section className="form-section" id="publicar-paso-2" aria-labelledby="publish-data-title">
             <div className="form-section-heading"><span><Package size={25} aria-hidden="true"/></span><div><h2 id="publish-data-title">2. Datos del anuncio</h2><p>Explica qué ofreces, cuánto cuesta y dónde se encuentra.</p></div></div>
@@ -118,7 +169,7 @@ export function PublishPage() {
         {/* Bloque 5: estado posterior a la publicación. */}
         {published && <div className="publish-success" role="status" aria-live="polite" ref={successRef} tabIndex={-1}><CheckCircle2 size={24}/><div><p>Tu anuncio se envió para revisión.</p><span>Aún no se muestra al público. Completa el pago y adjunta tu comprobante.</span><Link to={'/mis-anuncios/' + published.id + '/pago'}>Continuar con el pago <ArrowRight size={18}/></Link></div></div>}
       </form>
-      <aside className="publish-aside"><span className="section-kicker">ASÍ SE VERÁ DESPUÉS DE APROBARSE</span><div className="preview-card"><div className="preview-image">{photos[0] ? <img src={photos[0].url} alt="Vista previa de tu anuncio"/> : <><ImagePlus size={40}/><span>Aquí aparecerá tu foto principal</span></>}</div><div className="product-body"><span className="product-category">{category?.nombre || 'Tu categoría'}</span><h3>{data.titulo || 'Aquí aparecerá tu título'}</h3><p className="product-price">{data.precio && Number(data.precio) > 0 ? price(Number(data.precio)) : 'S/ —'}</p><p className="product-location"><MapPin size={17}/>{data.zona || 'Tu ubicación'}</p></div></div><div className="publish-checklist"><strong>Antes de enviar</strong>{['Añade hasta siete fotos propias', 'Completa los datos del anuncio', 'Revisa tu contacto', 'Elige el plan de publicación'].map((label, index) => <span className={completed[index] ? 'is-complete' : ''} key={label}><CheckCircle2 size={19}/>{label}{completed[index] && <span className="sr-only">: completo</span>}</span>)}</div><div className="publish-tip"><Lightbulb size={25}/><h3>Fotos y datos que ayuden</h3><p>Para un cuarto, muestra la habitación, baño y acceso. Indica el piso, dirección, servicios y condiciones de alquiler.</p></div></aside>
+      <aside className="publish-aside"><span className="section-kicker">ASÍ SE VERÁ DESPUÉS DE APROBARSE</span><div className="preview-card"><div className="preview-image">{photos[0] ? <img src={photos[0].url} referrerPolicy="no-referrer" alt="Vista previa de tu anuncio"/> : <><ImagePlus size={40}/><span>Aquí aparecerá tu foto principal</span></>}</div><div className="product-body"><span className="product-category">{category?.nombre || 'Tu categoría'}</span><h3>{data.titulo || 'Aquí aparecerá tu título'}</h3><p className="product-price">{data.precio && Number(data.precio) > 0 ? price(Number(data.precio)) : 'S/ —'}</p><p className="product-location"><MapPin size={17}/>{data.zona || 'Tu ubicación'}</p></div></div><div className="publish-checklist"><strong>Antes de enviar</strong>{['Añade hasta siete fotos propias o enlaces', 'Completa los datos del anuncio', 'Revisa tu contacto', 'Elige el plan de publicación'].map((label, index) => <span className={completed[index] ? 'is-complete' : ''} key={label}><CheckCircle2 size={19}/>{label}{completed[index] && <span className="sr-only">: completo</span>}</span>)}</div><div className="publish-tip"><Lightbulb size={25}/><h3>Fotos y datos que ayuden</h3><p>Para un cuarto, muestra la habitación, baño y acceso. Indica el piso, dirección, servicios y condiciones de alquiler.</p></div></aside>
     </div>}
   </div>;
 }

@@ -64,6 +64,10 @@ export async function migrateMysql(pool) {
     comprobante_archivo:'VARCHAR(100) NULL',referencia_pago:"VARCHAR(160) NOT NULL DEFAULT ''",fecha_comprobante:'DATETIME(3) NULL',fecha_confirmacion:'DATETIME(3) NULL',
   };
   for (const [name,type] of Object.entries(mysqlColumns)) if (!names.has(name)) await pool.query(`ALTER TABLE anuncios ADD COLUMN ${name} ${type}`);
+  const [photoColumns] = await pool.query('SHOW COLUMNS FROM fotos');
+  const photoPath = photoColumns.find(row => row.Field === 'archivo');
+  const currentPathLength = Number(/varchar\((\d+)\)/i.exec(photoPath?.Type || '')?.[1] || 0);
+  if (currentPathLength && currentPathLength < 2048) await pool.query('ALTER TABLE fotos MODIFY COLUMN archivo VARCHAR(2048) NOT NULL');
   const [constraints] = await pool.query("SELECT CONSTRAINT_NAME,CHECK_CLAUSE FROM information_schema.CHECK_CONSTRAINTS WHERE CONSTRAINT_SCHEMA = DATABASE() AND CONSTRAINT_NAME='ck_fotos_orden'");
   let photoConstraintReady = false;
   for (const row of constraints) {

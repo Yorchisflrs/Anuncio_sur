@@ -46,8 +46,9 @@ export function registerModerationRoutes(app, db, auth, config) {
   const privateImage = name => path.join(privateDir, path.basename(name));
   const sendImage = async (res,name,privacy='private, no-store') => {
     const file=privateImage(name);
-    try { await fs.access(file); } catch { throw new ApiError(404,'No encontramos esta imagen.'); }
-    res.set('Cache-Control',privacy).type('image/webp').sendFile(file);
+    let image;
+    try { image=await fs.readFile(file); } catch { throw new ApiError(404,'No encontramos esta imagen.'); }
+    res.set('Cache-Control',privacy).type('image/webp').send(image);
   };
   const ensureOwner = async (req, id) => {
     const ad = await db.get('SELECT * FROM anuncios WHERE id = ?', id);

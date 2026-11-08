@@ -1,3 +1,5 @@
+import { isIP } from 'node:net';
+
 export const ZONES = ['Puno', 'Juliaca', 'Otras localidades del sur del Perú'];
 
 export class ApiError extends Error {
@@ -21,6 +23,61 @@ export function validateRegistration(body) {
   return { correo, celular, password };
 }
 
+function isPrivatePhotoHost(hostname) {
+  const host = hostname.toLowerCase().replace(/^\[|\]$/g, '').replace(/\.$/, '');
+  if (host === 'localhost' || host.endsWith('.localhost') || host.endsWith('.local')) return true;
+  const version = isIP(host);
+  if (version === 4) {
+    const [a, b] = host.split('.').map(Number);
+    return a === 0 || a === 10 || a === 127 || a >= 224
+      || (a === 100 && b >= 64 && b <= 127)
+      || (a === 169 && b === 254)
+      || (a === 172 && b >= 16 && b <= 31)
+      || (a === 192 && b === 168);
+  }
+  if (version === 6) return host === '::1' || host.startsWith('fc') || host.startsWith('fd') || host.startsWith('fe80:') || host.startsWith('::ffff:');
+  return false;
+}
+
+function validatePhotoLinks(raw) {
+  const entries = raw === undefined ? [] : Array.isArray(raw) ? raw : [raw];
+  if (entries.length > 7) throw new ApiError(422, 'Puedes añadir hasta siete fotografías.', { fotos: 'Puedes añadir hasta siete fotografías.' });
+  return entries.map(value => {
+    if (typeof value !== 'string' || value.trim().length > 2048) throw new ApiError(422, 'Revisa los enlaces de las fotos.', { fotos: 'Cada enlace debe tener como máximo 2048 caracteres.' });
+    let url;
+    try { url = new URL(value.trim()); } catch { throw new ApiError(422, 'Revisa los enlaces de las fotos.', { fotos: 'Pega un enlace válido que abra una imagen pública.' }); }
+    if (url.protocol !== 'https:' || !url.hostname || url.username || url.password || url.port || isPrivatePhotoHost(url.hostname)) {
+      throw new ApiError(422, 'Revisa los enlaces de las fotos.', { fotos: 'Usa una dirección HTTPS pública, sin datos de acceso ni direcciones privadas.' });
+    }
+    return url.href;
+  });
+}
+
+function validatePhotoOrder(raw, fileCount, links) {
+  const fallback = [
+    ...Array.from({ length: fileCount }, (_, index) => `f:${index}`),
+    ...links.map((_, index) => `u:${index}`),
+  ];
+  if (raw === undefined || raw === '') return fallback;
+  let order;
+  try { order = JSON.parse(String(raw)); } catch { return null; }
+  if (!Array.isArray(order) || order.length !== fileCount + links.length) return null;
+  const fileIndexes = new Set();
+  const urlIndexes = new Set();
+  for (const token of order) {
+    if (typeof token !== 'string') return null;
+    const match = /^(f|u):(0|[1-6])$/.exec(token);
+    if (!match) return null;
+    const [kind, rawIndex] = [match[1], match[2]];
+    const index = Number(rawIndex);
+    const set = kind === 'f' ? fileIndexes : urlIndexes;
+    const limit = kind === 'f' ? fileCount : links.length;
+    if (index >= limit || set.has(index)) return null;
+    set.add(index);
+  }
+  return fileIndexes.size === fileCount && urlIndexes.size === links.length ? order : null;
+}
+
 export async function validateListing(body, db, photoCount) {
   const titulo = String(body.titulo || '').trim();
   const descripcion = String(body.descripcion || '').trim();
@@ -32,6 +89,8 @@ export async function validateListing(body, db, photoCount) {
   const referencia = String(body.referencia || '').trim();
   const contacto = String(body.contacto || '').trim();
   const fields = {};
+  const photoUrls = validatePhotoLinks(body.fotosUrl);
+  const photoOrder = validatePhotoOrder(body.ordenFotos, photoCount, photoUrls);
   if (titulo.length < 5 || titulo.length > 100) fields.titulo = 'El título debe tener entre 5 y 100 caracteres.';
   if (!descripcion || descripcion.length > 3000) fields.descripcion = 'Escribe una descripción de hasta 3000 caracteres.';
   const category = Number.isInteger(categoriaId) && await db.get('SELECT * FROM categorias WHERE id = ? AND activa = 1', categoriaId);
@@ -39,13 +98,14 @@ export async function validateListing(body, db, photoCount) {
   if (category && subcategoria && !(typeof category.subcategorias === 'string' ? JSON.parse(category.subcategorias) : category.subcategorias).includes(subcategoria)) fields.subcategoria = 'Selecciona una subcategoría válida.';
   if (!Number.isFinite(precio) || precio <= 0 || precio > 99999999.99 || !/^\d+(\.\d{1,2})?$/.test(String(body.precio || ''))) fields.precio = 'El precio debe ser mayor que S/ 0 y tener como máximo dos decimales.';
   if (!ZONES.includes(zona)) fields.zona = 'Selecciona una zona.';
-  if (!photoCount) fields.fotos = 'Añade al menos una fotografía principal.';
-  if (photoCount > 7) fields.fotos = 'Puedes añadir hasta siete fotografías.';
+  if (!photoCount && !photoUrls.length) fields.fotos = 'Añade al menos una fotografía principal.';
+  if (photoCount + photoUrls.length > 7) fields.fotos = 'Puedes añadir hasta siete fotografías entre archivos y enlaces.';
+  if (!photoOrder) fields.fotos = 'El orden de las fotografías no es válido. Vuelve a seleccionarlas.';
   if (direccion.length > 200) fields.direccion = 'Usa hasta 200 caracteres.';
   if (referencia.length > 300) fields.referencia = 'Usa hasta 300 caracteres.';
   if (contacto && !/^9\d{8}$/.test(contacto)) fields.contacto = 'Escribe un celular peruano de nueve dígitos que comience con 9.';
   if (Object.keys(fields).length) throw new ApiError(422, 'Revisa los datos antes de publicar.', fields);
-  return { titulo, descripcion, categoriaId, subcategoria, zona, direccion, referencia, contacto, precioCentimos: Math.round(precio * 100) };
+  return { titulo, descripcion, categoriaId, subcategoria, zona, direccion, referencia, contacto, precioCentimos: Math.round(precio * 100), photoUrls, photoOrder };
 }
 
 export function parseFilters(query) {

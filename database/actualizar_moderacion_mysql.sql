@@ -4,6 +4,7 @@
 -- Ejecutar con una copia de seguridad y sobre avisosur_db.
 -- La misma actualización se aplica automáticamente al iniciar el backend.
 USE avisosur_db;
+ALTER TABLE fotos MODIFY COLUMN archivo VARCHAR(2048) NOT NULL;
 CREATE TABLE IF NOT EXISTS planes_publicacion (
  id INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,nombre VARCHAR(80) NOT NULL,
  precio_centimos INT UNSIGNED NULL,dias INT UNSIGNED NOT NULL,

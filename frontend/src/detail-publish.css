@@ -245,3 +245,46 @@
   .publish-page .publish-actions .button { padding-inline: 12px; font-size: 13px; }
   .publish-page .publish-success { padding: 20px 16px; }
 }
+
+/* Mejora de lectura y contraste para completar el anuncio con menos esfuerzo. */
+.publish-page .section-kicker { font-size: 12px; letter-spacing: 1.35px; }
+.publish-page .page-heading h1 { font-size: clamp(38px, 4vw, 52px); }
+.publish-page .page-heading p { font-size: 17px; line-height: 1.8; }
+.publish-page .publish-progress > a { font-size: 14px; font-weight: 650; }
+.publish-page .form-section-heading h2 { font-size: 26px; }
+.publish-page .form-section-heading p { font-size: 15px; }
+.publish-page .form-field { font-size: 16px; font-weight: 600; }
+.publish-page .form-field > :is(input, select, textarea), .publish-page .input-with-icon input { font-size: 17px; min-height: 56px; }
+.publish-page .field-hint, .publish-page .field-error, .publish-page .field-optional { font-size: 14px; }
+.publish-page .upload-zone small { font-size: 14px; }
+.publish-page .photo-link-box { display: grid; gap: 12px; margin-top: 18px; padding: 18px; border: 1px solid var(--color-border); border-radius: 16px; background: var(--color-surface-alt); }
+.publish-page .photo-link-heading { display: flex; align-items: flex-start; gap: 12px; color: var(--color-brand); }
+.publish-page .photo-link-heading > svg { margin-top: 2px; }
+.publish-page .photo-link-heading strong, .publish-page .photo-link-heading span { display: block; }
+.publish-page .photo-link-heading strong { color: var(--color-ink); font-size: 16px; }
+.publish-page .photo-link-heading span, .publish-page .photo-link-box > p { color: var(--color-muted); font-size: 14px; line-height: 1.65; }
+.publish-page .photo-link-row { display: flex; gap: 10px; }
+.publish-page .photo-link-row input { flex: 1; min-width: 0; min-height: 54px; padding: 12px 14px; border: 1px solid var(--color-border); border-radius: 12px; background: var(--color-surface); color: var(--color-ink); font-size: 16px; }
+.publish-page .photo-link-row input:focus { border-color: var(--color-primary); outline: 3px solid var(--color-blue-panel); }
+.publish-page .photo-link-add { min-height: 54px; font-size: 15px; color: var(--color-brand); border-color: var(--color-inset-line); }
+.publish-page .photo-previews div > span { font-size: 12px; }
+.publish-page .publish-actions > span { font-size: 14px; }
+.publish-page .publish-actions .button { min-height: 56px; font-size: 15px; }
+.publish-page .publish-submit { min-width: 230px; min-height: 60px !important; padding-inline: 22px; border: 2px solid #FFFFFF; background: #173FAD; color: #FFFFFF; box-shadow: 0 10px 24px #142D6850; font-size: 16px !important; font-weight: 750; }
+.publish-page .publish-submit:hover:not(:disabled) { background: #102F84; box-shadow: 0 12px 28px #142D6860; }
+.publish-page .publish-submit:focus-visible { outline: 4px solid #25B9BE; outline-offset: 3px; }
+.publish-page .publish-submit:disabled { opacity: 1; background: #7185AD; color: #FFFFFF; box-shadow: none; border-color: #E1E8F3; }
+@media (max-width: 600px) {
+  .publish-page .page-heading h1 { font-size: 36px; }
+  .publish-page .page-heading p { font-size: 15px; }
+  .publish-page .section-kicker { font-size: 10px; letter-spacing: 1px; }
+  .publish-page .form-section-heading h2 { font-size: 22px; }
+  .publish-page .form-section-heading p { font-size: 14px; }
+  .publish-page .form-field { font-size: 15px; }
+  .publish-page .form-field > :is(input, select, textarea), .publish-page .input-with-icon input { font-size: 16px; }
+  .publish-page .field-hint, .publish-page .field-error, .publish-page .field-optional { font-size: 14px; }
+  .publish-page .photo-link-box { padding: 16px; }
+  .publish-page .photo-link-row { flex-direction: column; }
+  .publish-page .photo-link-row > * { width: 100%; }
+  .publish-page .publish-submit { min-width: 0; flex: 1; padding-inline: 12px; font-size: 14px !important; }
+}

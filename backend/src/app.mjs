@@ -20,7 +20,7 @@ export async function createApp(overrides = {}) {
   const app = express();
   const auth = authServices(db, config);
   app.disable('x-powered-by');
-  app.use(helmet({ contentSecurityPolicy: { directives: { upgradeInsecureRequests: null, frameSrc: ["'self'", 'https://www.openstreetmap.org'] } } }));
+  app.use(helmet({ contentSecurityPolicy: { directives: { upgradeInsecureRequests: null, imgSrc: ["'self'", 'data:', 'blob:', 'https:'], frameSrc: ["'self'", 'https://www.openstreetmap.org'] } } }));
   app.use(express.json({ limit: '16kb' }));
   app.use(cookieParser());
   app.use('/api', (_req, res, next) => { res.set('Cache-Control', 'no-store'); next(); });
@@ -90,7 +90,12 @@ export async function createApp(overrides = {}) {
         const price = tx.kind === 'mysql' ? (data.precioCentimos / 100).toFixed(2) : data.precioCentimos;
         const result = await tx.run(`INSERT INTO anuncios (usuario_id, titulo, descripcion, ${priceColumn}, zona, categoria_id, subcategoria, es_demo, fecha_publicacion, plan_id, dias_vigencia, monto_publicacion_centimos, bono_primer_snapshot, destacado, direccion, referencia, contacto) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`, req.user.id, data.titulo, data.descripcion, price, data.zona, data.categoriaId, data.subcategoria, Number(req.user.es_demo), date, plan.id, plan.dias, plan.precio_centimos, plan.bono_primer_anuncio, plan.destacado, data.direccion, data.referencia, data.contacto || req.user.celular);
         const id = Number(result.lastInsertRowid);
-        for (const [index, photo] of photos.entries()) await tx.run('INSERT INTO fotos (anuncio_id, archivo, orden, fecha_subida) VALUES (?, ?, ?, ?)', id, '/uploads/' + photo.filename, index, date);
+        for (const [index, token] of data.photoOrder.entries()) {
+          const [kind, rawPhotoIndex] = token.split(':');
+          const photoIndex = Number(rawPhotoIndex);
+          const filename = kind === 'f' ? '/uploads/' + photos[photoIndex].filename : data.photoUrls[photoIndex];
+          await tx.run('INSERT INTO fotos (anuncio_id, archivo, orden, fecha_subida) VALUES (?, ?, ?, ?)', id, filename, index, date);
+        }
         return id;
       });
     } catch (error) {
