@@ -42,7 +42,7 @@ try {
       if (!/^\$2[aby]\$\d\d\$/.test(row.password_hash)) throw new Error(`El usuario ${row.id} no tiene un hash bcrypt compatible.`);
       const existing = await tx.get('SELECT id, correo FROM usuarios WHERE correo = ? OR celular = ?', row.correo, row.celular);
       if (existing && existing.correo !== row.correo) throw new Error(`El celular del usuario ${row.id} ya pertenece a otro correo en MySQL.`);
-      const id = existing?.id ?? await insert(tx, 'usuarios', { correo: row.correo, celular: row.celular, password_hash: row.password_hash, es_demo: row.es_demo, fecha_registro: row.fecha_registro }, row.id);
+      const id = existing?.id ?? await insert(tx, 'usuarios', { nombre: row.nombre ?? '', correo: row.correo, celular: row.celular, password_hash: row.password_hash, es_demo: row.es_demo, fecha_registro: row.fecha_registro }, row.id);
       if (!existing) counts.usuarios++;
       users.set(row.id, id);
     }

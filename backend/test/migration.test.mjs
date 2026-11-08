@@ -68,6 +68,7 @@ test('La migración SQLite conserva datos, relaciones y sesiones; aplica revisi�
   assert.equal((await database.get('SELECT estado FROM anuncios WHERE id = ?', 42)).estado, 'dado_de_baja');
   assert.equal((await database.get('SELECT rol FROM usuarios WHERE id = ?', 7)).rol, 'usuario');
   assert.equal((await database.get('SELECT rol FROM usuarios WHERE id = ?', 8)).rol, 'usuario');
+  assert.equal((await database.get('SELECT nombre FROM usuarios WHERE id = ?', 8)).nombre, '', 'Las cuentas anteriores reciben un nombre vacío, no su correo.');
   assert.equal((await database.get('SELECT password_hash FROM usuarios WHERE id = ?', 7)).password_hash, hash);
   assert.deepEqual((await database.all('SELECT id, anuncio_id, archivo, orden, fecha_subida FROM fotos ORDER BY id')).map(row => ({ ...row })), [
     { id: 51, anuncio_id: 41, archivo: '/uploads/foto-anterior.webp', orden: 0, fecha_subida: instant },

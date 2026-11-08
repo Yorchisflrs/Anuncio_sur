@@ -8,7 +8,7 @@ describe('RF-01 · Cuenta y acceso', () => {
   let app;
   before(async () => { app = await createIsolatedApp(); });
   after(() => app?.close());
-  const account = (correo, celular, extra = {}) => jsonRequest({ correo, celular, password: TEST_PASSWORD, confirmacion: TEST_PASSWORD, ...extra });
+  const account = (correo, celular, extra = {}) => jsonRequest({ nombre: 'Persona de prueba', correo, celular, password: TEST_PASSWORD, confirmacion: TEST_PASSWORD, ...extra });
 
   it('El registro guarda un hash bcrypt de costo 12 y abre sesión con cookie HttpOnly y SameSite=Strict', async () => {
     const { response, body } = await app.request('/auth/registro', account('registro-valido@avisosur-test.local', '900000101'));
@@ -34,7 +34,25 @@ describe('RF-01 · Cuenta y acceso', () => {
   it('Datos inválidos devuelven 422 con un mensaje por cada campo', async () => {
     const { response, body } = await app.request('/auth/registro', jsonRequest({ correo: 'incorrecto', celular: '123', password: 'corta', confirmacion: 'otra' }));
     assert.equal(response.status, 422);
-    assert.deepEqual(Object.keys(body.fields).sort(), ['celular', 'confirmacion', 'correo', 'password']);
+    assert.deepEqual(Object.keys(body.fields).sort(), ['celular', 'confirmacion', 'correo', 'nombre', 'password']);
+  });
+
+  it('El nombre para mostrar no acepta un correo, un enlace ni un número de teléfono', async () => {
+    for (const nombre of ['', 'A', 'rosa@correo.com', 'www.mitienda.com', 'Llama al 987654321', 'x'.repeat(61)]) {
+      const { response, body } = await app.request('/auth/registro', account('nombre-invalido@avisosur-test.local', '900000104', { nombre }));
+      assert.equal(response.status, 422, nombre); assert(body.fields.nombre, nombre);
+    }
+    assert.equal((await app.db.get('SELECT COUNT(*) AS n FROM usuarios WHERE celular = ?', '900000104')).n, 0);
+  });
+
+  it('Una cuenta puede cambiar su nombre para mostrar desde su perfil', async () => {
+    const user = await app.register('cambia-nombre', { nombre: '  Rosa   Quispe  ' });
+    assert.equal(user.nombre, 'Rosa Quispe');
+    const changed = await app.request('/perfil', jsonRequest({ nombre: 'Cuartos Rosa · UNA' }, user.cookie, 'PATCH'));
+    assert.equal(changed.response.status, 422, 'El punto medio no es un carácter permitido.');
+    const valid = await app.request('/perfil', jsonRequest({ nombre: 'Cuartos Rosa (UNA)' }, user.cookie, 'PATCH'));
+    assert.equal(valid.response.status, 200); assert.equal(valid.body.usuario.nombre, 'Cuartos Rosa (UNA)');
+    assert.equal((await app.request('/perfil', jsonRequest({ nombre: 'Sin sesión' }, '', 'PATCH'))).response.status, 401);
   });
 
   it('Un correo o celular ya registrado devuelve 409 sin crear otra cuenta', async () => {

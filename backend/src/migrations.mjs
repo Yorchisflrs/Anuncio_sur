@@ -21,6 +21,8 @@ export function migrateSqlite(db) {
       (1,'Semanal',500,7,0,0,1),(2,'Diario',NULL,1,0,0,0),(3,'Mensual',NULL,30,0,0,0)`);
     const users = new Set(db.prepare('PRAGMA table_info(usuarios)').all().map(row => row.name));
     if (!users.has('rol')) db.exec("ALTER TABLE usuarios ADD COLUMN rol TEXT NOT NULL DEFAULT 'usuario' CHECK(rol IN ('usuario','admin'))");
+    // Nombre público del vendedor; las cuentas anteriores quedan vacías y se muestran con un nombre genérico.
+    if (!users.has('nombre')) db.exec("ALTER TABLE usuarios ADD COLUMN nombre TEXT NOT NULL DEFAULT ''");
     const columns = new Set(db.prepare('PRAGMA table_info(anuncios)').all().map(row => row.name));
     for (const [name, type] of Object.entries(sqliteColumns)) if (!columns.has(name)) db.exec(`ALTER TABLE anuncios ADD COLUMN ${name} ${type}`);
     db.exec('UPDATE anuncios SET plan_id=1 WHERE plan_id IS NULL');
@@ -52,6 +54,7 @@ export async function migrateMysql(pool) {
   ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`);
   const [userColumns] = await pool.query('SHOW COLUMNS FROM usuarios');
   if (!userColumns.some(row => row.Field === 'rol')) await pool.query("ALTER TABLE usuarios ADD COLUMN rol VARCHAR(20) NOT NULL DEFAULT 'usuario'");
+  if (!userColumns.some(row => row.Field === 'nombre')) await pool.query("ALTER TABLE usuarios ADD COLUMN nombre VARCHAR(60) NOT NULL DEFAULT ''");
   const [adColumns] = await pool.query('SHOW COLUMNS FROM anuncios');
   const names = new Set(adColumns.map(row => row.Field));
   const mysqlColumns = {

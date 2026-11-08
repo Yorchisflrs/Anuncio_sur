@@ -6,6 +6,7 @@ USE avisosur_db;
 
 CREATE TABLE IF NOT EXISTS usuarios (
   id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  nombre VARCHAR(60) NOT NULL DEFAULT '',
   correo VARCHAR(254) NOT NULL,
   celular CHAR(9) NOT NULL,
   password_hash VARCHAR(255) NOT NULL,

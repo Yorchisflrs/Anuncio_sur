@@ -46,8 +46,9 @@ export async function getListing(db, id, user) {
   const privileged = row && (row.usuario_id === user?.id || user?.rol === 'admin');
   const visible = row && row.estado === 'activo' && row.moderacion === 'aprobado' && row.estado_pago === 'confirmado' && row.fecha_aprobacion && Date.parse(row.fecha_vencimiento) > Date.now() && row.categoria_activa;
   if (!row || (!visible && !privileged)) throw new ApiError(404, 'Este anuncio no está disponible.');
-  const seller = await db.get('SELECT id, correo, celular, fecha_registro, es_demo FROM usuarios WHERE id = ?', row.usuario_id);
-  const vendedor = { id: seller.id, nombre: seller.es_demo ? 'Vendedor de demostración' : seller.correo.split('@')[0], celular: row.contacto || seller.celular, fechaRegistro: seller.fecha_registro, demo: Boolean(seller.es_demo) };
+  const seller = await db.get('SELECT id, nombre, celular, fecha_registro, es_demo FROM usuarios WHERE id = ?', row.usuario_id);
+  // El nombre público es el que eligió el vendedor; nunca se deriva de su correo.
+  const vendedor = { id: seller.id, nombre: seller.es_demo ? 'Vendedor de demostración' : seller.nombre || 'Vendedor de AvisoSur', celular: row.contacto || seller.celular, fechaRegistro: seller.fecha_registro, demo: Boolean(seller.es_demo) };
   const mensaje = 'Hola, vi tu anuncio de ' + row.titulo + ' en AvisoSur y quisiera saber si todavía está disponible';
   return { ...serializeListing(row), fotos: await db.all('SELECT id, archivo, orden FROM fotos WHERE anuncio_id = ? ORDER BY orden', row.id), vendedor, whatsappUrl: 'https://wa.me/51' + vendedor.celular + '?text=' + encodeURIComponent(mensaje),
     ...(privileged ? { pago: { comprobanteUrl: row.comprobante_archivo ? `/api/anuncios/${row.id}/comprobante` : null, referenciaPago: row.referencia_pago || '', fechaComprobante: row.fecha_comprobante || null, fechaConfirmacion: row.fecha_confirmacion || null } } : {}),

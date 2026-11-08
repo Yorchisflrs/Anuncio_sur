@@ -15,7 +15,7 @@ export function Layout() {
   const [menu, setMenu] = useState(false);
   const location = useLocation();
   const { user, error } = useAuth();
-  const userName = user ? (user.demo ? 'Cuenta demo' : user.correo.split('@')[0]) : '';
+  const userName = user ? (user.demo ? 'Cuenta demo' : user.nombre || 'Mi cuenta') : '';
   useEffect(() => {
     setMenu(false);
     window.scrollTo({ top: 0, behavior: 'instant' });

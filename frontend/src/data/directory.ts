@@ -53,7 +53,8 @@ export const INFO_TOPICS: Record<string, InfoTopic> = {
     kicker: 'TUS DATOS', title: 'Política de privacidad',
     intro: 'Así tratamos la información que compartes en AvisoSur.',
     points: [
-      'Solo pedimos correo, celular y contraseña para crear tu cuenta.',
+      'Pedimos un nombre para mostrar, correo, celular y contraseña para crear tu cuenta.',
+      'En tus avisos solo aparece tu nombre para mostrar; tu correo no se publica.',
       'Tu celular se muestra a los compradores únicamente para el contacto por WhatsApp de tus anuncios.',
       'Las contraseñas nunca se muestran a otros usuarios.',
       'Puedes dar de baja tus anuncios en cualquier momento desde Mi cuenta.'

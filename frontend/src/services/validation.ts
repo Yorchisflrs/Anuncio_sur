@@ -1,5 +1,13 @@
+/** Mismas reglas que el servidor: nombre público sin correo, enlace ni teléfono. */
+export function displayNameError(value: string) {
+  const nombre = value.normalize('NFC').replace(/\s+/g, ' ').trim();
+  const valid = nombre.length >= 2 && nombre.length <= 60 && /\p{L}/u.test(nombre) && /^[\p{L}\p{M}\d .,'&()-]+$/u.test(nombre) && !/www\./i.test(nombre) && (nombre.match(/\d/g) || []).length < 6;
+  return valid ? '' : 'Escribe un nombre de 2 a 60 caracteres, sin correo ni número de teléfono.';
+}
 export function validateRegistration(data: Record<string, string>) {
   const fields: Record<string, string> = {};
+  const nameError = displayNameError(data.nombre || '');
+  if (nameError) fields.nombre = nameError;
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.correo.trim()) || data.correo.length > 254) fields.correo = 'Escribe un correo electrónico válido.';
   if (!/^9\d{8}$/.test(data.celular)) fields.celular = 'Escribe 9 dígitos, comenzando con 9.';
   if (data.password.length < 8 || new TextEncoder().encode(data.password).length > 72) fields.password = 'Usa al menos 8 caracteres y un máximo de 72 bytes.';

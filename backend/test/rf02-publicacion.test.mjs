@@ -81,6 +81,16 @@ describe('RF-02 · Publicación de anuncios', () => {
     assert(profile.body.some(item => item.id === ad.id && item.estado === 'dado_de_baja'));
   });
 
+  it('El aviso muestra el nombre elegido por el vendedor, nunca una parte de su correo', async () => {
+    const named = await app.register('correo-privado-rf02', { nombre: 'Rosa Quispe' });
+    const ad = await app.publish(named.cookie, { titulo: 'Aviso con nombre para mostrar' });
+    const detail = await app.request('/anuncios/' + ad.id);
+    assert.equal(detail.body.vendedor.nombre, 'Rosa Quispe');
+    assert(!JSON.stringify(detail.body).includes('correo-privado-rf02'), 'El correo no aparece en el detalle público.');
+    await app.db.run("UPDATE usuarios SET nombre = '' WHERE id = ?", named.id); // Cuenta creada antes de pedir el nombre.
+    assert.equal((await app.request('/anuncios/' + ad.id)).body.vendedor.nombre, 'Vendedor de AvisoSur');
+  });
+
   it('La cuenta demo publica con la marca DEMO aunque el formulario intente quitarla', async () => {
     const cookie = await app.login(DEMO_USER.correo, DEMO_USER.password);
     const { response, body } = await app.listing(cookie, { titulo: 'Anuncio ficticio desde la cuenta demo', demo: 'false', es_demo: '0' });

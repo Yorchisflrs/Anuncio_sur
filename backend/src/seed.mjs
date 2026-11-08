@@ -35,7 +35,7 @@ export async function seedDatabase(db) {
   const hash = await bcrypt.hash(DEMO_USER.password, 12);
   db.exec('BEGIN');
   try {
-    const user = db.prepare('INSERT INTO usuarios (correo, celular, password_hash, es_demo, fecha_registro) VALUES (?, ?, ?, 1, ?)').run(DEMO_USER.correo, DEMO_USER.celular, hash, new Date().toISOString());
+    const user = db.prepare("INSERT INTO usuarios (nombre, correo, celular, password_hash, es_demo, fecha_registro) VALUES ('Vendedor de demostración', ?, ?, ?, 1, ?)").run(DEMO_USER.correo, DEMO_USER.celular, hash, new Date().toISOString());
     const listing = db.prepare('INSERT INTO anuncios (usuario_id, titulo, descripcion, precio_centimos, zona, categoria_id, subcategoria, es_demo, fecha_publicacion, plan_id) VALUES (?, ?, ?, ?, ?, ?, ?, 1, ?, 1)');
     const photo = db.prepare('INSERT INTO fotos (anuncio_id, archivo, orden, fecha_subida) VALUES (?, ?, 0, ?)');
     DEMO_LISTINGS.forEach(([titulo, precio, zona, categoria, subcategoria, asset, descripcion], index) => {

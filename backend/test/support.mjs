@@ -62,7 +62,7 @@ export async function createIsolatedApp(overrides = {}) {
   }
   async function register(label, overrides = {}) {
     userNumber += 1;
-    const result = await request('/auth/registro', jsonRequest({ correo: label + '@avisosur-test.local', celular: '91' + String(userNumber).padStart(7, '0'), password: TEST_PASSWORD, confirmacion: TEST_PASSWORD, ...overrides }));
+    const result = await request('/auth/registro', jsonRequest({ nombre: 'Usuario ' + label, correo: label + '@avisosur-test.local', celular: '91' + String(userNumber).padStart(7, '0'), password: TEST_PASSWORD, confirmacion: TEST_PASSWORD, ...overrides }));
     assert.equal(result.response.status, 201, JSON.stringify(result.body));
     const cookie = cookieFrom(result.response);
     assert(cookie, 'El registro debe iniciar sesión con una cookie.');

@@ -9,7 +9,7 @@ import path from 'node:path';
 import { defaultConfig, projectRoot } from './config.mjs';
 import { openDatabase } from './database.mjs';
 import { authServices, publicUser } from './auth.mjs';
-import { ApiError, validateRegistration, validateListing } from './validation.mjs';
+import { ApiError, validateRegistration, validateListing, validateDisplayName } from './validation.mjs';
 import { getCatalog, getListing, getOwnListings, publicCondition } from './listings.mjs';
 import { upload, preparePhotos, persistPhotos } from './uploads.mjs';
 import { publicationPlan, registerModerationRoutes } from './moderation.mjs';
@@ -53,7 +53,7 @@ export async function createApp(overrides = {}) {
     if (Object.keys(fields).length) throw new ApiError(409, 'Ya existe una cuenta con estos datos.', fields);
     let result;
     try {
-      result = await db.run('INSERT INTO usuarios (correo, celular, password_hash, fecha_registro) VALUES (?, ?, ?, ?)', data.correo, data.celular, hash, new Date().toISOString());
+      result = await db.run('INSERT INTO usuarios (nombre, correo, celular, password_hash, fecha_registro) VALUES (?, ?, ?, ?, ?)', data.nombre, data.correo, data.celular, hash, new Date().toISOString());
     } catch (error) {
       if (error.code === 'ER_DUP_ENTRY' || error.code === 'SQLITE_CONSTRAINT_UNIQUE') throw new ApiError(409, 'Ya existe una cuenta con estos datos.');
       throw error;
@@ -74,6 +74,11 @@ export async function createApp(overrides = {}) {
     res.json({ usuario: publicUser(user) });
   });
   app.post('/api/auth/logout', async (req, res) => { await auth.destroySession(req, res); res.json({ message: 'Sesión cerrada.' }); });
+  app.patch('/api/perfil', auth.requireUser, async (req, res) => {
+    const nombre = validateDisplayName(req.body?.nombre);
+    await db.run('UPDATE usuarios SET nombre = ? WHERE id = ?', nombre, req.user.id);
+    res.json({ usuario: publicUser(await db.get('SELECT * FROM usuarios WHERE id = ?', req.user.id)) });
+  });
   app.get('/api/anuncios', async (req, res) => res.json(await getCatalog(db, req.query)));
   app.get('/api/perfil/anuncios', auth.requireUser, async (req, res) => res.json(await getOwnListings(db, req.user.id)));
   app.get('/api/anuncios/:id', async (req, res) => res.json(await getListing(db, Number(req.params.id), req.user)));

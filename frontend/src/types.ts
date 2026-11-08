@@ -1,4 +1,4 @@
-export interface User { id: number; correo: string; celular: string; fechaRegistro: string; demo: boolean; rol: 'usuario' | 'admin' }
+export interface User { id: number; nombre: string; correo: string; celular: string; fechaRegistro: string; demo: boolean; rol: 'usuario' | 'admin' }
 export interface Category { id: number; nombre: string; subcategorias: string[]; total: number }
 export interface Listing {
   id: number; usuarioId: number; titulo: string; descripcion: string; precio: number; zona: string;

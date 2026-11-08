@@ -10,17 +10,33 @@ export class ApiError extends Error {
   }
 }
 
+const NAME_RULE = 'Escribe un nombre de 2 a 60 caracteres, sin correo ni número de teléfono.';
+/** Nombre público del vendedor: nunca un correo, un enlace ni un teléfono. Devuelve null si no es válido. */
+export function displayName(value) {
+  const nombre = String(value ?? '').normalize('NFC').replace(/\s+/g, ' ').trim();
+  const valid = nombre.length >= 2 && nombre.length <= 60 && /\p{L}/u.test(nombre) && /^[\p{L}\p{M}\d .,'&()-]+$/u.test(nombre)
+    && !/www\./i.test(nombre) && (nombre.match(/\d/g) || []).length < 6;
+  return valid ? nombre : null;
+}
+export function validateDisplayName(value) {
+  const nombre = displayName(value);
+  if (!nombre) throw new ApiError(422, 'Revisa tu nombre para mostrar.', { nombre: NAME_RULE });
+  return nombre;
+}
+
 export function validateRegistration(body) {
+  const nombre = displayName(body.nombre);
   const correo = String(body.correo || '').trim().toLowerCase();
   const celular = String(body.celular || '').trim();
   const password = String(body.password || '');
   const fields = {};
+  if (!nombre) fields.nombre = NAME_RULE;
   if (correo.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correo)) fields.correo = 'Escribe un correo electrónico válido.';
   if (!/^9\d{8}$/.test(celular)) fields.celular = 'Escribe un celular peruano de 9 dígitos que comience con 9.';
   if (password.length < 8 || Buffer.byteLength(password, 'utf8') > 72) fields.password = 'Usa al menos 8 caracteres y un máximo de 72 bytes.';
   if (password !== body.confirmacion) fields.confirmacion = 'Las contraseñas deben coincidir.';
   if (Object.keys(fields).length) throw new ApiError(422, 'Revisa los datos del formulario.', fields);
-  return { correo, celular, password };
+  return { nombre, correo, celular, password };
 }
 
 function isPrivatePhotoHost(hostname) {
