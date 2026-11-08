@@ -4,7 +4,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import type { User } from '../types';
 import { api, errorMessage } from '../services/api';
 
-interface AuthState { user: User | null; loading: boolean; endingSession: boolean; error: string; login: (identificador: string, password: string) => Promise<void>; register: (data: Record<string, string>) => Promise<void>; logout: () => Promise<void> }
+interface AuthState { user: User | null; loading: boolean; endingSession: boolean; error: string; login: (identificador: string, password: string) => Promise<void>; register: (data: Record<string, string>) => Promise<void>; logout: () => Promise<void>; updateName: (nombre: string) => Promise<void>; replaceUser: (user: User) => void }
 const AuthContext = createContext<AuthState | null>(null);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
@@ -21,11 +21,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
   async function login(identificador: string, password: string) { const result = await api<{ usuario: User }>('/auth/login', { method: 'POST', body: JSON.stringify({ identificador, password }) }); setUser(result.usuario); setError(''); }
   async function register(data: Record<string, string>) { const result = await api<{ usuario: User }>('/auth/registro', { method: 'POST', body: JSON.stringify(data) }); setUser(result.usuario); setError(''); }
+  async function updateName(nombre: string) { const result = await api<{ usuario: User }>('/perfil', { method: 'PATCH', body: JSON.stringify({ nombre }) }); setUser(result.usuario); }
   async function logout() {
     setEndingSession(true);
     try { await api('/auth/logout', { method: 'POST' }); setUser(null); navigate('/', { replace: true }); }
     catch (error) { setEndingSession(false); throw error; }
   }
-  return <AuthContext.Provider value={{ user, loading, endingSession, error, login, register, logout }}>{children}</AuthContext.Provider>;
+  return <AuthContext.Provider value={{ user, loading, endingSession, error, login, register, logout, updateName, replaceUser: setUser }}>{children}</AuthContext.Provider>;
 }
 export function useAuth() { const context = useContext(AuthContext); if (!context) throw new Error('AuthProvider requerido'); return context; }

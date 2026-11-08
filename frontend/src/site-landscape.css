@@ -166,8 +166,6 @@
 .site-shell .category-cover-link { color: var(--color-navy); }
 .site-shell .subcategory-list a { background: var(--landscape-softest); border-color: var(--landscape-border); color: var(--landscape-muted); min-height: 48px; font-size: 14px; }
 .site-shell .subcategory-list a:hover { background: var(--landscape-soft-hover); color: var(--landscape-text); }
-.site-shell .upcoming-badge { color: var(--landscape-muted); background: var(--landscape-soft); }
-.site-shell .upcoming-card .directory-icon { background: var(--landscape-softest); color: var(--landscape-muted); }
 
 /* Filters and fields. */
 .site-shell :is(.toolbar-label,.quick-filters select,.filters-title h2,.field-label,.form-field) { color: var(--landscape-text); }

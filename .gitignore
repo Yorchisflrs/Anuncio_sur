@@ -8,3 +8,6 @@ backend/uploads/
 .test-data/
 *.tsbuildinfo
 tmp/
+# Datos de pago personales: el QR se sube desde el panel de administración, nunca al repositorio.
+QR_Yape*
+*qr*yape*

@@ -15,7 +15,7 @@ export function Layout() {
   const [menu, setMenu] = useState(false);
   const location = useLocation();
   const { user, error } = useAuth();
-  const userName = user ? (user.demo ? 'Cuenta demo' : user.correo.split('@')[0]) : '';
+  const userName = user ? (user.demo ? 'Cuenta demo' : user.nombre || 'Mi cuenta') : '';
   useEffect(() => {
     setMenu(false);
     window.scrollTo({ top: 0, behavior: 'instant' });
@@ -30,8 +30,8 @@ export function Layout() {
     <div className="site-landscape" aria-hidden="true"><img src="/images/avisosur-titicaca-hero.webp" alt="" width={1672} height={941} fetchPriority="high"/></div>
     <a className="skip-link" href="#contenido">Saltar al contenido</a>
     <div className="topbar"><div className="container topbar-inner">
-      <span><MapPin size={13}/>Hecho para Puno y el sur del Perú</span>
-      <span className="topbar-right"><Handshake size={14}/>Personas cerca. Trato directo.</span>
+      <span><ShieldCheck size={13}/>Cada aviso se revisa antes de publicarse</span>
+      <Link className="topbar-right" to="/ayuda/seguridad"><Handshake size={14}/>Consejos para comprar seguro</Link>
     </div></div>
     <header className="site-header">
       <div className="container nav-inner">
@@ -56,12 +56,12 @@ export function Layout() {
     {error && <div className="connection-banner" role="alert">{error}</div>}
     <main id="contenido"><Outlet/></main>
     <footer className="site-footer">
-      <div className="container footer-lead"><h2>Una nueva oportunidad,<br/><span>más cerca de ti.</span></h2><Link to="/anuncios" className="footer-explore">Encuentra la tuya <ArrowUpRight size={27}/></Link></div>
+      <div className="container footer-lead"><h2>¿Buscas moto, cuarto<br/><span>o electrodoméstico?</span></h2><Link to="/anuncios" className="footer-explore">Ver los avisos <ArrowUpRight size={27}/></Link></div>
       <div className="container footer-columns">
-        <div className="footer-brand"><Logo light/><p>El punto de encuentro para comprar y vender en Puno, Juliaca y el sur del Perú.</p><span className="footer-region"><MapPin size={15}/>Comercio local, conexiones reales.</span></div>
+        <div className="footer-brand"><Logo light/><p>Avisos clasificados de Puno, Juliaca y otras localidades del sur del Perú.</p><span className="footer-region"><MapPin size={15}/>Puno · Juliaca · Sur del Perú</span></div>
         <div className="footer-links"><strong>Descubre</strong><Link to="/anuncios?categoriaId=1">Vehículos</Link><Link to="/anuncios?categoriaId=2">Inmuebles</Link><Link to="/anuncios?categoriaId=3">Electrodomésticos</Link><Link to="/categorias">Todas las categorías</Link></div>
         <div className="footer-links"><strong>Cerca de ti</strong><Link to="/anuncios?zona=Puno">Puno</Link><Link to="/anuncios?zona=Juliaca">Juliaca</Link><Link to={'/anuncios?zona=' + encodeURIComponent('Otras localidades del sur del Perú')}>Otras localidades del sur</Link><Link to="/publicar">Publica tu anuncio</Link></div>
-        <div className="footer-links"><strong>Estamos para orientarte</strong><Link to="/ayuda/seguridad">Consejos para comprar y vender</Link><Link to="/ayuda/terminos">Términos de publicación</Link><Link to="/ayuda/privacidad">Privacidad</Link><Link to="/ayuda/soporte">Ayuda y soporte</Link><Link to="/ayuda/reclamaciones">Reclamaciones · Prototipo</Link></div>
+        <div className="footer-links"><strong>Estamos para orientarte</strong><Link to="/ayuda/seguridad">Consejos para comprar y vender</Link><Link to="/ayuda/terminos">Términos de publicación</Link><Link to="/ayuda/privacidad">Privacidad</Link><Link to="/ayuda/soporte">Ayuda para publicar</Link></div>
       </div>
       <div className="container footer-bottom"><span>© {new Date().getFullYear()} AvisoSur · UNA Puno</span><span className="footer-demo"><ShieldCheck size={14}/>Publicación sujeta a revisión, pago confirmado y vigencia.</span></div>
     </footer>

@@ -3,7 +3,7 @@ import { ApiError } from './validation.mjs';
 
 const SESSION_DAYS = 7;
 const digest = token => createHash('sha256').update(token).digest('hex');
-export const publicUser = user => ({ id: user.id, correo: user.correo, celular: user.celular, fechaRegistro: user.fecha_registro, demo: Boolean(user.es_demo), rol: user.rol === 'admin' ? 'admin' : 'usuario' });
+export const publicUser = user => ({ id: user.id, nombre: user.nombre || '', correo: user.correo, celular: user.celular, fechaRegistro: user.fecha_registro, demo: Boolean(user.es_demo), rol: user.rol === 'admin' ? 'admin' : 'usuario', celularVerificado: Boolean(Number(user.celular_verificado)) });
 
 export function authServices(db, config) {
   const cookieOptions = { httpOnly: true, sameSite: 'strict', secure: config.secureCookie, path: '/', maxAge: SESSION_DAYS * 86400000 };

@@ -1,21 +1,21 @@
-import { CarFront, Building2, Refrigerator, Laptop, Shirt, BriefcaseBusiness, Wrench } from 'lucide-react';
+import { CarFront, Building2, Refrigerator } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
-// Íconos de las categorías activas en el backend (por id).
-export const CATEGORY_ICONS: Record<number, LucideIcon> = { 1: CarFront, 2: Building2, 3: Refrigerator };
-
-// Categorías del prototipo que aún no existen en el backend.
-export const UPCOMING_CATEGORIES: { nombre: string; icon: LucideIcon; detalle: string }[] = [
-  { nombre: 'Tecnología', icon: Laptop, detalle: 'Laptops, celulares y equipos' },
-  { nombre: 'Ropa y textil', icon: Shirt, detalle: 'Artesanías y fibra de alpaca' },
-  { nombre: 'Empleo & Serv.', icon: BriefcaseBusiness, detalle: 'Bolsa de trabajo y servicios' },
-  { nombre: 'Herramientas', icon: Wrench, detalle: 'Maquinaria y equipos de obra' }
+// Motivos fijos del reporte; las claves coinciden con REPORT_REASONS de backend/src/reports.mjs.
+export const REPORT_REASONS = [
+  { value: 'pide_adelanto', label: 'Pide un adelanto antes de mostrar el producto' },
+  { value: 'precio_sospechoso', label: 'El precio es sospechoso' },
+  { value: 'no_existe', label: 'El producto o el inmueble no existe' },
+  { value: 'ya_vendido', label: 'Ya se vendió o ya se alquiló' },
 ];
 
+// Íconos de las categorías activas en el backend (por id). Solo se muestran las que existen.
+export const CATEGORY_ICONS: Record<number, LucideIcon> = { 1: CarFront, 2: Building2, 3: Refrigerator };
+
 export const QUICK_SEARCHES = [
+  { label: 'Cuartos en alquiler en Puno', to: '/anuncios?categoriaId=2&subcategoria=Habitaciones&zona=Puno&tipo=alquiler' },
   { label: 'Motos en Juliaca', to: '/anuncios?categoriaId=1&subcategoria=Motos&zona=Juliaca' },
-  { label: 'Departamentos en Puno', to: '/anuncios?categoriaId=2&subcategoria=Departamentos&zona=Puno' },
-  { label: 'Terrenos', to: '/anuncios?categoriaId=2&subcategoria=Terrenos' },
+  { label: 'Departamentos en alquiler', to: '/anuncios?categoriaId=2&subcategoria=Departamentos&tipo=alquiler' },
   { label: 'Refrigeradoras', to: '/anuncios?categoriaId=3&subcategoria=Refrigeradoras' }
 ];
 
@@ -42,6 +42,7 @@ export const INFO_TOPICS: Record<string, InfoTopic> = {
       'Coordina la entrega en lugares públicos y concurridos: Plaza de Armas de Puno, Terminal Terrestre de Juliaca o centros cívicos.',
       'Revisa el producto o visita el inmueble antes de entregar cualquier pago.',
       'Desconfía de precios demasiado bajos o de quien te pida adelantos por transferencia.',
+      'Prefiere vendedores con la insignia «Celular verificado». Si un aviso te parece falso, usa «Reportar este aviso»: con tres reportes de personas verificadas se oculta hasta que administración lo revise.',
       'Para vehículos e inmuebles, verifica los documentos en SUNARP antes de cerrar el trato.',
       'Nunca compartas contraseñas ni códigos que lleguen a tu celular.'
     ]
@@ -59,31 +60,25 @@ export const INFO_TOPICS: Record<string, InfoTopic> = {
   },
   privacidad: {
     kicker: 'TUS DATOS', title: 'Política de privacidad',
-    intro: 'Así tratamos la información que compartes en este prototipo académico.',
+    intro: 'Así tratamos la información que compartes en AvisoSur.',
     points: [
-      'Solo pedimos correo, celular y contraseña para crear tu cuenta.',
-      'Tu celular se muestra a los compradores únicamente para el contacto por WhatsApp de tus anuncios.',
+      'Pedimos un nombre para mostrar, correo, celular y contraseña para crear tu cuenta.',
+      'En tus avisos solo aparece tu nombre para mostrar; tu correo no se publica.',
+      'El celular de tus avisos no aparece en el catálogo: se muestra solo a quien pulsa «Ver contacto del vendedor», con un límite de pedidos por persona.',
+      'En Mi cuenta ves cuántas personas pidieron tu contacto. De quienes lo piden sin cuenta solo guardamos un código cifrado, no su dirección.',
       'Las contraseñas nunca se muestran a otros usuarios.',
       'Puedes dar de baja tus anuncios en cualquier momento desde Mi cuenta.'
     ]
   },
-  reclamaciones: {
-    kicker: 'ATENCIÓN AL USUARIO', title: 'Libro de reclamaciones virtual',
-    intro: 'En la versión final aquí podrás registrar un reclamo o queja. En este prototipo la función es solo demostrativa.',
-    points: [
-      'Identifica el anuncio o la situación que motiva tu reclamo.',
-      'Describe los hechos con fecha, zona y datos de contacto.',
-      'Recibirás una respuesta en un plazo máximo de 15 días hábiles.'
-    ]
-  },
   soporte: {
-    kicker: 'AYUDA', title: 'Soporte técnico',
+    kicker: 'AYUDA', title: 'Ayuda para publicar',
     intro: '¿Tienes problemas para publicar o ingresar? Revisa estas soluciones rápidas.',
     points: [
-      'Las fotos deben estar en formato JPG o PNG.',
+      'Puedes subir fotos JPG, PNG, WebP o HEIC del celular; las fotos grandes se reducen automáticamente.',
+      'Si una foto HEIC del iPhone no se abre, elige «Más compatible» en Ajustes > Cámara > Formatos o compártela como JPG.',
       'Si no puedes ingresar, revisa que tu correo o celular estén bien escritos.',
-      'Si la página no carga anuncios, comprueba que el servidor de AvisoSur esté iniciado.',
-      'Para cualquier otra consulta, escribe al equipo del proyecto en la UNA Puno.'
+      'Tu aviso aparece en el catálogo cuando administración confirma el pago y lo aprueba. Revisa su estado en Mi cuenta.',
+      'Si tu aviso fue observado, abre «Pago y revisión» en Mi cuenta para leer el motivo y corregirlo.'
     ]
   }
 };

@@ -4,7 +4,7 @@ import type { Category } from '../types';
 import { CATEGORY_ICONS } from '../data/directory';
 
 const FALLBACK: Category[] = [{ id: 1, nombre: 'Vehículos', subcategorias: [], total: 0 }, { id: 2, nombre: 'Inmuebles', subcategorias: [], total: 0 }, { id: 3, nombre: 'Electrodomésticos', subcategorias: [], total: 0 }];
-const DESCRIPTIONS: Record<number, string> = { 1: 'Tu próximo camino comienza aquí.', 2: 'Un espacio para tu siguiente historia.', 3: 'Más posibilidades para tu hogar.' };
+const DESCRIPTIONS: Record<number, string> = { 1: 'Motos, autos y mototaxis.', 2: 'Cuartos, departamentos, casas, terrenos y locales.', 3: 'Refrigeradoras, lavadoras, televisores y cocinas.' };
 
 export function CategoryTiles({ categories, loading }: { categories: Category[] | null; loading: boolean }) {
   return <div className="directory-grid">{(categories || FALLBACK).map(category => {

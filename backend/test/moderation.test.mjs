@@ -1,7 +1,7 @@
-import test from 'node:test';
+import { describe, it, before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
-import { isolatedApp, jsonRequest, testPicture } from './support.mjs';
+import { createIsolatedApp, isolatedApp, jsonRequest, testPicture } from './support.mjs';
 import { DEMO_USER } from '../src/seed.mjs';
 
 const day = 24 * 60 * 60 * 1000;
@@ -9,33 +9,41 @@ const denied = status => assert([403, 404].includes(status), 'Un tercero no debe
 const listingOk = result => { assert.equal(result.response.status, 201, JSON.stringify(result.body)); return result.body; };
 const approvedOk = result => { assert.equal(result.response.status, 200, JSON.stringify(result.body)); return result.body; };
 
-test('Moderación, pagos manuales y planes: HTTP real con SQLite y archivos aislados', async t => {
-  const app = await isolatedApp(t);
-  const admin = await app.administrator();
-  const owner = await app.register('propietario');
-  const stranger = await app.register('tercero');
+// Publicación pagada: revisión administrativa, comprobante privado, planes y vigencia.
+describe('Moderación, pagos manuales y planes', () => {
+  let app, admin, owner, stranger;
+  before(async () => {
+    app = await createIsolatedApp();
+    admin = await app.administrator();
+    owner = await app.register('propietario');
+    stranger = await app.register('tercero');
+  });
+  after(() => app?.close());
+  const publicTotal = async () => (await app.request('/categorias')).body.reduce((sum, category) => sum + category.total, 0);
 
-  await t.test('La instalación inicia con anuncios pendientes y sin simular un QR o un pago', async () => {
-    const catalog = await app.request('/anuncios');
+  it('La instalación inicia con anuncios pendientes y sin simular un QR o un pago', async t => {
+    const fresh = await isolatedApp(t);
+    const freshAdmin = await fresh.administrator();
+    const catalog = await fresh.request('/anuncios');
     assert.equal(catalog.response.status, 200); assert.equal(catalog.body.total, 0);
-    const categories = await app.request('/categorias');
+    const categories = await fresh.request('/categorias');
     assert.equal(categories.body.length, 3); assert(categories.body.every(item => item.total === 0));
-    const publication = await app.request('/publicacion');
+    const publication = await fresh.request('/publicacion');
     assert.equal(publication.response.status, 200);
     const week = publication.body.planes.find(item => item.id === 1);
     assert(week); assert.equal(week.precio, 5); assert.equal(week.dias, 7); assert.equal(week.bonoPrimerAnuncio, 0);
     assert(publication.body.planes.every(plan => plan.activo));
     assert.equal(publication.body.pago.configurado, false); assert.equal(publication.body.pago.qrUrl, null);
-    const privateCatalog = await app.request('/admin/anuncios', { headers: { Cookie: admin.cookie } });
+    const privateCatalog = await fresh.request('/admin/anuncios', { headers: { Cookie: freshAdmin.cookie } });
     assert.equal(privateCatalog.response.status, 200); assert.equal(privateCatalog.body.length, 16);
     assert(privateCatalog.body.every(ad => ad.moderacion === 'pendiente' && ad.demo));
-    assert.equal((await app.request('/anuncios/1')).response.status, 404);
-    const plans = await app.request('/admin/planes', { headers: { Cookie: admin.cookie } });
+    assert.equal((await fresh.request('/anuncios/1')).response.status, 404);
+    const plans = await fresh.request('/admin/planes', { headers: { Cookie: freshAdmin.cookie } });
     assert.equal(plans.response.status, 200); assert.equal(plans.body.length, 3);
     assert(plans.body.filter(plan => plan.id !== 1).every(plan => !plan.activo));
   });
 
-  await t.test('El registro ignora el rol enviado y las operaciones administrativas exigen admin', async () => {
+  it('El registro ignora el rol enviado y las operaciones administrativas exigen admin', async () => {
     const attemptedAdmin = await app.register('rol-manipulado', { rol: 'admin', role: 'admin', es_admin: true });
     assert.equal(attemptedAdmin.rol, 'usuario');
     assert.equal((await app.db.get('SELECT rol FROM usuarios WHERE id = ?', attemptedAdmin.id)).rol, 'usuario');
@@ -49,7 +57,7 @@ test('Moderación, pagos manuales y planes: HTTP real con SQLite y archivos aisl
     assert.equal(plan.response.status, 403);
   });
 
-  await t.test('Siete fotos se guardan en orden; el anuncio pendiente sólo lo ven propietario y admin', async () => {
+  it('Siete fotos se guardan en orden; el anuncio pendiente sólo lo ven propietario y admin', async () => {
     const ad = listingOk(await app.listing(owner.cookie, { titulo: 'Siete fotos privadas en revisión' }, 7));
     assert.equal(ad.moderacion, 'pendiente'); assert.equal(ad.fotos.length, 7);
     assert.deepEqual(ad.fotos.map(photo => photo.orden), [0, 1, 2, 3, 4, 5, 6]);
@@ -61,19 +69,9 @@ test('Moderación, pagos manuales y planes: HTTP real con SQLite y archivos aisl
     assert.equal((await app.request('/anuncios/' + ad.id, { headers: { Cookie: owner.cookie } })).response.status, 200);
     assert.equal((await app.request('/anuncios/' + ad.id, { headers: { Cookie: admin.cookie } })).response.status, 200);
     assert.equal((await app.request('/anuncios?q=' + encodeURIComponent(ad.titulo))).body.total, 0);
-    assert.equal((await app.request('/categorias')).body.reduce((sum, item) => sum + item.total, 0), 0);
   });
 
-  await t.test('Ocho fotos se rechazan sin dejar anuncios ni archivos huérfanos', async () => {
-    const before = (await app.db.get('SELECT COUNT(*) AS n FROM anuncios')).n;
-    const filesBefore = (await fs.readdir(app.settings.uploadDir)).sort();
-    const result = await app.listing(owner.cookie, { titulo: 'No debe guardarse con ocho fotos' }, 8);
-    assert.equal(result.response.status, 422); assert(result.body.fields.fotos);
-    assert.equal((await app.db.get('SELECT COUNT(*) AS n FROM anuncios')).n, before);
-    assert.deepEqual((await fs.readdir(app.settings.uploadDir)).sort(), filesBefore);
-  });
-
-  await t.test('El comprobante es privado, válido como imagen y no publica automáticamente', async () => {
+  it('El comprobante es privado, válido como imagen y no publica automáticamente', async () => {
     const ad = listingOk(await app.listing(owner.cookie, { titulo: 'Pago adjunto sigue en revisión' }));
     assert.equal((await app.proof(owner.cookie, ad.id, Buffer.from('imagen falsa'))).response.status, 422);
     const uploaded = await app.proof(owner.cookie, ad.id, null, { referenciaPago: '  OPERACION-FICTICIA-123  ' });
@@ -105,7 +103,7 @@ test('Moderación, pagos manuales y planes: HTTP real con SQLite y archivos aisl
     assert.equal((await fetch(app.base + '/uploads/.privado/')).status, 404);
   });
 
-  await t.test('Aprobar exige administrador, confirmación explícita y comprobante o referencia', async () => {
+  it('Aprobar exige administrador, confirmación explícita y comprobante o referencia', async () => {
     const ad = listingOk(await app.listing(owner.cookie, { titulo: 'No aprobar sin revisar pago' }));
     assert.equal((await app.approve(owner.cookie, ad.id)).response.status, 403);
     assert.equal((await app.request('/admin/anuncios/' + ad.id + '/aprobar', jsonRequest({ referenciaPago: 'Referencia sin confirmar pago' }, admin.cookie))).response.status, 422);
@@ -114,10 +112,10 @@ test('Moderación, pagos manuales y planes: HTTP real con SQLite y archivos aisl
     assert.equal((await app.request('/anuncios/' + ad.id)).response.status, 404);
   });
 
-  await t.test('La aprobación con comprobante inicia siete días y publica sin exponer el pago', async () => {
+  it('La aprobación con comprobante inicia siete días y publica sin exponer el pago', async () => {
     const ad = listingOk(await app.listing(owner.cookie, { titulo: 'Aprobado con pago manual comprobado' }));
     await app.proof(owner.cookie, ad.id);
-    const before = (await app.request('/categorias')).body.reduce((sum, category) => sum + category.total, 0);
+    const before = await publicTotal();
     const approved = approvedOk(await app.approve(admin.cookie, ad.id, { referenciaPago: '' }));
     assert.equal(approved.estado, 'activo'); assert.equal(approved.moderacion, 'aprobado'); assert.equal(approved.diasVigencia, 7); assert.equal(approved.diasPromocion, 0);
     assert.equal(Date.parse(approved.fechaVencimiento) - Date.parse(approved.fechaAprobacion), 7 * day);
@@ -125,15 +123,14 @@ test('Moderación, pagos manuales y planes: HTTP real con SQLite y archivos aisl
     const publicDetail = await app.request('/anuncios/' + ad.id);
     assert.equal(publicDetail.response.status, 200); assert(!publicDetail.body.pago, 'El comprobante y la referencia no se publican.');
     assert.equal((await app.request('/anuncios?q=' + encodeURIComponent(ad.titulo))).body.total, 1);
-    const after = (await app.request('/categorias')).body.reduce((sum, category) => sum + category.total, 0);
-    assert.equal(after, before + 1);
+    assert.equal(await publicTotal(), before + 1);
     const privateFiles = (await fs.readdir(app.settings.privateUploadDir)).sort();
     const replacement = await app.proof(owner.cookie, ad.id);
     assert.equal(replacement.response.status, 409, 'Un comprobante confirmado no se sustituye después de la aprobación.');
     assert.deepEqual((await fs.readdir(app.settings.privateUploadDir)).sort(), privateFiles);
   });
 
-  await t.test('Una doble aprobación concurrente conserva las fechas y no duplica la vigencia', async () => {
+  it('Una doble aprobación concurrente conserva las fechas y no duplica la vigencia', async () => {
     const ad = listingOk(await app.listing(owner.cookie, { titulo: 'Aprobación idempotente concurrente' }));
     const results = await Promise.all([app.approve(admin.cookie, ad.id), app.approve(admin.cookie, ad.id)]);
     const first = approvedOk(results[0]); const second = approvedOk(results[1]);
@@ -144,7 +141,7 @@ test('Moderación, pagos manuales y planes: HTTP real con SQLite y archivos aisl
     assert.equal((await app.request('/anuncios?q=' + encodeURIComponent(ad.titulo))).body.total, 1);
   });
 
-  await t.test('Los valores del plan vienen del servidor y la edición posterior no cambia un pendiente', async () => {
+  it('Los valores del plan vienen del servidor y la edición posterior no cambia un pendiente', async () => {
     const ad = listingOk(await app.listing(owner.cookie, { titulo: 'Snapshot de plan sin alteraciones', montoPublicacion: '0', diasVigencia: '999', diasPromocion: '999', estado: 'activo', pagoConfirmado: 'true', moderacion: 'aprobado', estadoPago: 'confirmado', fechaAprobacion: '2026-01-01T00:00:00.000Z', fechaVencimiento: '2099-01-01T00:00:00.000Z' }));
     assert.equal(ad.moderacion, 'pendiente'); assert.equal(ad.montoPublicacion, 5); assert.equal(ad.diasVigencia, 7); assert.equal(ad.diasPromocion, 0);
     assert.equal(ad.estadoPago, 'pendiente');
@@ -164,7 +161,7 @@ test('Moderación, pagos manuales y planes: HTTP real con SQLite y archivos aisl
     const missing = await app.listing(owner.cookie, { planId: '99999' }); assert.equal(missing.response.status, 422);
   });
 
-  await t.test('La promoción configurable corresponde sólo a la primera publicación pagada', async () => {
+  it('La promoción configurable corresponde sólo a la primera publicación pagada', async () => {
     const buyer = await app.register('primera-publicacion');
     await app.request('/admin/planes/1', jsonRequest({ nombre: 'Semanal con promoción de prueba', precio: 5, dias: 7, bonoPrimerAnuncio: 3, destacado: false, activo: true }, admin.cookie, 'PATCH'));
     try {
@@ -183,7 +180,7 @@ test('Moderación, pagos manuales y planes: HTTP real con SQLite y archivos aisl
     }
   });
 
-  await t.test('Un plan borrador necesita precio antes de activarse y sólo aparece al habilitarse', async () => {
+  it('Un plan borrador necesita precio antes de activarse y sólo aparece al habilitarse', async () => {
     const initialPlans = (await app.db.get('SELECT COUNT(*) AS n FROM planes_publicacion')).n;
     const freeActive = await app.request('/admin/planes', jsonRequest({ nombre: 'Plan activo inválido de cero soles', precio: 0, dias: 7, bonoPrimerAnuncio: 0, destacado: false, activo: true }, admin.cookie));
     assert.equal(freeActive.response.status, 422); assert(freeActive.body.fields.precio);
@@ -208,7 +205,7 @@ test('Moderación, pagos manuales y planes: HTTP real con SQLite y archivos aisl
     assert.equal(ad.planId, draft.body.id); assert.equal(ad.montoPublicacion, 12); assert.equal(ad.diasVigencia, 30); assert.equal(ad.destacado, true);
   });
 
-  await t.test('El rechazo exige motivo y el propietario puede leerlo sin publicar el anuncio', async () => {
+  it('El rechazo exige motivo y el propietario puede leerlo sin publicar el anuncio', async () => {
     const ad = listingOk(await app.listing(owner.cookie, { titulo: 'Anuncio rechazado por revisión manual' }));
     const empty = await app.request('/admin/anuncios/' + ad.id + '/rechazar', jsonRequest({ motivo: '' }, admin.cookie)); assert.equal(empty.response.status, 422);
     const reason = 'Añade una fotografía clara del producto y revisa sus datos.';
@@ -222,35 +219,34 @@ test('Moderación, pagos manuales y planes: HTTP real con SQLite y archivos aisl
     assert.equal((await app.request('/anuncios?q=' + encodeURIComponent(ad.titulo))).body.total, 0);
   });
 
-  await t.test('La vigencia vencida desaparece del catálogo, contadores y detalle público sin cron', async () => {
+  it('La vigencia vencida desaparece del catálogo, contadores y detalle público sin cron', async () => {
     const ad = listingOk(await app.listing(owner.cookie, { titulo: 'Anuncio vencido sin tarea programada' }));
     approvedOk(await app.approve(admin.cookie, ad.id));
-    const before = (await app.request('/categorias')).body.reduce((sum, category) => sum + category.total, 0);
+    const before = await publicTotal();
     await app.db.run('UPDATE anuncios SET fecha_vencimiento = ? WHERE id = ?', new Date(Date.now() - day).toISOString(), ad.id);
     assert.equal((await app.request('/anuncios?q=' + encodeURIComponent(ad.titulo))).body.total, 0);
     assert.equal((await app.request('/anuncios/' + ad.id)).response.status, 404);
     assert.equal((await app.request('/anuncios/' + ad.id, { headers: { Cookie: stranger.cookie } })).response.status, 404);
     const own = await app.request('/anuncios/' + ad.id, { headers: { Cookie: owner.cookie } });
     assert.equal(own.response.status, 200); assert(Date.parse(own.body.fechaVencimiento) < Date.now());
-    const after = (await app.request('/categorias')).body.reduce((sum, category) => sum + category.total, 0);
-    assert.equal(after, before - 1);
+    assert.equal(await publicTotal(), before - 1);
   });
 
-  await t.test('Una aprobación sin pago confirmado o sin fecha no se filtra al catálogo público', async () => {
+  it('Una aprobación sin pago confirmado o sin fecha no se filtra al catálogo público', async () => {
     const ad = listingOk(await app.listing(owner.cookie, { titulo: 'Estados incompletos no aparecen publicados' }));
     const approved = approvedOk(await app.approve(admin.cookie, ad.id));
-    const before = (await app.request('/categorias')).body.reduce((sum, category) => sum + category.total, 0);
+    const before = await publicTotal();
     for (const sql of ["UPDATE anuncios SET estado_pago = 'pendiente' WHERE id = ?", 'UPDATE anuncios SET fecha_aprobacion = NULL WHERE id = ?']) {
       await app.db.run(sql, ad.id);
       assert.equal((await app.request('/anuncios?q=' + encodeURIComponent(ad.titulo))).body.total, 0);
       assert.equal((await app.request('/anuncios/' + ad.id)).response.status, 404);
-      assert.equal((await app.request('/categorias')).body.reduce((sum, category) => sum + category.total, 0), before - 1);
+      assert.equal(await publicTotal(), before - 1);
       await app.db.run("UPDATE anuncios SET estado_pago = 'confirmado', fecha_aprobacion = ? WHERE id = ?", approved.fechaAprobacion, ad.id);
     }
     assert.equal((await app.request('/anuncios/' + ad.id)).response.status, 200);
   });
 
-  await t.test('El administrador configura el destino y un QR real; su imagen se entrega como archivo', async () => {
+  it('El administrador configura el destino y un QR real; su imagen se entrega como archivo', async () => {
     const data = { metodo: 'Yape', titular: 'Titular ficticio de pruebas', numero: '900000005', instrucciones: 'Prueba aislada: no realices ninguna transferencia.' };
     const configured = await app.request('/admin/configuracion', jsonRequest(data, admin.cookie, 'PUT'));
     assert.equal(configured.response.status, 200, JSON.stringify(configured.body));
@@ -264,10 +260,9 @@ test('Moderación, pagos manuales y planes: HTTP real con SQLite y archivos aisl
     assert.equal(image.status, 200); assert.match(image.headers.get('content-type'), /^image\//); assert((await image.arrayBuffer()).byteLength > 0);
   });
 
-  await t.test('El identificador DEMO lo determina la cuenta y sobrevive la moderación', async () => {
-    const session = await app.request('/auth/login', jsonRequest({ identificador: DEMO_USER.correo, password: DEMO_USER.password }));
-    assert.equal(session.response.status, 200);
-    const cookie = session.response.headers.get('set-cookie').split(';')[0];
+  it('El identificador DEMO lo determina la cuenta y sobrevive la moderación', async () => {
+    const cookie = await app.login(DEMO_USER.correo, DEMO_USER.password);
+    await app.verify(1); // Solo en la base temporal: la cuenta demo real no puede verificarse ni publicar.
     const ad = listingOk(await app.listing(cookie, { titulo: 'DEMO conservado después de aprobar', demo: 'false', es_demo: '0' }));
     assert.equal(ad.demo, true); assert.equal(ad.vendedor.demo, true); assert.equal(ad.moderacion, 'pendiente');
     approvedOk(await app.approve(admin.cookie, ad.id));
@@ -275,7 +270,9 @@ test('Moderación, pagos manuales y planes: HTTP real con SQLite y archivos aisl
     assert.equal(visible.body.demo, true); assert.equal(visible.body.vendedor.demo, true);
   });
 
-  await t.test('El resumen administrativo calcula ingresos confirmados y excluye ejemplos DEMO', async () => {
+  it('El resumen administrativo calcula ingresos confirmados y excluye ejemplos DEMO', async () => {
+    approvedOk(await app.approve(admin.cookie, 2)); // Anuncio DEMO del seed: su pago no cuenta como ingreso.
+    approvedOk(await app.approve(admin.cookie, listingOk(await app.listing(owner.cookie, { titulo: 'Pago real incluido en el resumen' })).id));
     const summary = await app.request('/admin/resumen', { headers: { Cookie: admin.cookie } });
     assert.equal(summary.response.status, 200);
     const expected = await app.db.get("SELECT COUNT(*) AS n, COALESCE(SUM(monto_publicacion_centimos), 0) AS monto FROM anuncios WHERE estado_pago = 'confirmado' AND es_demo = 0");

@@ -1,34 +1,44 @@
 # AvisoSur
 
-Portal de anuncios clasificados para Puno, Juliaca y el sur del Perú. Prototipo académico funcional para Ingeniería de Software II de la Universidad Nacional del Altiplano. La integración opcional con MySQL de XAMPP se explica en [docs/MYSQL.md](docs/MYSQL.md).
+Portal de avisos clasificados para Puno, Juliaca y el sur del Perú: motos, cuartos y departamentos, y electrodomésticos. Proyecto de Ingeniería de Software II de la Universidad Nacional del Altiplano.
 
-Permite explorar anuncios sin cuenta, combinar filtros, consultar fotografías y abrir un contacto por WhatsApp. Los usuarios registrados pueden publicar y consultar sus anuncios, cerrar sesión y dar de baja sus publicaciones conservando los registros.
+Cualquiera puede buscar y comparar avisos sin cuenta. Para publicar hace falta una cuenta con el **celular verificado**. Cada aviso pasa por **revisión y pago manual** antes de aparecer: quien publica paga un plan por Yape, adjunta su comprobante y administración lo aprueba. El celular del vendedor solo se muestra a quien lo pide. Los compradores pueden **reportar avisos sospechosos**: con tres reportes de personas verificadas, el aviso se oculta hasta que lo revise un moderador.
+
+Las observaciones de la Práctica 9 y cómo se levantaron están en [docs/OBSERVACIONES_P9.md](docs/OBSERVACIONES_P9.md).
 
 ## Inicio rápido
 
-Requiere **Node.js 24 o superior** y npm. SQLite funciona sin instalar un servidor; para usar MySQL inicia XAMPP y sigue [la secuencia de importación y conexión](docs/MYSQL.md). La primera instalación requiere Internet para descargar paquetes; el uso posterior y las imágenes son locales. El enlace de WhatsApp sí abre un servicio externo.
-
-Desde esta carpeta:
+Requiere **Node.js 24 o superior** y npm. En PowerShell, si la política impide ejecutar `npm.ps1`, usa `npm.cmd`.
 
 ```powershell
 npm install
 npm run dev
 ```
 
-Abre **http://127.0.0.1:5173**. El backend escucha en **http://127.0.0.1:3001** y Vite redirige `/api` y `/uploads` al backend. `Ctrl+C` detiene ambos procesos.
+Abre **http://127.0.0.1:5173**. La API escucha en **http://127.0.0.1:3001** y Vite le redirige `/api` y `/uploads`. Sin archivo `.env`, se usa SQLite en `backend/data/avisosur.sqlite`, que se crea con 16 avisos DEMO **pendientes de revisión**.
 
-Para ejecutar el frontend compilado con un único servidor:
+Para servir la versión compilada con un solo servidor:
 
 ```powershell
 npm run build
 npm start
 ```
 
-Abre **http://127.0.0.1:3001**. Las rutas de React admiten acceso directo y recarga. Si AvisoSur ya está iniciado en ese puerto, abre su URL sin lanzar una segunda instancia.
+Abre **http://127.0.0.1:3001**. Para usar el MySQL de XAMPP, sigue [docs/MYSQL.md](docs/MYSQL.md).
 
-En PowerShell, si la política impide ejecutar `npm.ps1`, usa `npm.cmd` en los mismos comandos. Si `node` no está en PATH, configura la instalación de Node antes de ejecutar los comandos.
+### Primera configuración
 
-## Cuenta y datos de demostración
+1. Crea una cuenta de administración desde la terminal (la contraseña se pide sin mostrarse):
+
+   ```powershell
+   node scripts/admin-user.mjs tu-correo@dominio.com --crear
+   ```
+
+2. En **Administración → QR y datos de pago**, registra el medio de pago (titular, número y QR) y revisa los **Planes y tarifas**.
+3. Aprueba los avisos que quieras mostrar en **Revisar anuncios**. Los 16 avisos DEMO se aprueban como cualquier otro.
+4. Las cuentas nuevas aparecen en **Verificar celulares**: genera el código y envíalo por WhatsApp, o verifica en persona.
+
+### Cuenta de demostración
 
 | Dato | Valor ficticio |
 | --- | --- |
@@ -36,109 +46,98 @@ En PowerShell, si la política impide ejecutar `npm.ps1`, usa `npm.cmd` en los m
 | Celular | `900000000` |
 | Contraseña | `AvisoSur2026!` |
 
-También se puede iniciar sesión usando el celular. El botón **Rellenar datos de demostración** completa el formulario de acceso; después pulsa **Iniciar sesión**.
+Sirve para recorrer la cuenta y el perfil. Su número es ficticio, así que **no se puede verificar ni publicar**: para publicar, crea tu propia cuenta. Las tarjetas de sus avisos dicen «Ejemplo», y sus imágenes son ilustraciones, no fotos reales.
 
-En modo SQLite, la base se crea y carga automáticamente en el primer arranque con **16 anuncios**, distribuidos en las tres categorías y en Puno, Juliaca y otras localidades del sur. El seed es idempotente: reiniciar no duplica anuncios ni borra publicaciones. En MySQL, los datos se incorporan con la migración o con el SQL opcional. Las tarjetas muestran **DEMO**, y el detalle identifica las ilustraciones y el vendedor ficticio. Los anuncios publicados desde la cuenta demo conservan esa marca.
+## Funcionalidades
 
-Las imágenes de demostración son recursos locales creados para este proyecto; representan productos de ejemplo y no son fotografías de esos bienes. La cabecera y el pie muestran el logo oficial azul y gris. El número demo es un marcador inventado, no un contacto verificado: revisa la URL de WhatsApp sin enviar un mensaje a ese número. Ninguna función envía mensajes automáticamente.
-
-Para demostrar una publicación en el prototipo, usa JPG o PNG propios o pulsa **Usar imagen de demostración** en el formulario. Este botón selecciona un PNG local, muestra la vista previa y permite guardarlo mediante el mismo flujo de carga del backend. También se incluye `docs/fixtures/moto-demo.png`. Todos los datos de las pruebas son ficticios.
-
-## Funcionalidades implementadas
-
-| Requisito del alcance | Implementación |
+| Requisito | Implementación |
 | --- | --- |
-| RF-01 — Cuenta y acceso | Registro validado, acceso con correo o celular, bcrypt, sesión persistente y cierre de sesión. |
-| RF-02 — Publicación | Ruta autenticada, título, descripción, categoría, subcategoría, precio, zona y de una a tres fotos; vista previa y errores que conservan campos. |
-| RF-03 — Consulta y búsqueda | Catálogo, detalle, filtros combinados, subcategorías, ordenamiento, paginación y precios mínimo y máximo inclusivos. |
-| RF-04 — Contacto | Enlace `wa.me` con `51` y celular del vendedor, más un mensaje codificado con el título del anuncio. |
-| RNF-01 — Búsqueda | Consultas parametrizadas, índices, límite de resultados y prueba reproducible con 500 anuncios y 50 clientes concurrentes. |
-| RNF-03 — Contraseñas | bcrypt con costo 12, hashes excluidos de la API, tokens de sesión aleatorios con solo su SHA-256 guardado, cookie HttpOnly y validación en backend. |
+| RF-01 · Cuenta y acceso | Registro con nombre para mostrar, correo, celular y contraseña; acceso con correo o celular; sesión de 7 días; cierre de sesión; cambio de nombre en el perfil. |
+| RF-02 · Publicación | Fotos JPG, PNG, WebP o HEIC (hasta 7, de 10 MB cada una, reducidas a 1600 px WebP) o enlaces HTTPS directos; venta o alquiler mensual; plan de publicación; exige celular verificado. |
+| RF-03 · Consulta y búsqueda | Catálogo en lista o en tarjetas; filtros por texto, categoría, subcategoría, venta o alquiler, zona y rango de precio inclusivo; orden y paginación. |
+| RF-04 · Contacto | «Ver contacto del vendedor» entrega el celular y un enlace `wa.me` con el mensaje preparado, con un límite de pedidos por persona; el vendedor ve cuántas personas lo pidieron. |
+| Publicación pagada | Planes configurables, pago por Yape con comprobante privado, aprobación o rechazo con motivo, vigencia desde la aprobación y días extra en la primera publicación. |
+| Confianza (novedad) | Celular verificado con código o en persona; insignia «Celular verificado» con avisos publicados y dados de baja; reportes con motivos fijos; ocultamiento automático con tres reportes verificados; página del moderador. |
+| RNF-01 · Búsqueda rápida | Consultas parametrizadas e índices; prueba de carga con 500 avisos públicos y 50 clientes concurrentes. |
+| RNF-03 · Seguridad | bcrypt con costo 12, sesiones guardadas como SHA-256, cookie HttpOnly y SameSite=Strict, rechazo de origen ajeno, límite de intentos, roles verificados en el servidor y celulares fuera de las respuestas públicas. |
 
-Las siete rutas son `/`, `/anuncios`, `/anuncios/:id`, `/registro`, `/login`, `/publicar` y `/perfil`. Incluyen navegación móvil, estados de carga, error y listas vacías. El perfil muestra los anuncios activos y dados de baja. Solo su propietario puede retirarlos del catálogo y consultar el detalle de sus anuncios retirados.
+### Pantallas
+
+| Ruta | Pantalla |
+| --- | --- |
+| `/` | Portada con búsqueda, avisos recientes, planes, categorías y zonas |
+| `/anuncios` | Catálogo en lista, con filtros |
+| `/anuncios/:id` | Detalle con fotos, vendedor, insignia, contacto y reporte |
+| `/categorias` | Categorías y subcategorías |
+| `/ayuda/:tema` | Seguridad, términos, privacidad y ayuda para publicar |
+| `/registro` y `/login` | Crear cuenta e ingresar |
+| `/publicar` | Formulario de publicación |
+| `/perfil` | Mis publicaciones, verificación del celular y nombre para mostrar |
+| `/mis-anuncios/:id/pago` | Pago y comprobante de una publicación |
+| `/admin` | Revisión, reportes, verificación de celulares, pago y planes |
 
 ## Tecnologías y decisiones
 
-- **Frontend:** React, TypeScript, Vite, Tailwind CSS, React Router, Lucide e Inter alojada localmente.
-- **Backend:** Node, Express, SQLite mediante `node:sqlite` o MySQL mediante `mysql2/promise`, bcryptjs, Multer y Sharp.
-- **Persistencia:** SQLite en `backend/data/avisosur.sqlite` o MySQL en `avisosur_db`, más fotos optimizadas en `backend/uploads/`. Para respaldar los datos originales, detén el servidor y copia completas las carpetas `backend/data/` y `backend/uploads/`, incluyendo los archivos auxiliares de SQLite.
-- **SQLite integrado:** evita compilar un conector nativo en Windows. Se eligió Node 24 como mínimo; la API utilizada es `DatabaseSync`. [Documentación oficial de SQLite en Node](https://nodejs.org/download/release/latest-v24.x/docs/api/sqlite.html).
-- **bcryptjs:** implementa bcrypt en JavaScript sin compilar módulos adicionales. Se rechazan contraseñas menores de ocho caracteres o mayores de 72 bytes para evitar truncamientos.
-- **Sesiones:** cookie HttpOnly, SameSite=Strict, duración de siete días y revocación al cerrar sesión. No se guardan tokens en localStorage. El servidor rechaza escrituras con un origen ajeno y limita intentos de registro/acceso.
-- **Precios:** SQLite almacena centavos enteros; MySQL usa `DECIMAL(10,2)`. La API devuelve soles y la búsqueda incluye ambos extremos del rango.
-- **Fotos:** límite temporal de tres JPG/PNG de hasta 2 MB cada uno, y protección de decodificación de 20 megapíxeles. Se comprueban el formato y el contenido, se elimina metadatos al recodificar, se ajusta a 1600 px y se almacena WebP. **Estos límites deben validarse con usuarios.**
-- **Búsqueda:** insensible a mayúsculas y tildes; los índices cubren estado, categoría, precio, zona y fecha. La búsqueda de texto recorre los anuncios candidatos; para un catálogo mayor se puede introducir FTS5.
-- **Identidad:** `frontend/src/components/Logo.tsx` muestra `frontend/public/logo-avisosur.jpg`, el logo oficial. `frontend/public/favicon.svg` conserva el icono simplificado. `scripts/generate-demo-assets.mjs` regenera las ilustraciones.
-- **Tailwind:** integrado como plugin de Vite y usado junto con estilos de componentes. [Guía oficial de instalación](https://tailwindcss.com/docs/installation/using-vite).
+- **Frontend:** React 19, TypeScript, Vite, React Router, Lucide, CSS propio y Tailwind como plugin de Vite.
+- **Backend:** Node 24, Express 5, SQLite mediante `node:sqlite` o MySQL/MariaDB mediante `mysql2`, bcryptjs, Multer, Sharp y express-rate-limit.
+- **Migraciones aditivas:** al iniciar, el servidor agrega las columnas, tablas e índices que falten en SQLite o MySQL, sin borrar ni reescribir datos. También hay scripts SQL equivalentes en `database/`.
+- **Fotos:** el formato se comprueba por el contenido. Se corrige la orientación, se quitan los metadatos y se guarda WebP de hasta 1600 px. El navegador reduce las fotos grandes antes de subirlas.
+- **Verificación del celular:** el código de 6 dígitos se guarda solo como hash, vence en 24 horas y admite 5 intentos. No hay proveedor de SMS: administración lo envía por WhatsApp con el mensaje preparado.
+- **Contacto:** quien pide un contacto se registra una vez por aviso, como hash con sal propia de la instalación; no se guarda su IP.
+- **Precios:** SQLite guarda céntimos enteros y MySQL usa `DECIMAL(10,2)`; la API responde en soles. El precio de lo que se ofrece es distinto del costo del plan.
+- **Archivos privados:** los comprobantes y el QR se guardan en una carpeta privada que el servidor estático no expone.
+
+La arquitectura, el modelo de datos y la lista completa de endpoints están en [docs/ARQUITECTURA.md](docs/ARQUITECTURA.md).
 
 ## Estructura
 
 ```text
-frontend/
-  public/demo/          Ilustraciones sin dependencias externas
-  src/components/       Layout, navegación, tarjetas, estados y rutas protegidas
-  src/pages/            Las siete pantallas
-  src/context/          Sesión y notificaciones
-  src/hooks/            Carga cancelable de recursos
-  src/services/         API, formatos y validaciones del formulario
-  src/types.ts          Modelos del frontend
-  src/styles.css        Diseño responsive y accesibilidad
-backend/
-  src/app.mjs           API REST y controladores
-  src/database.mjs      Esquema, claves foráneas e índices
-  src/auth.mjs          Gestión de sesiones
-  src/listings.mjs      Consultas y serialización de anuncios
-  src/uploads.mjs       Validación y optimización de fotos
-  src/validation.mjs    Validaciones de servidor
-  src/seed.mjs          Categorías, cuenta y 16 anuncios ficticios
-  test/api.test.mjs     Escenarios de integración y persistencia
-scripts/
-  dev.mjs               Inicio conjunto de API y Vite
-  benchmark.mjs         Carga aislada para RNF-01
-  generate-demo-assets.mjs
-docs/
-  VALIDACION.md         Resultados y límites de la verificación
-  ARQUITECTURA.md       Modelo, API y decisiones
-  acceptance-results.json
-  benchmark-results.json
+frontend/src/
+  pages/                Pantallas (portada, catálogo, detalle, publicar, perfil, pago, administración…)
+  components/           Tarjetas y lista, contacto, reporte, verificación, moderador, galería
+  services/             API, imágenes del celular, validaciones y estados de publicación
+backend/src/
+  app.mjs               API REST y publicación
+  listings.mjs          Catálogo, detalle y regla única de visibilidad pública
+  contact.mjs           Contacto a pedido con límite por persona
+  verification.mjs      Celular verificado
+  reports.mjs           Reportes, revisión automática y moderador
+  moderation.mjs        Pago manual, aprobación, planes y resumen
+  migrations.mjs        Migraciones aditivas SQLite y MySQL
+backend/test/           Pruebas por requisito (rf01…rf04), novedad, moderación y migración
+database/               Esquema MySQL, datos DEMO y actualizaciones aditivas
+docs/                   Arquitectura, validación, acta, entrevistas, observaciones y evidencias
 ```
 
-## Verificación reproducible
+## Pruebas y verificación
 
 ```powershell
-npm run check
-npm run build
-npm test
-npm run benchmark
+npm test                 # pruebas HTTP reales con SQLite temporal
+npm run test:reporte     # además escribe docs/evidencias/pruebas-automatizadas.xml
+npm run benchmark        # RNF-01, escribe docs/benchmark-results.json
+npm run check            # TypeScript
+npm run build            # compilación de producción
 ```
 
-Las pruebas usan SQLite y carpetas temporales aisladas, sin alterar el catálogo normal. `npm test` comprueba registro, hash, acceso, protección, publicación por S/ 1, tres imágenes, archivos inválidos, filtros inclusivos, ausencia de coincidencias, URL de WhatsApp, propiedad, baja y persistencia tras reiniciar. Produce `docs/acceptance-results.json` y mide la publicación contra el objetivo local de cinco segundos.
+Cada archivo de `backend/test/` corresponde a un requisito y cada caso es independiente: levanta el servidor real en un puerto libre, hace pedidos HTTP y usa una base y carpetas temporales que borra al terminar. La prueba de integración con MySQL crea y borra su propia base `avisosur_test_<aleatorio>`, y solo corre con `AVISOSUR_TEST_MYSQL=1`. Ninguna prueba toca `avisosur_db`.
 
-`npm run benchmark` prepara 500 anuncios activos y lanza 50 clientes virtuales con diez búsquedas por cliente, después de 25 búsquedas de calentamiento. Produce `docs/benchmark-results.json` con latencias, errores, entorno y plan de consulta. Falla si hay errores o si alguna respuesta tarda dos segundos o más. Es una prueba HTTP de la API en la misma máquina; no mide experiencia 3G ni una red pública. Consulta los resultados efectivamente ejecutados en [docs/VALIDACION.md](docs/VALIDACION.md).
+Los resultados de la última ejecución están en [docs/VALIDACION.md](docs/VALIDACION.md). El acta Dado/Cuando/Entonces para otra mesa está en [docs/ACTA_ACEPTACION.md](docs/ACTA_ACEPTACION.md), y la guía de entrevistas en [docs/ENTREVISTAS.md](docs/ENTREVISTAS.md).
 
-## Configuración opcional
+## Configuración
 
-Sin `.env`, el proyecto conserva el modo SQLite. Para MySQL, copia `.env.example` a `.env` después de crear el esquema. El servidor carga `.env` automáticamente y usa `DB_CLIENT=mysql`, `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER` y `DB_PASSWORD`. Consulta [docs/MYSQL.md](docs/MYSQL.md) para el orden exacto.
+Copia `.env.example` como `.env` para usar MySQL. Variables principales: `DB_CLIENT` (`mysql` o `sqlite`), `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER` y `DB_PASSWORD`. Además: `PORT` y `HOST` del servidor, `APP_ORIGIN` (el origen extra que puede enviar formularios), `DB_PATH` y `UPLOAD_DIR` para SQLite y fotos, y `COOKIE_SECURE=true` solo con HTTPS. El servidor escucha en `127.0.0.1`. No se incluye despliegue público.
 
-El servidor está enlazado a `127.0.0.1`. En desarrollo, si cambias el puerto de la API, ajusta también el destino del proxy en `frontend/vite.config.ts`. Para el prototipo HTTP local, `Secure` está desactivado en la cookie; en HTTPS se debe activar `COOKIE_SECURE=true` y configurar el origen. No se proporciona despliegue comercial ni acceso público.
+## Límites conocidos
 
-## Pendientes y límites del prototipo
+- La verificación del celular depende de que administración envíe el código por WhatsApp; no hay SMS automático.
+- No hay recuperación de contraseña, edición de avisos ni notificaciones.
+- Las fotos HEIC se convierten en el navegador cuando este puede abrirlas (Safari). En otros navegadores se pide enviarlas como JPG.
+- RNF-02 (98 % de disponibilidad en 30 días) y la medición de RNF-04 (menos de 4 s en 3G) siguen pendientes de un despliegue real.
+- Antes de operar públicamente faltan HTTPS, términos y privacidad revisados, libro de reclamaciones, respaldos y monitoreo.
 
-- **RF-05 — Sugerencia de precio:** después se pueden comparar anuncios activos de categoría, subcategoría y zona similares y presentar una mediana y su tamaño de muestra; distinguir alquileres de ventas y justificar el criterio con usuarios.
-- **RF-06 — Patrones de riesgo:** incorporar reportes y reglas revisables con moderación humana. Evaluar falsos positivos antes de mostrar alertas. No existe un detector de estafas en esta versión.
-- **RF-07 — Categoría sugerida:** añadir una clasificación por palabras clave o un modelo evaluado con ejemplos etiquetados; permitir que el vendedor corrija la sugerencia.
-- **RF-08 — Moderación:** la tabla `reportes` y sus relaciones están preparadas; faltan endpoint, formulario, permisos administrativos y panel de revisión.
-- **RNF-02 — 98% durante 30 días:** objetivo documental pendiente de monitoreo real.
-- **RNF-04 — Inicio en menos de cuatro segundos en 3G:** diseño móvil, imágenes optimizadas y fuentes locales implementados; la medición específica en 3G sigue pendiente.
-- Faltan verificación de correo/celular, recuperación de contraseña, edición de anuncios, restauración de bajas y operación de producción. No hay pagos, chat interno ni resultados de IA simulados.
+## Guion de exposición (2 minutos)
 
-## Guion de exposición
-
-1. Abre el inicio y entra a **Explorar anuncios**.
-2. Selecciona **Vehículos**, mínimo **0**, máximo **5000** y aplica filtros: aparecen la moto de S/ 5000 y el mototaxi de S/ 4800.
-3. Abre la moto, revisa el detalle y el enlace de WhatsApp sin enviar mensajes al número ficticio.
-4. Busca `sincoincidencia-xyz` y observa el mensaje y la sugerencia para ampliar filtros.
-5. Registra una cuenta ficticia con un correo nuevo y celular peruano de nueve dígitos; llegas al perfil.
-6. Cierra sesión e ingresa con correo o celular.
-7. Publica un anuncio con una foto JPG/PNG y precio **S/ 1**. Prueba primero **S/ 0** o categoría vacía: los datos se conservan.
-8. Comprueba la confirmación debajo del botón y abre **Ver anuncio publicado** para revisar el detalle. Luego consulta el catálogo y el perfil. Da de baja el anuncio para mostrar que desaparece del catálogo y permanece en tu perfil.
+1. En la portada, pulsa «Cuartos en alquiler en Puno». En el catálogo, fija el máximo en S/ 300: se ven los precios «al mes» en una lista.
+2. Abre un cuarto publicado por un arrendador con la insignia «Celular verificado» y su historial de avisos. Pulsa **Ver contacto del vendedor**: el número aparece solo ahora.
+3. Con tres cuentas de compradores verificadas, reporta un aviso falso. Con el tercer reporte desaparece del catálogo.
+4. En **Administración → Reportes**, revisa los motivos y restáuralo o dalo de baja.

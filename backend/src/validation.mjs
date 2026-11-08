@@ -1,6 +1,7 @@
 import { isIP } from 'node:net';
 
 export const ZONES = ['Puno', 'Juliaca', 'Otras localidades del sur del Perú'];
+export const OPERATIONS = ['venta', 'alquiler'];
 
 export class ApiError extends Error {
   constructor(status, message, fields = {}) {
@@ -10,17 +11,33 @@ export class ApiError extends Error {
   }
 }
 
+const NAME_RULE = 'Escribe un nombre de 2 a 60 caracteres, sin correo ni número de teléfono.';
+/** Nombre público del vendedor: nunca un correo, un enlace ni un teléfono. Devuelve null si no es válido. */
+export function displayName(value) {
+  const nombre = String(value ?? '').normalize('NFC').replace(/\s+/g, ' ').trim();
+  const valid = nombre.length >= 2 && nombre.length <= 60 && /\p{L}/u.test(nombre) && /^[\p{L}\p{M}\d .,'&()-]+$/u.test(nombre)
+    && !/www\./i.test(nombre) && (nombre.match(/\d/g) || []).length < 6;
+  return valid ? nombre : null;
+}
+export function validateDisplayName(value) {
+  const nombre = displayName(value);
+  if (!nombre) throw new ApiError(422, 'Revisa tu nombre para mostrar.', { nombre: NAME_RULE });
+  return nombre;
+}
+
 export function validateRegistration(body) {
+  const nombre = displayName(body.nombre);
   const correo = String(body.correo || '').trim().toLowerCase();
   const celular = String(body.celular || '').trim();
   const password = String(body.password || '');
   const fields = {};
+  if (!nombre) fields.nombre = NAME_RULE;
   if (correo.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correo)) fields.correo = 'Escribe un correo electrónico válido.';
   if (!/^9\d{8}$/.test(celular)) fields.celular = 'Escribe un celular peruano de 9 dígitos que comience con 9.';
   if (password.length < 8 || Buffer.byteLength(password, 'utf8') > 72) fields.password = 'Usa al menos 8 caracteres y un máximo de 72 bytes.';
   if (password !== body.confirmacion) fields.confirmacion = 'Las contraseñas deben coincidir.';
   if (Object.keys(fields).length) throw new ApiError(422, 'Revisa los datos del formulario.', fields);
-  return { correo, celular, password };
+  return { nombre, correo, celular, password };
 }
 
 function isPrivatePhotoHost(hostname) {
@@ -88,8 +105,11 @@ export async function validateListing(body, db, photoCount) {
   const direccion = String(body.direccion || '').trim();
   const referencia = String(body.referencia || '').trim();
   const contacto = String(body.contacto || '').trim();
+  // Sin el campo se asume venta, como en los avisos anteriores a esta opción.
+  const tipoOperacion = body.tipoOperacion === undefined || body.tipoOperacion === '' ? 'venta' : String(body.tipoOperacion);
   const fields = {};
   const photoUrls = validatePhotoLinks(body.fotosUrl);
+  if (!OPERATIONS.includes(tipoOperacion)) fields.tipoOperacion = 'Indica si vendes o alquilas.';
   const photoOrder = validatePhotoOrder(body.ordenFotos, photoCount, photoUrls);
   if (titulo.length < 5 || titulo.length > 100) fields.titulo = 'El título debe tener entre 5 y 100 caracteres.';
   if (!descripcion || descripcion.length > 3000) fields.descripcion = 'Escribe una descripción de hasta 3000 caracteres.';
@@ -105,12 +125,13 @@ export async function validateListing(body, db, photoCount) {
   if (referencia.length > 300) fields.referencia = 'Usa hasta 300 caracteres.';
   if (contacto && !/^9\d{8}$/.test(contacto)) fields.contacto = 'Escribe un celular peruano de nueve dígitos que comience con 9.';
   if (Object.keys(fields).length) throw new ApiError(422, 'Revisa los datos antes de publicar.', fields);
-  return { titulo, descripcion, categoriaId, subcategoria, zona, direccion, referencia, contacto, precioCentimos: Math.round(precio * 100), photoUrls, photoOrder };
+  return { titulo, descripcion, categoriaId, subcategoria, zona, direccion, referencia, contacto, tipoOperacion, precioCentimos: Math.round(precio * 100), photoUrls, photoOrder };
 }
 
 export function parseFilters(query) {
   const fields = {};
-  const result = { q: String(query.q || '').trim().slice(0, 100), zona: String(query.zona || ''), subcategoria: String(query.subcategoria || '') };
+  const result = { q: String(query.q || '').trim().slice(0, 100), zona: String(query.zona || ''), subcategoria: String(query.subcategoria || ''), tipo: String(query.tipo || '') };
+  if (result.tipo && !OPERATIONS.includes(result.tipo)) fields.tipo = 'Elige venta o alquiler.';
   for (const key of ['min', 'max']) {
     if (query[key] !== undefined && query[key] !== '') {
       const value = Number(query[key]);

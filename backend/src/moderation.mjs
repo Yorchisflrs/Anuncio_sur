@@ -66,8 +66,8 @@ export function registerModerationRoutes(app, db, auth, config) {
     const id = validId(req.params.id);
     await ensureOwner(req,id);
     const reference = req.body?.referenciaPago === undefined ? null : text(req.body.referenciaPago,160,'referenciaPago');
-    if (!req.file) throw new ApiError(422,'Adjunta una imagen JPG o PNG del comprobante.',{comprobante:'Selecciona el comprobante.'});
-    const photos = await preparePhotos([req.file]);
+    if (!req.file) throw new ApiError(422,'Adjunta una imagen del comprobante (JPG, PNG, WebP o HEIC).',{comprobante:'Selecciona el comprobante.'});
+    const photos = await preparePhotos([req.file],{field:'comprobante'});
     const saved = await persistPhotos(photos,privateDir);
     let oldFile;
     try {
@@ -99,7 +99,11 @@ export function registerModerationRoutes(app, db, auth, config) {
       SUM(CASE WHEN estado_pago='confirmado' AND es_demo=0 THEN 1 ELSE 0 END) AS pagosConfirmados,
       SUM(CASE WHEN estado_pago='confirmado' AND es_demo=0 THEN monto_publicacion_centimos ELSE 0 END) AS ingreso_centimos FROM anuncios`,now,now);
     const users = await db.get('SELECT COUNT(*) AS total FROM usuarios');
-    res.json({ anuncios:Number(totals.anuncios),usuarios:Number(users.total),pendientes:Number(totals.pendientes||0),aprobados:Number(totals.aprobados||0),rechazados:Number(totals.rechazados||0),activos:Number(totals.activos||0),vencidos:Number(totals.vencidos||0),pagosEnRevision:Number(totals.pagosEnRevision||0),pagosConfirmados:Number(totals.pagosConfirmados||0),ingresos:Number(totals.ingreso_centimos||0)/100 });
+    const reports = await db.get("SELECT COUNT(*) AS total, COUNT(DISTINCT anuncio_id) AS avisos FROM reportes WHERE estado = 'pendiente'");
+    const hidden = await db.get('SELECT COUNT(*) AS n FROM anuncios WHERE revision_reportes = 1');
+    const unverified = await db.get('SELECT COUNT(*) AS n FROM usuarios WHERE celular_verificado = 0 AND es_demo = 0');
+    res.json({ anuncios:Number(totals.anuncios),usuarios:Number(users.total),pendientes:Number(totals.pendientes||0),aprobados:Number(totals.aprobados||0),rechazados:Number(totals.rechazados||0),activos:Number(totals.activos||0),vencidos:Number(totals.vencidos||0),pagosEnRevision:Number(totals.pagosEnRevision||0),pagosConfirmados:Number(totals.pagosConfirmados||0),ingresos:Number(totals.ingreso_centimos||0)/100,
+      reportesPendientes:Number(reports.total||0),avisosReportados:Number(reports.avisos||0),ocultosPorReportes:Number(hidden.n||0),celularesSinVerificar:Number(unverified.n||0) });
   });
   app.get('/api/admin/anuncios', auth.requireAdmin, async (req,res) => {
     const where = [], values = [];
@@ -159,8 +163,8 @@ export function registerModerationRoutes(app, db, auth, config) {
     res.json(publicPayment(payment));
   });
   app.post('/api/admin/configuracion/qr', auth.requireAdmin, singleImage('qr'), async (req,res)=>{
-    if (!req.file) throw new ApiError(422,'Selecciona una imagen JPG o PNG del QR.',{qr:'Selecciona el QR de tu cuenta.'});
-    const photos=await preparePhotos([req.file],{lossless:true}),saved=await persistPhotos(photos,privateDir);
+    if (!req.file) throw new ApiError(422,'Selecciona una imagen del QR (JPG, PNG o WebP).',{qr:'Selecciona el QR de tu cuenta.'});
+    const photos=await preparePhotos([req.file],{lossless:true,field:'qr'}),saved=await persistPhotos(photos,privateDir);
     let payment,oldFile;
     try { await db.transaction(async tx=>{ payment=await readPayment(tx,true);oldFile=payment.qrArchivo;payment.qrArchivo=photos[0].filename;payment.configurado=Boolean(payment.metodo&&payment.titular);await writePayment(tx,payment); }); }
     catch(error){await Promise.allSettled(saved.map(file=>fs.unlink(file)));throw error;}

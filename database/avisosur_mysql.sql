@@ -6,17 +6,32 @@ USE avisosur_db;
 
 CREATE TABLE IF NOT EXISTS usuarios (
   id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  nombre VARCHAR(60) NOT NULL DEFAULT '',
   correo VARCHAR(254) NOT NULL,
   celular CHAR(9) NOT NULL,
   password_hash VARCHAR(255) NOT NULL,
   es_demo TINYINT(1) NOT NULL DEFAULT 0,
   rol VARCHAR(20) NOT NULL DEFAULT 'usuario',
+  celular_verificado TINYINT(1) NOT NULL DEFAULT 0,
+  fecha_verificacion DATETIME(3) NULL,
+  metodo_verificacion VARCHAR(20) NOT NULL DEFAULT '',
   fecha_registro DATETIME(3) NOT NULL,
   PRIMARY KEY (id),
   UNIQUE KEY uq_usuarios_correo (correo),
   UNIQUE KEY uq_usuarios_celular (celular),
   CONSTRAINT ck_usuarios_celular CHECK (celular REGEXP '^9[0-9]{8}$'),
   CONSTRAINT ck_usuarios_demo CHECK (es_demo IN (0, 1))
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS verificaciones_celular (
+  usuario_id BIGINT UNSIGNED NOT NULL,
+  solicitado DATETIME(3) NOT NULL,
+  codigo_hash CHAR(64) CHARACTER SET ascii COLLATE ascii_bin NULL,
+  expira DATETIME(3) NULL,
+  intentos INT UNSIGNED NOT NULL DEFAULT 0,
+  enviado DATETIME(3) NULL,
+  PRIMARY KEY (usuario_id),
+  CONSTRAINT fk_verificaciones_usuario FOREIGN KEY (usuario_id) REFERENCES usuarios (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS categorias (
@@ -47,6 +62,7 @@ CREATE TABLE IF NOT EXISTS anuncios (
   precio DECIMAL(10,2) NOT NULL,
   zona VARCHAR(100) NOT NULL,
   subcategoria VARCHAR(100) NOT NULL DEFAULT '',
+  tipo_operacion VARCHAR(10) NOT NULL DEFAULT 'venta',
   estado VARCHAR(20) NOT NULL DEFAULT 'activo',
   es_demo TINYINT(1) NOT NULL DEFAULT 0,
   fecha_publicacion DATETIME(3) NOT NULL,
@@ -63,6 +79,7 @@ CREATE TABLE IF NOT EXISTS anuncios (
   direccion VARCHAR(200) NOT NULL DEFAULT '', referencia VARCHAR(300) NOT NULL DEFAULT '',
   contacto VARCHAR(100) NOT NULL DEFAULT '', comprobante_archivo VARCHAR(100) NULL,
   referencia_pago VARCHAR(160) NOT NULL DEFAULT '',fecha_comprobante DATETIME(3) NULL,fecha_confirmacion DATETIME(3) NULL,
+  revision_reportes TINYINT(1) NOT NULL DEFAULT 0, fecha_revision_reportes DATETIME(3) NULL,
   PRIMARY KEY (id),
   KEY idx_anuncios_catalogo (estado, categoria_id, precio),
   KEY idx_anuncios_zona_fecha (estado, zona, fecha_publicacion),
@@ -72,6 +89,7 @@ CREATE TABLE IF NOT EXISTS anuncios (
   CONSTRAINT fk_anuncios_categoria FOREIGN KEY (categoria_id) REFERENCES categorias (id),
   CONSTRAINT ck_anuncios_precio CHECK (precio > 0),
   CONSTRAINT ck_anuncios_estado CHECK (estado IN ('activo', 'dado_de_baja')),
+  CONSTRAINT ck_anuncios_tipo CHECK (tipo_operacion IN ('venta', 'alquiler')),
   CONSTRAINT ck_anuncios_demo CHECK (es_demo IN (0, 1))
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
@@ -92,14 +110,30 @@ CREATE TABLE IF NOT EXISTS reportes (
   anuncio_id BIGINT UNSIGNED NOT NULL,
   usuario_id BIGINT UNSIGNED NOT NULL,
   motivo TEXT NOT NULL,
+  detalle VARCHAR(500) NOT NULL DEFAULT '',
   fecha DATETIME(3) NOT NULL,
   estado VARCHAR(20) NOT NULL DEFAULT 'pendiente',
+  fecha_revision DATETIME(3) NULL,
+  revisado_por BIGINT UNSIGNED NULL,
+  resolucion VARCHAR(20) NOT NULL DEFAULT '',
   PRIMARY KEY (id),
+  UNIQUE KEY uq_reportes_anuncio_usuario (anuncio_id, usuario_id),
   KEY idx_reportes_anuncio (anuncio_id),
   KEY idx_reportes_usuario (usuario_id),
+  KEY idx_reportes_estado (estado, anuncio_id),
   CONSTRAINT fk_reportes_anuncio FOREIGN KEY (anuncio_id) REFERENCES anuncios (id),
   CONSTRAINT fk_reportes_usuario FOREIGN KEY (usuario_id) REFERENCES usuarios (id),
   CONSTRAINT ck_reportes_estado CHECK (estado IN ('pendiente', 'revisado'))
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS contactos_anuncio (
+  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  anuncio_id BIGINT UNSIGNED NOT NULL,
+  visitante CHAR(64) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  fecha DATETIME(3) NOT NULL,
+  PRIMARY KEY (id),
+  UNIQUE KEY uq_contactos_anuncio_visitante (anuncio_id, visitante),
+  CONSTRAINT fk_contactos_anuncio FOREIGN KEY (anuncio_id) REFERENCES anuncios (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS sesiones (

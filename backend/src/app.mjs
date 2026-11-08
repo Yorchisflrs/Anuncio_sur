@@ -9,10 +9,13 @@ import path from 'node:path';
 import { defaultConfig, projectRoot } from './config.mjs';
 import { openDatabase } from './database.mjs';
 import { authServices, publicUser } from './auth.mjs';
-import { ApiError, validateRegistration, validateListing } from './validation.mjs';
+import { ApiError, validateRegistration, validateListing, validateDisplayName } from './validation.mjs';
 import { getCatalog, getListing, getOwnListings, publicCondition } from './listings.mjs';
-import { upload, preparePhotos, persistPhotos } from './uploads.mjs';
+import { upload, preparePhotos, persistPhotos, MAX_IMAGE_MB } from './uploads.mjs';
 import { publicationPlan, registerModerationRoutes } from './moderation.mjs';
+import { registerContactRoutes } from './contact.mjs';
+import { registerVerificationRoutes, requestVerification, requireVerified } from './verification.mjs';
+import { registerReportRoutes } from './reports.mjs';
 
 export async function createApp(overrides = {}) {
   const config = { ...defaultConfig, ...overrides };
@@ -37,7 +40,7 @@ export async function createApp(overrides = {}) {
   app.use('/uploads', express.static(config.uploadDir, { dotfiles: 'deny', index: false, maxAge: '7d' }));
   app.use('/demo', express.static(path.join(projectRoot, 'frontend', 'public', 'demo'), { maxAge: '7d' }));
 
-  const loginLimit = rateLimit({ windowMs: 15 * 60 * 1000, limit: 30, standardHeaders: 'draft-8', legacyHeaders: false, message: { message: 'Has realizado varios intentos. Espera unos minutos y vuelve a intentarlo.' } });
+  const loginLimit = rateLimit({ windowMs: 15 * 60 * 1000, limit: config.authAttemptLimit ?? 30, standardHeaders: 'draft-8', legacyHeaders: false, message: { message: 'Has realizado varios intentos. Espera unos minutos y vuelve a intentarlo.' } });
   app.get('/api/health', (_req, res) => res.json({ status: 'ok', nombre: 'AvisoSur' }));
   app.get('/api/categorias', async (_req, res) => {
     const rows = await db.all(`SELECT c.*, (SELECT COUNT(*) FROM anuncios a WHERE a.categoria_id = c.id AND ${publicCondition()}) AS total FROM categorias c WHERE c.activa = 1 ORDER BY c.id`,new Date().toISOString());
@@ -53,12 +56,14 @@ export async function createApp(overrides = {}) {
     if (Object.keys(fields).length) throw new ApiError(409, 'Ya existe una cuenta con estos datos.', fields);
     let result;
     try {
-      result = await db.run('INSERT INTO usuarios (correo, celular, password_hash, fecha_registro) VALUES (?, ?, ?, ?)', data.correo, data.celular, hash, new Date().toISOString());
+      result = await db.run('INSERT INTO usuarios (nombre, correo, celular, password_hash, fecha_registro) VALUES (?, ?, ?, ?, ?)', data.nombre, data.correo, data.celular, hash, new Date().toISOString());
     } catch (error) {
       if (error.code === 'ER_DUP_ENTRY' || error.code === 'SQLITE_CONSTRAINT_UNIQUE') throw new ApiError(409, 'Ya existe una cuenta con estos datos.');
       throw error;
     }
     const user = await db.get('SELECT * FROM usuarios WHERE id = ?', result.lastInsertRowid);
+    // La cuenta nueva queda en la lista de administración para recibir su código de verificación.
+    await requestVerification(db, user.id);
     await auth.createSession(user.id, res, req.cookies.avisosur_session);
     res.status(201).json({ usuario: publicUser(user) });
   });
@@ -74,10 +79,19 @@ export async function createApp(overrides = {}) {
     res.json({ usuario: publicUser(user) });
   });
   app.post('/api/auth/logout', async (req, res) => { await auth.destroySession(req, res); res.json({ message: 'Sesión cerrada.' }); });
+  app.patch('/api/perfil', auth.requireUser, async (req, res) => {
+    const nombre = validateDisplayName(req.body?.nombre);
+    await db.run('UPDATE usuarios SET nombre = ? WHERE id = ?', nombre, req.user.id);
+    res.json({ usuario: publicUser(await db.get('SELECT * FROM usuarios WHERE id = ?', req.user.id)) });
+  });
   app.get('/api/anuncios', async (req, res) => res.json(await getCatalog(db, req.query)));
   app.get('/api/perfil/anuncios', auth.requireUser, async (req, res) => res.json(await getOwnListings(db, req.user.id)));
   app.get('/api/anuncios/:id', async (req, res) => res.json(await getListing(db, Number(req.params.id), req.user)));
-  app.post('/api/anuncios', auth.requireUser, upload, async (req, res) => {
+  registerContactRoutes(app, db, config);
+  registerVerificationRoutes(app, db, auth);
+  registerReportRoutes(app, db, auth);
+  // Sin celular verificado se puede mirar, pero no publicar. Se comprueba antes de recibir las fotos.
+  app.post('/api/anuncios', auth.requireUser, requireVerified, upload, async (req, res) => {
     const data = await validateListing(req.body || {}, db, req.files?.length || 0);
     const plan = await publicationPlan(db, req.body?.planId);
     const photos = await preparePhotos(req.files);
@@ -88,7 +102,7 @@ export async function createApp(overrides = {}) {
         const date = new Date().toISOString();
         const priceColumn = tx.kind === 'mysql' ? 'precio' : 'precio_centimos';
         const price = tx.kind === 'mysql' ? (data.precioCentimos / 100).toFixed(2) : data.precioCentimos;
-        const result = await tx.run(`INSERT INTO anuncios (usuario_id, titulo, descripcion, ${priceColumn}, zona, categoria_id, subcategoria, es_demo, fecha_publicacion, plan_id, dias_vigencia, monto_publicacion_centimos, bono_primer_snapshot, destacado, direccion, referencia, contacto) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`, req.user.id, data.titulo, data.descripcion, price, data.zona, data.categoriaId, data.subcategoria, Number(req.user.es_demo), date, plan.id, plan.dias, plan.precio_centimos, plan.bono_primer_anuncio, plan.destacado, data.direccion, data.referencia, data.contacto || req.user.celular);
+        const result = await tx.run(`INSERT INTO anuncios (usuario_id, titulo, descripcion, ${priceColumn}, zona, categoria_id, subcategoria, tipo_operacion, es_demo, fecha_publicacion, plan_id, dias_vigencia, monto_publicacion_centimos, bono_primer_snapshot, destacado, direccion, referencia, contacto) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`, req.user.id, data.titulo, data.descripcion, price, data.zona, data.categoriaId, data.subcategoria, data.tipoOperacion, Number(req.user.es_demo), date, plan.id, plan.dias, plan.precio_centimos, plan.bono_primer_anuncio, plan.destacado, data.direccion, data.referencia, data.contacto || req.user.celular);
         const id = Number(result.lastInsertRowid);
         for (const [index, token] of data.photoOrder.entries()) {
           const [kind, rawPhotoIndex] = token.split(':');
@@ -117,12 +131,13 @@ export async function createApp(overrides = {}) {
   app.use('/api', (_req, _res, next) => next(new ApiError(404, 'No encontramos este recurso.')));
   if (fs.existsSync(path.join(config.frontendDist, 'index.html'))) {
     app.use(express.static(config.frontendDist));
-    app.get('/{*path}', (_req, res) => res.sendFile(path.join(config.frontendDist, 'index.html')));
+    // Con `root`, la ruta funciona aunque una carpeta superior empiece con punto (por ejemplo, ~/.local).
+    app.get('/{*path}', (_req, res) => res.sendFile('index.html', { root: config.frontendDist }));
   }
   app.use((error, _req, res, _next) => {
     if (error.name === 'MulterError') {
       const field = _req.path.endsWith('/comprobante') ? 'comprobante' : _req.path.endsWith('/qr') ? 'qr' : 'fotos';
-      const message = error.code === 'LIMIT_FILE_SIZE' ? 'Cada imagen debe pesar como máximo 2 MB.' : field === 'fotos' ? 'Puedes subir hasta siete fotografías JPG o PNG.' : 'Selecciona una sola imagen JPG o PNG.';
+      const message = error.code === 'LIMIT_FILE_SIZE' ? `Cada imagen debe pesar como máximo ${MAX_IMAGE_MB} MB.` : field === 'fotos' ? 'Puedes subir hasta siete fotografías.' : 'Selecciona una sola imagen.';
       return res.status(422).json({ message, fields: { [field]: message } });
     }
     if (error.type === 'entity.parse.failed') return res.status(400).json({ message: 'La solicitud no tiene un formato válido.' });
