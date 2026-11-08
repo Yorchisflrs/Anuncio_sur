@@ -1,15 +1,16 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { FormEvent } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, ArrowUpRight, CalendarDays, Check, CheckCircle2, ChevronRight, Clock3, CreditCard, FileCheck2, ImagePlus, Inbox, LoaderCircle, MapPin, PackageCheck, Phone, QrCode, RefreshCw, Save, Search, ShieldCheck, SlidersHorizontal, Star, Tag, Users, XCircle } from 'lucide-react';
+import { ArrowLeft, ArrowUpRight, BadgeCheck, CalendarDays, Check, CheckCircle2, ChevronRight, Clock3, CreditCard, FileCheck2, ImagePlus, Inbox, LoaderCircle, MapPin, PackageCheck, Phone, QrCode, RefreshCw, Save, Search, ShieldCheck, SlidersHorizontal, Star, Tag, Users, XCircle } from 'lucide-react';
 import type { AdminResumen, ConfigPago, ListingDetail, PlanPublicacion } from '../types';
 import { useResource } from '../hooks/useResource';
 import { api, errorMessage, listingPrice, price } from '../services/api';
 import { ErrorState, Loading } from '../components/States';
 import { MAX_UPLOAD_MB } from '../services/images';
+import { AdminVerifications } from '../components/AdminVerifications';
 import '../admin.css';
 
-type AdminTab = 'anuncios' | 'pagos' | 'planes';
+type AdminTab = 'anuncios' | 'verificaciones' | 'pagos' | 'planes';
 type ReviewFilter = 'pendiente' | 'activo' | 'rechazado' | 'vencido' | 'todos';
 const FILTERS: { id: ReviewFilter; label: string }[] = [{ id: 'pendiente', label: 'Pendientes' }, { id: 'activo', label: 'Activos' }, { id: 'rechazado', label: 'Rechazados' }, { id: 'vencido', label: 'Vencidos' }, { id: 'todos', label: 'Todos' }];
 const PAYMENT_LABELS: Record<ListingDetail['estadoPago'], string> = { pendiente: 'Sin confirmar', en_revision: 'Comprobante por revisar', confirmado: 'Pago confirmado', rechazado: 'Pago rechazado' };
@@ -65,7 +66,7 @@ export function AdminPage() {
     {summary.error ? <div className="admin-inline-error" role="alert">{summary.error}<button onClick={summary.reload}>Reintentar</button></div> : <div className="admin-stats" aria-label="Resumen de publicaciones">{stats.map(({ filter: next, icon: Icon, title, value }) => <button key={next} className={'admin-stat' + (tab === 'anuncios' && filter === next ? ' is-selected' : '')} onClick={() => { setTab('anuncios'); setFilter(next); setSelectedId(null); }}><span><Icon size={20}/>{title}</span><strong>{value ?? '—'}</strong><small>Ver anuncios <ArrowUpRight size={15}/></small></button>)}</div>}
     <div className="admin-small-summary"><span><CreditCard size={16}/><strong>{summary.data?.pagosEnRevision ?? '—'}</strong> comprobantes por revisar</span><span><CheckCircle2 size={16}/>Ingresos confirmados (sin ejemplos): <strong>{summary.data ? price(summary.data.ingresos) : '—'}</strong></span><span><Users size={16}/><strong>{summary.data?.usuarios ?? '—'}</strong> usuarios</span></div>
 
-    <nav className="admin-tabs" aria-label="Secciones de administración">{[{ id: 'anuncios' as const, label: 'Revisar anuncios', icon: Inbox }, { id: 'pagos' as const, label: 'QR y datos de pago', icon: QrCode }, { id: 'planes' as const, label: 'Planes y tarifas', icon: SlidersHorizontal }].map(({ id, label, icon: Icon }) => <button key={id} aria-current={tab === id ? 'page' : undefined} onClick={() => { setTab(id); setNotice(''); }}><Icon size={19}/>{label}</button>)}</nav>
+    <nav className="admin-tabs" aria-label="Secciones de administración">{[{ id: 'anuncios' as const, label: 'Revisar anuncios', icon: Inbox }, { id: 'verificaciones' as const, label: 'Verificar celulares', icon: BadgeCheck }, { id: 'pagos' as const, label: 'QR y datos de pago', icon: QrCode }, { id: 'planes' as const, label: 'Planes y tarifas', icon: SlidersHorizontal }].map(({ id, label, icon: Icon }) => <button key={id} aria-current={tab === id ? 'page' : undefined} onClick={() => { setTab(id); setNotice(''); }}><Icon size={19}/>{label}</button>)}</nav>
     {notice && <div className="admin-notice" role="status"><CheckCircle2 size={19}/>{notice}</div>}
 
     {tab === 'anuncios' && <section className="admin-review" aria-label="Bandeja de revisión">
@@ -77,6 +78,7 @@ export function AdminPage() {
         {selected && <AdminListingDetail key={selected.id} listing={selected} plans={plans.data || []} onSaved={message => { setNotice(message); refreshReview(); }}/>}</div>}
     </section>}
     {tab === 'pagos' && (configuration.loading && !configuration.data ? <Loading label="Cargando datos de pago…"/> : configuration.error ? <ErrorState message={configuration.error} retry={configuration.reload}/> : <PaymentSettings value={configuration.data || EMPTY_PAYMENT} onSaved={message => { setNotice(message); configuration.reload(); }}/>) }
+    {tab === 'verificaciones' && <AdminVerifications onSaved={setNotice}/>}
     {tab === 'planes' && <section className="admin-plans-section"><div className="admin-section-heading"><span className="admin-section-icon"><Tag size={24}/></span><div><h2>Planes de publicación</h2><p>Define precio, vigencia y días extra antes de activar cada plan.</p></div></div><p className="admin-explanation"><ShieldCheck size={19}/>Las tarifas son configurables. Un pago no publica un anuncio por sí solo: la aprobación del administrador sigue siendo necesaria.</p>{plans.error ? <ErrorState message={plans.error} retry={plans.reload}/> : plans.loading && !plans.data ? <Loading label="Cargando planes…"/> : plans.data?.length ? <div className="admin-plan-grid">{plans.data.map(plan => <PlanEditor key={plan.id + '-' + JSON.stringify(plan)} value={plan} onSaved={() => { setNotice('El plan “' + plan.nombre + '” se actualizó correctamente.'); plans.reload(); }}/>)}</div> : <div className="admin-empty"><Tag size={32}/><h2>No hay planes configurados</h2><p>Revisa la configuración del servidor para cargar los planes de publicación.</p></div>}</section>}
   </div>;
 }

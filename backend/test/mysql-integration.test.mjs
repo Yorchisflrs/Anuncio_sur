@@ -96,6 +96,9 @@ test('MySQL/MariaDB temporal: migración legado, moderación, siete fotos y vige
     assert.equal(result.response.status, 200, JSON.stringify(result.body));
     return result.response.headers.get('set-cookie').split(';')[0];
   };
+  // Las cuentas migradas empiezan sin verificar; la prueba verifica la del propietario para publicar.
+  assert.equal((await context.db.get('SELECT celular_verificado FROM usuarios WHERE id = ?', 7)).celular_verificado, 0);
+  await context.db.run('UPDATE usuarios SET celular_verificado = 1 WHERE id = ?', 7);
   const ownerCookie = await login('demo-legado@avisosur-test.local');
   const adminCookie = await login('admin-legado@avisosur-test.local');
   assert.equal((await request('/anuncios/41')).response.status, 404);

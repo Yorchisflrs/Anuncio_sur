@@ -60,13 +60,19 @@ export async function createIsolatedApp(overrides = {}) {
     const body = response.headers.get('content-type')?.includes('application/json') ? await response.json() : await response.text();
     return { response, body };
   }
-  async function register(label, overrides = {}) {
+  /** Marca el celular como verificado directamente en la base temporal (el flujo real se prueba aparte). */
+  async function verify(userId) {
+    await context.db.run("UPDATE usuarios SET celular_verificado = 1, fecha_verificacion = ?, metodo_verificacion = 'codigo' WHERE id = ?", new Date().toISOString(), userId);
+  }
+  /** Por defecto la cuenta queda verificada para poder publicar; { verificado: false } la deja como al registrarse. */
+  async function register(label, overrides = {}, { verificado = true } = {}) {
     userNumber += 1;
     const result = await request('/auth/registro', jsonRequest({ nombre: 'Usuario ' + label, correo: label + '@avisosur-test.local', celular: '91' + String(userNumber).padStart(7, '0'), password: TEST_PASSWORD, confirmacion: TEST_PASSWORD, ...overrides }));
     assert.equal(result.response.status, 201, JSON.stringify(result.body));
     const cookie = cookieFrom(result.response);
     assert(cookie, 'El registro debe iniciar sesión con una cookie.');
-    return { ...result.body.usuario, cookie };
+    if (verificado) await verify(result.body.usuario.id);
+    return { ...result.body.usuario, celularVerificado: verificado, cookie };
   }
   async function login(identificador, password = TEST_PASSWORD) {
     const result = await request('/auth/login', jsonRequest({ identificador, password }));
@@ -111,7 +117,7 @@ export async function createIsolatedApp(overrides = {}) {
   }
   return {
     temporary, settings, get db() { return context.db; }, get base() { return base; },
-    request, register, login, administrator, admin, listing, listingWith, publish, proof, approve, close,
+    request, register, verify, login, administrator, admin, listing, listingWith, publish, proof, approve, close,
     async restart() {
       if (server.listening) await new Promise(resolve => server.close(resolve));
       await context.db.close();

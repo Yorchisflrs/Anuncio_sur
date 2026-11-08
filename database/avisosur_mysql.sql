@@ -12,12 +12,26 @@ CREATE TABLE IF NOT EXISTS usuarios (
   password_hash VARCHAR(255) NOT NULL,
   es_demo TINYINT(1) NOT NULL DEFAULT 0,
   rol VARCHAR(20) NOT NULL DEFAULT 'usuario',
+  celular_verificado TINYINT(1) NOT NULL DEFAULT 0,
+  fecha_verificacion DATETIME(3) NULL,
+  metodo_verificacion VARCHAR(20) NOT NULL DEFAULT '',
   fecha_registro DATETIME(3) NOT NULL,
   PRIMARY KEY (id),
   UNIQUE KEY uq_usuarios_correo (correo),
   UNIQUE KEY uq_usuarios_celular (celular),
   CONSTRAINT ck_usuarios_celular CHECK (celular REGEXP '^9[0-9]{8}$'),
   CONSTRAINT ck_usuarios_demo CHECK (es_demo IN (0, 1))
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS verificaciones_celular (
+  usuario_id BIGINT UNSIGNED NOT NULL,
+  solicitado DATETIME(3) NOT NULL,
+  codigo_hash CHAR(64) CHARACTER SET ascii COLLATE ascii_bin NULL,
+  expira DATETIME(3) NULL,
+  intentos INT UNSIGNED NOT NULL DEFAULT 0,
+  enviado DATETIME(3) NULL,
+  PRIMARY KEY (usuario_id),
+  CONSTRAINT fk_verificaciones_usuario FOREIGN KEY (usuario_id) REFERENCES usuarios (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS categorias (

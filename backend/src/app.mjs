@@ -14,6 +14,7 @@ import { getCatalog, getListing, getOwnListings, publicCondition } from './listi
 import { upload, preparePhotos, persistPhotos, MAX_IMAGE_MB } from './uploads.mjs';
 import { publicationPlan, registerModerationRoutes } from './moderation.mjs';
 import { registerContactRoutes } from './contact.mjs';
+import { registerVerificationRoutes, requestVerification, requireVerified } from './verification.mjs';
 
 export async function createApp(overrides = {}) {
   const config = { ...defaultConfig, ...overrides };
@@ -60,6 +61,8 @@ export async function createApp(overrides = {}) {
       throw error;
     }
     const user = await db.get('SELECT * FROM usuarios WHERE id = ?', result.lastInsertRowid);
+    // La cuenta nueva queda en la lista de administración para recibir su código de verificación.
+    await requestVerification(db, user.id);
     await auth.createSession(user.id, res, req.cookies.avisosur_session);
     res.status(201).json({ usuario: publicUser(user) });
   });
@@ -84,7 +87,9 @@ export async function createApp(overrides = {}) {
   app.get('/api/perfil/anuncios', auth.requireUser, async (req, res) => res.json(await getOwnListings(db, req.user.id)));
   app.get('/api/anuncios/:id', async (req, res) => res.json(await getListing(db, Number(req.params.id), req.user)));
   registerContactRoutes(app, db, config);
-  app.post('/api/anuncios', auth.requireUser, upload, async (req, res) => {
+  registerVerificationRoutes(app, db, auth);
+  // Sin celular verificado se puede mirar, pero no publicar. Se comprueba antes de recibir las fotos.
+  app.post('/api/anuncios', auth.requireUser, requireVerified, upload, async (req, res) => {
     const data = await validateListing(req.body || {}, db, req.files?.length || 0);
     const plan = await publicationPlan(db, req.body?.planId);
     const photos = await preparePhotos(req.files);

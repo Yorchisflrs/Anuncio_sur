@@ -1,4 +1,6 @@
-export interface User { id: number; nombre: string; correo: string; celular: string; fechaRegistro: string; demo: boolean; rol: 'usuario' | 'admin' }
+export interface User { id: number; nombre: string; correo: string; celular: string; fechaRegistro: string; demo: boolean; rol: 'usuario' | 'admin'; celularVerificado: boolean }
+export interface VerificationStatus { verificado: boolean; fechaVerificacion: string | null; metodo: string; solicitado: string | null; codigoVigente: boolean; expira: string | null; intentosRestantes: number }
+export interface AdminVerification { usuarioId: number; nombre: string; celular: string; fechaRegistro: string; solicitado: string | null; codigoEnviado: string | null; codigoVigente: boolean; expira: string | null }
 export interface Category { id: number; nombre: string; subcategorias: string[]; total: number }
 export interface Listing {
   id: number; usuarioId: number; titulo: string; descripcion: string; precio: number; zona: string;

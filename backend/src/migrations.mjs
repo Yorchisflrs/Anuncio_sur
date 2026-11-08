@@ -28,6 +28,14 @@ export function migrateSqlite(db) {
     if (!users.has('rol')) db.exec("ALTER TABLE usuarios ADD COLUMN rol TEXT NOT NULL DEFAULT 'usuario' CHECK(rol IN ('usuario','admin'))");
     // Nombre público del vendedor; las cuentas anteriores quedan vacías y se muestran con un nombre genérico.
     if (!users.has('nombre')) db.exec("ALTER TABLE usuarios ADD COLUMN nombre TEXT NOT NULL DEFAULT ''");
+    // Celular verificado: las cuentas existentes empiezan sin verificar.
+    if (!users.has('celular_verificado')) db.exec('ALTER TABLE usuarios ADD COLUMN celular_verificado INTEGER NOT NULL DEFAULT 0 CHECK(celular_verificado IN (0, 1))');
+    if (!users.has('fecha_verificacion')) db.exec('ALTER TABLE usuarios ADD COLUMN fecha_verificacion TEXT');
+    if (!users.has('metodo_verificacion')) db.exec("ALTER TABLE usuarios ADD COLUMN metodo_verificacion TEXT NOT NULL DEFAULT ''");
+    db.exec(`CREATE TABLE IF NOT EXISTS verificaciones_celular (
+      usuario_id INTEGER PRIMARY KEY REFERENCES usuarios(id), solicitado TEXT NOT NULL,
+      codigo_hash TEXT, expira TEXT, intentos INTEGER NOT NULL DEFAULT 0, enviado TEXT
+    )`);
     const columns = new Set(db.prepare('PRAGMA table_info(anuncios)').all().map(row => row.name));
     for (const [name, type] of Object.entries(sqliteColumns)) if (!columns.has(name)) db.exec(`ALTER TABLE anuncios ADD COLUMN ${name} ${type}`);
     db.exec('UPDATE anuncios SET plan_id=1 WHERE plan_id IS NULL');
@@ -69,6 +77,14 @@ export async function migrateMysql(pool) {
   const [userColumns] = await pool.query('SHOW COLUMNS FROM usuarios');
   if (!userColumns.some(row => row.Field === 'rol')) await pool.query("ALTER TABLE usuarios ADD COLUMN rol VARCHAR(20) NOT NULL DEFAULT 'usuario'");
   if (!userColumns.some(row => row.Field === 'nombre')) await pool.query("ALTER TABLE usuarios ADD COLUMN nombre VARCHAR(60) NOT NULL DEFAULT ''");
+  const userAdditions = { celular_verificado: 'TINYINT(1) NOT NULL DEFAULT 0', fecha_verificacion: 'DATETIME(3) NULL', metodo_verificacion: "VARCHAR(20) NOT NULL DEFAULT ''" };
+  for (const [name, type] of Object.entries(userAdditions)) if (!userColumns.some(row => row.Field === name)) await pool.query(`ALTER TABLE usuarios ADD COLUMN ${name} ${type}`);
+  await pool.query(`CREATE TABLE IF NOT EXISTS verificaciones_celular (
+    usuario_id BIGINT UNSIGNED NOT NULL PRIMARY KEY, solicitado DATETIME(3) NOT NULL,
+    codigo_hash CHAR(64) CHARACTER SET ascii COLLATE ascii_bin NULL, expira DATETIME(3) NULL,
+    intentos INT UNSIGNED NOT NULL DEFAULT 0, enviado DATETIME(3) NULL,
+    CONSTRAINT fk_verificaciones_usuario FOREIGN KEY (usuario_id) REFERENCES usuarios (id)
+  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`);
   const [adColumns] = await pool.query('SHOW COLUMNS FROM anuncios');
   const names = new Set(adColumns.map(row => row.Field));
   const mysqlColumns = {

@@ -17,6 +17,10 @@ END$$
 DELIMITER ;
 -- Nombre público del vendedor (ya no se deriva del correo).
 CALL avisosur_agregar_columna('usuarios','nombre','VARCHAR(60) NOT NULL DEFAULT ''''');
+-- Celular verificado: las cuentas existentes empiezan sin verificar.
+CALL avisosur_agregar_columna('usuarios','celular_verificado','TINYINT(1) NOT NULL DEFAULT 0');
+CALL avisosur_agregar_columna('usuarios','fecha_verificacion','DATETIME(3) NULL');
+CALL avisosur_agregar_columna('usuarios','metodo_verificacion','VARCHAR(20) NOT NULL DEFAULT ''''');
 -- Venta o alquiler: los avisos existentes quedan como venta.
 CALL avisosur_agregar_columna('anuncios','tipo_operacion','VARCHAR(10) NOT NULL DEFAULT ''venta''');
 DROP PROCEDURE avisosur_agregar_columna;
@@ -31,4 +35,11 @@ CREATE TABLE IF NOT EXISTS contactos_anuncio (
  visitante CHAR(64) CHARACTER SET ascii COLLATE ascii_bin NOT NULL, fecha DATETIME(3) NOT NULL,
  UNIQUE KEY uq_contactos_anuncio_visitante (anuncio_id, visitante),
  CONSTRAINT fk_contactos_anuncio FOREIGN KEY (anuncio_id) REFERENCES anuncios (id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+-- Códigos de verificación pendientes: solo se guarda el hash del código.
+CREATE TABLE IF NOT EXISTS verificaciones_celular (
+ usuario_id BIGINT UNSIGNED NOT NULL PRIMARY KEY, solicitado DATETIME(3) NOT NULL,
+ codigo_hash CHAR(64) CHARACTER SET ascii COLLATE ascii_bin NULL, expira DATETIME(3) NULL,
+ intentos INT UNSIGNED NOT NULL DEFAULT 0, enviado DATETIME(3) NULL,
+ CONSTRAINT fk_verificaciones_usuario FOREIGN KEY (usuario_id) REFERENCES usuarios (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

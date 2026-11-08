@@ -262,6 +262,7 @@ describe('Moderación, pagos manuales y planes', () => {
 
   it('El identificador DEMO lo determina la cuenta y sobrevive la moderación', async () => {
     const cookie = await app.login(DEMO_USER.correo, DEMO_USER.password);
+    await app.verify(1); // Solo en la base temporal: la cuenta demo real no puede verificarse ni publicar.
     const ad = listingOk(await app.listing(cookie, { titulo: 'DEMO conservado después de aprobar', demo: 'false', es_demo: '0' }));
     assert.equal(ad.demo, true); assert.equal(ad.vendedor.demo, true); assert.equal(ad.moderacion, 'pendiente');
     approvedOk(await app.approve(admin.cookie, ad.id));

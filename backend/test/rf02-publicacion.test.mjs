@@ -120,8 +120,17 @@ describe('RF-02 · Publicación de anuncios', () => {
     assert.equal((await app.request('/anuncios/' + ad.id)).body.vendedor.nombre, 'Vendedor de AvisoSur');
   });
 
-  it('La cuenta demo publica con la marca DEMO aunque el formulario intente quitarla', async () => {
+  it('La cuenta demo de la documentación no puede publicar: su celular es ficticio y no está verificado', async () => {
     const cookie = await app.login(DEMO_USER.correo, DEMO_USER.password);
+    const before = await count('anuncios');
+    const { response, body } = await app.listing(cookie, { titulo: 'Intento de publicar como vendedor de demostración' });
+    assert.equal(response.status, 403); assert(body.fields.verificacion);
+    assert.equal(await count('anuncios'), before);
+  });
+
+  it('Un aviso de una cuenta DEMO conserva la marca aunque el formulario intente quitarla', async () => {
+    const cookie = await app.login(DEMO_USER.correo, DEMO_USER.password);
+    await app.verify(1); // Solo en la base temporal: la cuenta demo real no puede verificarse.
     const { response, body } = await app.listing(cookie, { titulo: 'Anuncio ficticio desde la cuenta demo', demo: 'false', es_demo: '0' });
     assert.equal(response.status, 201, JSON.stringify(body));
     assert.equal(body.demo, true); assert.equal(body.vendedor.demo, true); assert.equal(body.moderacion, 'pendiente');

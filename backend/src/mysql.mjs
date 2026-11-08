@@ -4,7 +4,7 @@ import { migrateMysql } from './migrations.mjs';
 // La aplicación conserva las fechas ISO en UTC. DATETIME no lleva zona horaria,
 // por lo que se convierte solo en el límite con MySQL.
 const isoDate = /^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d(?:\.\d{1,3})?Z$/;
-const dateFields = new Set(['fecha_registro', 'fecha_publicacion', 'fecha_subida', 'fecha', 'expira', 'fecha_aprobacion', 'fecha_vencimiento', 'fecha_comprobante', 'fecha_confirmacion']);
+const dateFields = new Set(['fecha_registro', 'fecha_publicacion', 'fecha_subida', 'fecha', 'expira', 'fecha_aprobacion', 'fecha_vencimiento', 'fecha_comprobante', 'fecha_confirmacion', 'fecha_verificacion', 'solicitado', 'enviado']);
 const parameters = values => values.map(value => typeof value === 'string' && isoDate.test(value) ? value.slice(0, -1).replace('T', ' ') : value);
 const normalizeRow = row => {
   if (!row) return row;

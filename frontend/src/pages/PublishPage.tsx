@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import type { FormEvent } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, ChevronRight, ImagePlus, X, MapPin, CheckCircle2, Lightbulb, MessageCircle, Package, Mail, UserRound, CalendarDays, ShieldCheck, CreditCard, Link2, LoaderCircle } from 'lucide-react';
+import { ArrowRight, ChevronRight, ImagePlus, X, MapPin, CheckCircle2, Lightbulb, MessageCircle, Package, Mail, UserRound, CalendarDays, ShieldCheck, ShieldAlert, CreditCard, Link2, LoaderCircle } from 'lucide-react';
 import type { Category, ListingDetail, PublicacionConfig } from '../types';
 import { ZONES } from '../types';
 import { useResource } from '../hooks/useResource';
@@ -135,6 +135,7 @@ export function PublishPage() {
     {/* Bloque 3: formulario y vista previa del objeto Anuncio. */}
     {categories.error ? <ErrorState message={categories.error} retry={categories.reload}/> : <div className="publish-layout">
       <form className="publish-form" onSubmit={submit} noValidate>
+        {user && !user.celularVerificado && <div className="commerce-notice publish-verify-notice" role="status"><ShieldAlert size={26} aria-hidden="true"/><div><strong>{user.demo ? 'La cuenta de demostración no puede publicar' : 'Verifica tu celular para publicar'}</strong><p>{user.demo ? 'Usa un número ficticio. Para publicar, crea tu propia cuenta y verifica tu celular.' : 'Puedes preparar tu aviso, pero para enviarlo tu celular debe estar verificado. AvisoSur te envía un código por WhatsApp.'}</p>{!user.demo && <Link className="text-link" to="/perfil#verificacion">Verificar mi celular <ArrowRight size={16} aria-hidden="true"/></Link>}</div></div>}
         {message && <div className="error-banner" role="alert" ref={errorRef} tabIndex={-1}>{message}</div>}
         <fieldset className="publish-fields" disabled={busy || Boolean(published)}>
           <legend className="sr-only">Completa tu anuncio</legend>
@@ -169,7 +170,7 @@ export function PublishPage() {
           </section>
         </fieldset>
         {/* Bloque 4: acción principal que guarda el Anuncio. */}
-        <div className="publish-actions"><span><ShieldCheck size={20}/>{plan?`${price(plan.precio)} por ${plan.dias} días · Revisión y confirmación de pago`:'Elige un plan para continuar'}</span><div><Link className="button button-outline" to="/perfil">Cancelar</Link><button type="submit" className="button button-primary publish-submit" disabled={busy || preparingPhotos || Boolean(published) || categories.loading || publication.loading || !plan}>{busy ? 'Enviando…' : published ? 'Anuncio enviado' : 'Enviar para revisión'}<ArrowRight size={20}/></button></div></div>
+        <div className="publish-actions"><span><ShieldCheck size={20}/>{plan?`${price(plan.precio)} por ${plan.dias} días · Revisión y confirmación de pago`:'Elige un plan para continuar'}</span><div><Link className="button button-outline" to="/perfil">Cancelar</Link><button type="submit" className="button button-primary publish-submit" disabled={busy || preparingPhotos || Boolean(published) || categories.loading || publication.loading || !plan || !user?.celularVerificado}>{busy ? 'Enviando…' : published ? 'Anuncio enviado' : 'Enviar para revisión'}<ArrowRight size={20}/></button></div></div>
         {/* Bloque 5: estado posterior a la publicación. */}
         {published && <div className="publish-success" role="status" aria-live="polite" ref={successRef} tabIndex={-1}><CheckCircle2 size={24}/><div><p>Tu anuncio se envió para revisión.</p><span>Aún no se muestra al público. Completa el pago y adjunta tu comprobante.</span><Link to={'/mis-anuncios/' + published.id + '/pago'}>Continuar con el pago <ArrowRight size={18}/></Link></div></div>}
       </form>
