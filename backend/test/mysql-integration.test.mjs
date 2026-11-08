@@ -132,6 +132,33 @@ test('MySQL/MariaDB temporal: migración legado, moderación, siete fotos y vige
   assert.equal((await request('/anuncios/' + publication.body.id)).response.status, 404);
   assert.equal((await request('/anuncios/' + publication.body.id, { headers: { Cookie: ownerCookie } })).response.status, 200);
 
+  // Observaciones de la Práctica 9 sobre MySQL: columnas aditivas, contacto a pedido y reportes.
+  const columns = async table => new Set((await context.db.all('SELECT COLUMN_NAME AS name FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ?', table)).map(row => row.name));
+  for (const [table, expected] of Object.entries({ usuarios: ['nombre', 'celular_verificado', 'fecha_verificacion', 'metodo_verificacion'], anuncios: ['tipo_operacion', 'revision_reportes', 'fecha_revision_reportes'], reportes: ['detalle', 'fecha_revision', 'revisado_por', 'resolucion'], contactos_anuncio: ['anuncio_id', 'visitante'], verificaciones_celular: ['codigo_hash', 'intentos'] })) {
+    const present = await columns(table);
+    for (const column of expected) assert(present.has(column), table + '.' + column);
+  }
+  assert.equal((await context.db.get('SELECT tipo_operacion FROM anuncios WHERE id = 41')).tipo_operacion, 'venta');
+  assert.equal((await context.db.get("SELECT COUNT(*) AS n FROM information_schema.STATISTICS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'reportes' AND INDEX_NAME = 'uq_reportes_anuncio_usuario'")).n > 0, true);
+  const detail41 = await request('/anuncios/41');
+  assert.equal(detail41.body.vendedor.celular, undefined); assert.equal(detail41.body.whatsappUrl, undefined);
+  const contact = await request('/anuncios/41/contacto');
+  assert.equal(contact.response.status, 200); assert.equal(new URL(contact.body.whatsappUrl).pathname, '/51900000007');
+  assert.equal((await context.db.get('SELECT COUNT(*) AS n FROM contactos_anuncio WHERE anuncio_id = 41')).n, 1);
+  const reporters = [];
+  for (let index = 0; index < 3; index += 1) {
+    const registered = await request('/auth/registro', jsonRequest({ nombre: 'Comprador MySQL ' + index, correo: 'reporte-' + index + '@avisosur-test.local', celular: '91000020' + index, password: TEST_PASSWORD, confirmacion: TEST_PASSWORD }));
+    assert.equal(registered.response.status, 201, JSON.stringify(registered.body));
+    await context.db.run('UPDATE usuarios SET celular_verificado = 1 WHERE id = ?', registered.body.usuario.id);
+    reporters.push(registered.response.headers.get('set-cookie').split(';')[0]);
+  }
+  const reports = await Promise.all(reporters.map(cookie => request('/anuncios/41/reportes', jsonRequest({ motivo: 'precio_sospechoso' }, cookie))));
+  reports.forEach(result => assert.equal(result.response.status, 201, JSON.stringify(result.body)));
+  assert.equal((await request('/anuncios')).body.total, 0, 'Tres reportes verificados simultáneos ocultan el aviso.');
+  const restored = await request('/admin/anuncios/41/reportes/resolver', jsonRequest({ accion: 'restaurar' }, adminCookie));
+  assert.equal(restored.response.status, 200, JSON.stringify(restored.body)); assert(restored.body.fechaVencimiento.endsWith('Z'));
+  assert.equal((await request('/anuncios')).body.total, 1);
+
   const before = await context.db.all('SELECT * FROM anuncios ORDER BY id');
   await new Promise(resolve => server.close(resolve)); server = null;
   await context.db.close(); context = null;
