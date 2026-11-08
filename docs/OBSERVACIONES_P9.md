@@ -14,8 +14,9 @@ Los cambios están en cuatro ramas, cada una con su pull request hacia `main`, y
 | `fix/observaciones-diseno` | Observaciones de diseño | 5 |
 | `feat/vendedor-verificado-y-reportes` | Novedad propuesta: vendedor verificado y reporte de estafa | 6 |
 | `docs/acta-y-evidencias` | Acta, guía de entrevistas, evidencias y documentación | 2 |
+| `mejora/nota-validador` | Cuenta demo sin contraseña en el código y prueba del recorrido completo | 3 |
 
-Cada rama parte de la anterior. Fusionadas en ese orden, `main` queda con los 15 commits.
+Cada rama parte de la anterior. Fusionadas en ese orden, `main` queda con los 18 commits.
 
 ## Resumen
 
@@ -24,7 +25,7 @@ Cada rama parte de la anterior. Fusionadas en ese orden, `main` queda con los 15
 | Hay ramas, pero no hay merge | Levantada | PR #2 y PR #3 fusionados; los commits de `nelsoncaisa07` y `promclaudio` están en `main` |
 | No hay historia | Levantada desde ahora | 15 commits pequeños en 4 ramas con PR (no se reescribe el historial anterior) |
 | El aporte de dos integrantes es cosmético | **Pendiente del equipo** | Propuestas listas en [Pendiente del equipo](#pendiente-del-equipo) |
-| Pocas pruebas: una prueba con 17 pasos | Levantada | 89 pruebas en 10 grupos; [reporte JUnit](evidencias/pruebas-automatizadas.xml) |
+| Pocas pruebas: una prueba con 17 pasos | Levantada | 102 pruebas en 11 archivos; [reporte JUnit](evidencias/pruebas-automatizadas.xml) |
 | No está el acta de aceptación | Acta lista; **falta que otra mesa la ejecute** | [ACTA_ACEPTACION.md](ACTA_ACEPTACION.md) |
 | GET /api/anuncios/:id entrega el celular | Levantada | `rf04-contacto.test.mjs` |
 | Innovación: la novedad propuesta | Levantada (partes 1 a 6) | `novedad-celular-verificado.test.mjs`, `novedad-reportes.test.mjs` |
@@ -50,17 +51,18 @@ El commit inicial de 235 archivos no se reescribe: hacerlo obligaría a forzar l
 
 ### Pocas pruebas: una sola prueba grande
 
-`api.test.mjs` tenía una prueba con 17 pasos encadenados. Ahora hay **89 pruebas** en 10 grupos. Cada caso prepara sus propios datos y no depende del orden. Todas levantan el servidor real con `listen(0)`, hacen pedidos HTTP con `fetch` y usan una base SQLite temporal.
+`api.test.mjs` tenía una prueba con 17 pasos encadenados. Ahora hay **102 pruebas** en 11 archivos. Cada caso prepara sus propios datos y no depende del orden, salvo el recorrido completo, que a propósito sigue los escenarios del acta como una sola historia. Todas levantan el servidor real con `listen(0)`, hacen pedidos HTTP con `fetch` y usan una base SQLite temporal.
 
 | Archivo | Requisito | Pruebas |
 | --- | --- | --- |
-| `rf01-cuenta.test.mjs` | RF-01 Cuenta y acceso; RNF-03 límite de intentos | 12 |
+| `rf01-cuenta.test.mjs` | RF-01 Cuenta y acceso; RNF-03 límite de intentos y cuenta demo sin contraseña conocida | 13 |
 | `rf02-publicacion.test.mjs` | RF-02 Publicación, fotos, venta o alquiler, nombre del vendedor | 15 |
 | `rf03-busqueda.test.mjs` | RF-03 Consulta, filtros, orden, paginación, persistencia | 12 |
 | `rf04-contacto.test.mjs` | RF-04 Contacto a pedido y límite por persona | 8 |
 | `novedad-celular-verificado.test.mjs` | Novedad: celular verificado e insignia | 11 |
 | `novedad-reportes.test.mjs` | Novedad: reporte de estafa y moderador | 11 |
 | `moderation.test.mjs` | Publicación pagada, pago manual, planes y vigencia | 16 |
+| `integracion-recorrido.test.mjs` | Integración: un cuarto en alquiler de la cuenta nueva a la decisión del moderador (CA-01 a CA-12) | 12 |
 | `migration.test.mjs`, `mysql.test.mjs` | Migración y consultas MySQL | 3 |
 | `mysql-integration.test.mjs` | Integración con MySQL/MariaDB (opcional) | 1 |
 
@@ -106,7 +108,7 @@ Dos decisiones de diseño que conviene explicar:
 | El nombre del vendedor sale de su correo | Se pide un **nombre para mostrar** al registrarse; las cuentas anteriores se muestran como «Vendedor de AvisoSur», nunca con su correo | `07-registro-nombre-para-mostrar` |
 | Categorías que no existen | Se quitaron las cuatro tarjetas «Próximamente» | `06-categorias-sin-proximamente` |
 | Textos de prototipo | Se quitaron «comprueba que el servidor esté iniciado», «Reclamaciones · Prototipo» y la promesa de respuesta en 15 días | `14-ayuda-sin-textos-de-prototipo` |
-| La cuenta demo en la pantalla de ingreso | El botón ya no existe. Además, la cuenta demo tiene un número ficticio y no se puede verificar, así que **no puede publicar** como «Vendedor de demostración». | Prueba en `rf02-publicacion.test.mjs` |
+| La cuenta demo en la pantalla de ingreso | El botón ya no existe y la cuenta demo ya no tiene una contraseña escrita en el código: recibe una clave aleatoria al crear la base. Además, la cuenta demo tiene un número ficticio y no se puede verificar, así que **no puede publicar** como «Vendedor de demostración». | Prueba en `rf02-publicacion.test.mjs` |
 | Fotos: solo JPG o PNG de hasta 2 MB | JPG, PNG, WebP y HEIC de hasta 10 MB. El navegador reduce las fotos grandes antes de subirlas y el servidor las deja en 1600 px WebP. | `10-publicar-fotos-y-operacion` |
 
 ## ¿Quién lo usaría y cómo se vende?
@@ -135,7 +137,7 @@ Cada integrante crea su rama desde `main`, hace commits con su propia cuenta y a
 ## Cómo comprobarlo
 
 ```powershell
-npm.cmd test                 # 89 pruebas (la de MySQL se activa con AVISOSUR_TEST_MYSQL=1)
+npm.cmd test                 # 102 pruebas (la de MySQL se activa con AVISOSUR_TEST_MYSQL=1)
 npm.cmd run test:reporte     # además genera docs/evidencias/pruebas-automatizadas.xml
 npm.cmd run benchmark        # RNF-01: 500 avisos públicos y 50 clientes concurrentes
 npm.cmd run check            # TypeScript

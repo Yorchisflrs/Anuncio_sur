@@ -100,7 +100,7 @@ backend/src/
   reports.mjs           Reportes, revisión automática y moderador
   moderation.mjs        Pago manual, aprobación, planes y resumen
   migrations.mjs        Migraciones aditivas SQLite y MySQL
-backend/test/           Pruebas por requisito (rf01…rf04), novedad, moderación y migración
+backend/test/           Pruebas por requisito (rf01…rf04), novedad, moderación, migración y recorrido completo
 database/               Esquema MySQL, datos DEMO y actualizaciones aditivas
 docs/                   Arquitectura, validación, acta, entrevistas, observaciones y evidencias
 ```
@@ -115,7 +115,7 @@ npm run check            # TypeScript
 npm run build            # compilación de producción
 ```
 
-Cada archivo de `backend/test/` corresponde a un requisito y cada caso es independiente: levanta el servidor real en un puerto libre, hace pedidos HTTP y usa una base y carpetas temporales que borra al terminar. La prueba de integración con MySQL crea y borra su propia base `avisosur_test_<aleatorio>`, y solo corre con `AVISOSUR_TEST_MYSQL=1`. Ninguna prueba toca `avisosur_db`.
+Cada archivo de `backend/test/` corresponde a un requisito y cada caso es independiente: levanta el servidor real en un puerto libre, hace pedidos HTTP y usa una base y carpetas temporales que borra al terminar. `integracion-recorrido.test.mjs` junta todo en una sola historia, en el orden del acta: un arrendador crea su cuenta, verifica su celular, publica un cuarto, paga y lo aprueban; una estudiante lo encuentra y pide el contacto; tres compradores lo reportan y el moderador decide. La prueba de integración con MySQL crea y borra su propia base `avisosur_test_<aleatorio>`, y solo corre con `AVISOSUR_TEST_MYSQL=1`. Ninguna prueba toca `avisosur_db`.
 
 Los resultados de la última ejecución están en [docs/VALIDACION.md](docs/VALIDACION.md). El acta Dado/Cuando/Entonces para otra mesa está en [docs/ACTA_ACEPTACION.md](docs/ACTA_ACEPTACION.md), y la guía de entrevistas en [docs/ENTREVISTAS.md](docs/ENTREVISTAS.md).
 

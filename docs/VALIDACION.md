@@ -1,12 +1,12 @@
 # Validación ejecutada de AvisoSur
 
-Fecha: 8 de noviembre de 2026 (America/Lima). Entorno: Windows 11, Node v24.16.0, Intel Core i5-1235U y MariaDB de XAMPP. Se validó la versión con las observaciones de la Práctica 9 (ramas `test/pruebas-por-requisito`, `fix/observaciones-diseno`, `feat/vendedor-verificado-y-reportes` y `docs/acta-y-evidencias`).
+Fecha: 8 de noviembre de 2026 (America/Lima). Entorno: Windows 11, Node v24.16.0, Intel Core i5-1235U y MariaDB de XAMPP. Se validó la versión con las observaciones de la Práctica 9 (ramas `test/pruebas-por-requisito`, `fix/observaciones-diseno`, `feat/vendedor-verificado-y-reportes`, `docs/acta-y-evidencias` y `mejora/nota-validador`).
 
 ## Resumen
 
 | Verificación | Resultado |
 | --- | --- |
-| `npm test`: pruebas HTTP con SQLite temporal | **88 correctas, 0 fallos**, 1 omitida por diseño (la de MySQL, que se ejecutó aparte) |
+| `npm test`: pruebas HTTP con SQLite temporal | **101 correctas, 0 fallos**, 1 omitida por diseño (la de MySQL, que se ejecutó aparte) |
 | Integración con MySQL/MariaDB (`AVISOSUR_TEST_MYSQL=1`) | **Correcta**, sobre una base temporal que se borró al terminar; `avisosur_db` no se tocó |
 | `npm run check` (TypeScript) | Sin errores |
 | `npm run build` (Vite) | Compilación correcta |
@@ -16,12 +16,12 @@ Fecha: 8 de noviembre de 2026 (America/Lima). Entorno: Windows 11, Node v24.16.0
 
 ## Pruebas automáticas
 
-`npm run test:reporte` ejecuta las 89 pruebas y deja el detalle en [evidencias/pruebas-automatizadas.xml](evidencias/pruebas-automatizadas.xml), en formato JUnit. En ese archivo, las rutas absolutas de la copia de trabajo se cambiaron por rutas relativas; los resultados no se modificaron.
+`npm run test:reporte` ejecuta las 102 pruebas y deja el detalle en [evidencias/pruebas-automatizadas.xml](evidencias/pruebas-automatizadas.xml), en formato JUnit. En ese archivo, las rutas absolutas de la copia de trabajo se cambiaron por rutas relativas; los resultados no se modificaron.
 
 | Grupo | Pruebas | Resultado |
 | --- | --- | --- |
 | RF-01 · Cuenta y acceso | 11 | correctas |
-| RNF-03 · Protección del acceso | 1 | correcta |
+| RNF-03 · Protección del acceso | 2 | correctas |
 | RF-02 · Publicación de anuncios | 15 | correctas |
 | RF-03 · Consulta y búsqueda | 11 | correctas |
 | RF-03 · Persistencia | 1 | correcta |
@@ -31,9 +31,10 @@ Fecha: 8 de noviembre de 2026 (America/Lima). Entorno: Windows 11, Node v24.16.0
 | Novedad · Reporte de estafa y revisión automática | 11 | correctas |
 | Moderación, pagos manuales y planes | 16 | correctas |
 | Migración SQLite y consultas MySQL | 3 | correctas |
+| Integración · Recorrido completo de un cuarto en alquiler (CA-01 a CA-12) | 12 | correctas |
 | Integración MySQL/MariaDB (opcional) | 1 | omitida en `npm test`; ejecutada aparte con éxito |
 
-Cada prueba levanta el servidor real en un puerto libre, hace pedidos HTTP y usa SQLite y carpetas temporales que se borran al terminar. Los casos que pidió el profesor para la novedad están incluidos con esos nombres:
+Cada prueba levanta el servidor real en un puerto libre, hace pedidos HTTP y usa SQLite y carpetas temporales que se borran al terminar. El recorrido completo sigue los 12 escenarios del acta en orden, como una sola historia: cuenta, código de verificación, publicación con una foto grande, pago, búsqueda, contacto, tres reportes y decisión del moderador. Se comprobó que esa prueba falla si se cambia el umbral de reportes o si el detalle público vuelve a traer el celular. Los casos que pidió el profesor para la novedad están incluidos con esos nombres:
 
 - usuario sin verificar intenta publicar → 403;
 - código equivocado → 422;
@@ -107,7 +108,7 @@ Los nombres, correos y celulares de las capturas son ficticios.
 
 - **La aceptación por otra mesa no está hecha.** [ACTA_ACEPTACION.md](ACTA_ACEPTACION.md) está lista para ejecutarse; los resultados de esta página no la reemplazan.
 - La verificación con un celular real por WhatsApp y la subida de fotos HEIC desde un iPhone se probaron con datos simulados; quedan para el acta.
-- El ocultamiento por reportes y la verificación se probaron con cuentas marcadas como verificadas en la base temporal o en persona.
+- En el recorrido completo, los celulares se verifican con el código que genera administración, por HTTP. Los demás grupos marcan las cuentas como verificadas en la base temporal para ir directo a lo que prueban.
 - RNF-02 (98 % de disponibilidad en 30 días) y la medición de RNF-04 (menos de 4 s en 3G) siguen pendientes de un despliegue real.
 
 Para repetir: `npm run test:reporte`, `npm run benchmark`, `npm run check` y `npm run build`.

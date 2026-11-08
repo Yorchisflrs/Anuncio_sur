@@ -22,6 +22,8 @@ Esta acta la ejecuta **otra mesa**, no el equipo de AvisoSur, frente a la aplica
 4. Tener al menos un aviso aprobado de cuarto en alquiler en Puno con precio hasta S/ 300, publicado por una cuenta verificada.
 5. Para el escenario de reporte, preparar un aviso «falso» de prueba y tres cuentas de compradores con celular verificado (pueden ser los celulares de la mesa evaluadora).
 
+Antes de citar a la otra mesa, el equipo ejecuta `npm.cmd test`. La prueba `backend/test/integracion-recorrido.test.mjs` recorre estos mismos 12 escenarios por la API. No reemplaza esta acta: aquí los ejecuta otra mesa, en pantalla y con celulares reales.
+
 Cada escenario se marca como **Cumple** o **No cumple**. Si no cumple, se anota qué pasó.
 
 ## Escenarios
