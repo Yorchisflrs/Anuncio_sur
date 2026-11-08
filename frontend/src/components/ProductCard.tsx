@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { MapPin, ArrowUpRight } from 'lucide-react';
 import type { Listing } from '../types';
-import { date, price } from '../services/api';
+import { date, listingPrice } from '../services/api';
 
 export function ListingCardContent({ listing, eager = false }: { listing: Listing; eager?: boolean }) {
   return <>
@@ -13,9 +13,9 @@ export function ListingCardContent({ listing, eager = false }: { listing: Listin
       <span className="card-arrow"><ArrowUpRight size={18}/></span>
     </span>
     <span className="product-body">
-      <span className="product-category">{listing.categoria}{listing.subcategoria ? ' / ' + listing.subcategoria : ''}</span>
+      <span className="product-category">{listing.tipoOperacion === 'alquiler' ? 'Alquiler · ' : ''}{listing.categoria}{listing.subcategoria ? ' / ' + listing.subcategoria : ''}</span>
       <span className="product-title">{listing.titulo}</span>
-      <span className="product-price">{price(listing.precio)}</span>
+      <span className="product-price">{listingPrice(listing)}</span>
       <span className="product-location"><span><MapPin size={13}/>{listing.zona.startsWith('Otras localidades') ? 'Sur del Perú' : listing.zona}</span><time dateTime={listing.fechaPublicacion}>{date(listing.fechaPublicacion)}</time></span>
     </span>
   </>;
@@ -30,10 +30,10 @@ export function ListingRow({ listing }: { listing: Listing }) {
   return <Link to={'/anuncios/' + listing.id} className="listing-row" data-category={listing.categoriaId}>
     <span className="listing-row-image"><img src={listing.imagen} alt="" referrerPolicy="no-referrer" loading="lazy" width="160" height="120" draggable={false}/>{listing.demo && <span className="image-badge">Ejemplo</span>}</span>
     <span className="listing-row-body">
-      <span className="product-category">{listing.categoria}{listing.subcategoria ? ' / ' + listing.subcategoria : ''}</span>
+      <span className="product-category">{listing.tipoOperacion === 'alquiler' ? 'Alquiler · ' : ''}{listing.categoria}{listing.subcategoria ? ' / ' + listing.subcategoria : ''}</span>
       <span className="listing-row-title">{listing.titulo}</span>
       <span className="listing-row-meta"><span><MapPin size={13}/>{listing.zona.startsWith('Otras localidades') ? 'Sur del Perú' : listing.zona}</span><time dateTime={listing.fechaPublicacion}>{date(listing.fechaPublicacion)}</time></span>
     </span>
-    <span className="listing-row-price">{price(listing.precio)}{listing.destacado && <small>Destacado</small>}</span>
+    <span className="listing-row-price">{listingPrice(listing)}{listing.destacado && <small>Destacado</small>}</span>
   </Link>;
 }

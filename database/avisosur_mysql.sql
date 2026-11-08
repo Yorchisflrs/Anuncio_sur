@@ -48,6 +48,7 @@ CREATE TABLE IF NOT EXISTS anuncios (
   precio DECIMAL(10,2) NOT NULL,
   zona VARCHAR(100) NOT NULL,
   subcategoria VARCHAR(100) NOT NULL DEFAULT '',
+  tipo_operacion VARCHAR(10) NOT NULL DEFAULT 'venta',
   estado VARCHAR(20) NOT NULL DEFAULT 'activo',
   es_demo TINYINT(1) NOT NULL DEFAULT 0,
   fecha_publicacion DATETIME(3) NOT NULL,
@@ -73,6 +74,7 @@ CREATE TABLE IF NOT EXISTS anuncios (
   CONSTRAINT fk_anuncios_categoria FOREIGN KEY (categoria_id) REFERENCES categorias (id),
   CONSTRAINT ck_anuncios_precio CHECK (precio > 0),
   CONSTRAINT ck_anuncios_estado CHECK (estado IN ('activo', 'dado_de_baja')),
+  CONSTRAINT ck_anuncios_tipo CHECK (tipo_operacion IN ('venta', 'alquiler')),
   CONSTRAINT ck_anuncios_demo CHECK (es_demo IN (0, 1))
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 

@@ -2,7 +2,7 @@ export interface User { id: number; nombre: string; correo: string; celular: str
 export interface Category { id: number; nombre: string; subcategorias: string[]; total: number }
 export interface Listing {
   id: number; usuarioId: number; titulo: string; descripcion: string; precio: number; zona: string;
-  categoriaId: number; categoria: string; subcategoria: string; estado: 'activo' | 'dado_de_baja';
+  categoriaId: number; categoria: string; subcategoria: string; tipoOperacion: 'venta' | 'alquiler'; estado: 'activo' | 'dado_de_baja';
   fechaPublicacion: string; imagen: string; demo: boolean;
   moderacion: 'pendiente' | 'aprobado' | 'rechazado';
   estadoPago: 'pendiente' | 'en_revision' | 'confirmado' | 'rechazado';

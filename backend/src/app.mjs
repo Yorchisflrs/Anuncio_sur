@@ -93,7 +93,7 @@ export async function createApp(overrides = {}) {
         const date = new Date().toISOString();
         const priceColumn = tx.kind === 'mysql' ? 'precio' : 'precio_centimos';
         const price = tx.kind === 'mysql' ? (data.precioCentimos / 100).toFixed(2) : data.precioCentimos;
-        const result = await tx.run(`INSERT INTO anuncios (usuario_id, titulo, descripcion, ${priceColumn}, zona, categoria_id, subcategoria, es_demo, fecha_publicacion, plan_id, dias_vigencia, monto_publicacion_centimos, bono_primer_snapshot, destacado, direccion, referencia, contacto) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`, req.user.id, data.titulo, data.descripcion, price, data.zona, data.categoriaId, data.subcategoria, Number(req.user.es_demo), date, plan.id, plan.dias, plan.precio_centimos, plan.bono_primer_anuncio, plan.destacado, data.direccion, data.referencia, data.contacto || req.user.celular);
+        const result = await tx.run(`INSERT INTO anuncios (usuario_id, titulo, descripcion, ${priceColumn}, zona, categoria_id, subcategoria, tipo_operacion, es_demo, fecha_publicacion, plan_id, dias_vigencia, monto_publicacion_centimos, bono_primer_snapshot, destacado, direccion, referencia, contacto) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`, req.user.id, data.titulo, data.descripcion, price, data.zona, data.categoriaId, data.subcategoria, data.tipoOperacion, Number(req.user.es_demo), date, plan.id, plan.dias, plan.precio_centimos, plan.bono_primer_anuncio, plan.destacado, data.direccion, data.referencia, data.contacto || req.user.celular);
         const id = Number(result.lastInsertRowid);
         for (const [index, token] of data.photoOrder.entries()) {
           const [kind, rawPhotoIndex] = token.split(':');

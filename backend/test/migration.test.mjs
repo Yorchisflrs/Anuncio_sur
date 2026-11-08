@@ -47,6 +47,9 @@ test('La migración SQLite conserva datos, relaciones y sesiones; aplica revisi�
   const insert = original.prepare('INSERT INTO anuncios VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
   insert.run(41, 7, 'Moto del sistema anterior', 'Conserva descripción, precio e identificación DEMO.', 500000, 'Puno', 1, 'Motos', 'activo', 1, instant);
   insert.run(42, 8, 'Anuncio anterior dado de baja', 'No debe reactivarse durante la migración.', 100, 'Juliaca', 1, 'Motos', 'dado_de_baja', 0, instant);
+  // Un aviso DEMO del seed que es alquiler y un aviso real con el mismo título que no debe cambiar.
+  insert.run(43, 7, 'Habitación cerca de la UNA Puno', 'Alquiler mensual de ejemplo.', 28000, 'Puno', 1, 'Motos', 'activo', 1, instant);
+  insert.run(44, 8, 'Habitación cerca de la UNA Puno', 'Aviso real con el mismo título.', 30000, 'Puno', 1, 'Motos', 'activo', 0, instant);
   original.prepare('INSERT INTO fotos VALUES (?, ?, ?, ?, ?)').run(51, 41, '/uploads/foto-anterior.webp', 0, instant);
   original.prepare('INSERT INTO fotos VALUES (?, ?, ?, ?, ?)').run(52, 42, '/uploads/foto-baja-anterior.webp', 0, instant);
   original.prepare('INSERT INTO reportes VALUES (?, ?, ?, ?, ?, ?)').run(61, 41, 8, 'Reporte conservado de la versión anterior', instant, 'pendiente');
@@ -59,7 +62,10 @@ test('La migración SQLite conserva datos, relaciones y sesiones; aplica revisi�
 
   database = await openDatabase(config);
   const migrated = await database.get('SELECT * FROM anuncios WHERE id = ?', 41);
-  assert.equal((await database.get('SELECT COUNT(*) AS n FROM anuncios')).n, 2);
+  assert.equal((await database.get('SELECT COUNT(*) AS n FROM anuncios')).n, 4);
+  assert.equal(migrated.tipo_operacion, 'venta', 'Los avisos anteriores quedan como venta.');
+  assert.equal((await database.get('SELECT tipo_operacion FROM anuncios WHERE id = 43')).tipo_operacion, 'alquiler');
+  assert.equal((await database.get('SELECT tipo_operacion FROM anuncios WHERE id = 44')).tipo_operacion, 'venta', 'La corrección solo toca avisos DEMO.');
   assert.equal((await database.get('SELECT COUNT(*) AS n FROM usuarios')).n, 2);
   assert.equal(migrated.usuario_id, 7); assert.equal(migrated.titulo, 'Moto del sistema anterior');
   assert.equal(migrated.precio_centimos, 500000); assert.equal(migrated.es_demo, 1); assert.equal(migrated.fecha_publicacion, instant);

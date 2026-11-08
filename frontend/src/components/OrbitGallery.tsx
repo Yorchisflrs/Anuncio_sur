@@ -2,7 +2,7 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import type { CSSProperties, KeyboardEvent } from 'react';
 import { ArrowUpRight, ChevronLeft, ChevronRight, Hand, Layers3, List, Pause, Play } from 'lucide-react';
 import type { Listing } from '../types';
-import { price } from '../services/api';
+import { listingPrice } from '../services/api';
 import { ListingCardContent } from './ProductCard';
 import { balancedListings } from './balancedListings';
 import './OrbitGallery.css';
@@ -197,7 +197,7 @@ export function OrbitGallery({ listings, paused, onSelect, compact = false, bala
     <div ref={sceneRef} className="bubble-stage" data-moving="false" style={{ '--bubble-card-width': cardWidth + 'px', '--bubble-stage-height': stageHeight + 'px' } as CSSProperties} onKeyDown={keyboard}>
       {visible.map((listing, index) => <button ref={element => { cardsRef.current[index] = element; }} key={listing.id} type="button" className="bubble-card" data-listing-id={listing.id} data-category={listing.categoriaId}
         onPointerEnter={() => { motion.current.hovered = index; }} onPointerLeave={() => { if (motion.current.hovered === index) motion.current.hovered = -1; }}
-        onClick={() => onSelect(listing.id)} aria-label={`Ver anuncio: ${listing.titulo}, ${price(listing.precio)}, ${listing.zona}`}><ListingCardContent listing={listing} eager/><span className="bubble-card-open">Ver detalles <ArrowUpRight size={16}/></span></button>)}
+        onClick={() => onSelect(listing.id)} aria-label={`Ver anuncio: ${listing.titulo}, ${listingPrice(listing)}, ${listing.zona}`}><ListingCardContent listing={listing} eager/><span className="bubble-card-open">Ver detalles <ArrowUpRight size={16}/></span></button>)}
     </div>
     {view === 'bubble' && <div className="bubble-navigation" aria-label="Destacar anuncios"><button type="button" data-action="previous" onClick={() => highlight(-1)} disabled={count < 2}><ChevronLeft size={19}/><span>Anterior</span></button><button type="button" data-action="motion" className="bubble-motion" onClick={() => setMotionChoice(!autoEnabled)} aria-pressed={!autoEnabled} disabled={reducedMotion} title={reducedMotion ? 'Movimiento reducido activado. Usa Anterior y Siguiente.' : undefined}>{autoEnabled ? <Pause size={17}/> : <Play size={17}/>}<span>{autoEnabled ? 'Pausar' : 'Mover'}</span></button><button type="button" data-action="next" onClick={() => highlight(1)} disabled={count < 2}><span>Siguiente</span><ChevronRight size={19}/></button></div>}
     <footer className="bubble-footer"><span className="bubble-instruction"><Hand size={16}/>{reducedMotion ? 'Sin movimiento automático. Usa Anterior y Siguiente.' : 'Toca un anuncio para abrirlo.'}</span><div className="bubble-groups"><span>{first + 1}–{Math.min(first + perGroup, presentation.length)} de {presentation.length}</span>{groups > 1 && <><button type="button" data-action="previous-group" aria-label="Grupo anterior de anuncios" onClick={() => changeGroup(-1)}><ChevronLeft size={18}/></button><button type="button" data-action="next-group" onClick={() => changeGroup(1)}>Más anuncios <ChevronRight size={17}/></button></>}</div></footer>

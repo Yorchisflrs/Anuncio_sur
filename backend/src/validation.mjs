@@ -1,6 +1,7 @@
 import { isIP } from 'node:net';
 
 export const ZONES = ['Puno', 'Juliaca', 'Otras localidades del sur del Perú'];
+export const OPERATIONS = ['venta', 'alquiler'];
 
 export class ApiError extends Error {
   constructor(status, message, fields = {}) {
@@ -104,8 +105,11 @@ export async function validateListing(body, db, photoCount) {
   const direccion = String(body.direccion || '').trim();
   const referencia = String(body.referencia || '').trim();
   const contacto = String(body.contacto || '').trim();
+  // Sin el campo se asume venta, como en los avisos anteriores a esta opción.
+  const tipoOperacion = body.tipoOperacion === undefined || body.tipoOperacion === '' ? 'venta' : String(body.tipoOperacion);
   const fields = {};
   const photoUrls = validatePhotoLinks(body.fotosUrl);
+  if (!OPERATIONS.includes(tipoOperacion)) fields.tipoOperacion = 'Indica si vendes o alquilas.';
   const photoOrder = validatePhotoOrder(body.ordenFotos, photoCount, photoUrls);
   if (titulo.length < 5 || titulo.length > 100) fields.titulo = 'El título debe tener entre 5 y 100 caracteres.';
   if (!descripcion || descripcion.length > 3000) fields.descripcion = 'Escribe una descripción de hasta 3000 caracteres.';
@@ -121,12 +125,13 @@ export async function validateListing(body, db, photoCount) {
   if (referencia.length > 300) fields.referencia = 'Usa hasta 300 caracteres.';
   if (contacto && !/^9\d{8}$/.test(contacto)) fields.contacto = 'Escribe un celular peruano de nueve dígitos que comience con 9.';
   if (Object.keys(fields).length) throw new ApiError(422, 'Revisa los datos antes de publicar.', fields);
-  return { titulo, descripcion, categoriaId, subcategoria, zona, direccion, referencia, contacto, precioCentimos: Math.round(precio * 100), photoUrls, photoOrder };
+  return { titulo, descripcion, categoriaId, subcategoria, zona, direccion, referencia, contacto, tipoOperacion, precioCentimos: Math.round(precio * 100), photoUrls, photoOrder };
 }
 
 export function parseFilters(query) {
   const fields = {};
-  const result = { q: String(query.q || '').trim().slice(0, 100), zona: String(query.zona || ''), subcategoria: String(query.subcategoria || '') };
+  const result = { q: String(query.q || '').trim().slice(0, 100), zona: String(query.zona || ''), subcategoria: String(query.subcategoria || ''), tipo: String(query.tipo || '') };
+  if (result.tipo && !OPERATIONS.includes(result.tipo)) fields.tipo = 'Elige venta o alquiler.';
   for (const key of ['min', 'max']) {
     if (query[key] !== undefined && query[key] !== '') {
       const value = Number(query[key]);

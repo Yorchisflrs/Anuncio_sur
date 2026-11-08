@@ -5,9 +5,9 @@ import type { LucideIcon } from 'lucide-react';
 export const CATEGORY_ICONS: Record<number, LucideIcon> = { 1: CarFront, 2: Building2, 3: Refrigerator };
 
 export const QUICK_SEARCHES = [
+  { label: 'Cuartos en alquiler en Puno', to: '/anuncios?categoriaId=2&subcategoria=Habitaciones&zona=Puno&tipo=alquiler' },
   { label: 'Motos en Juliaca', to: '/anuncios?categoriaId=1&subcategoria=Motos&zona=Juliaca' },
-  { label: 'Departamentos en Puno', to: '/anuncios?categoriaId=2&subcategoria=Departamentos&zona=Puno' },
-  { label: 'Terrenos', to: '/anuncios?categoriaId=2&subcategoria=Terrenos' },
+  { label: 'Departamentos en alquiler', to: '/anuncios?categoriaId=2&subcategoria=Departamentos&tipo=alquiler' },
   { label: 'Refrigeradoras', to: '/anuncios?categoriaId=3&subcategoria=Refrigeradoras' }
 ];
 

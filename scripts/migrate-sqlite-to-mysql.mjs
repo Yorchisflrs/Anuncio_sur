@@ -57,7 +57,7 @@ try {
       const id = existing?.id ?? await insert(tx, 'anuncios', {
         usuario_id: userId, categoria_id: categories.get(row.categoria_id), titulo: row.titulo,
         descripcion: row.descripcion, precio: (row.precio_centimos / 100).toFixed(2), zona: row.zona,
-        subcategoria: row.subcategoria, estado: row.estado, es_demo: row.es_demo,
+        subcategoria: row.subcategoria, tipo_operacion: row.tipo_operacion ?? 'venta', estado: row.estado, es_demo: row.es_demo,
         fecha_publicacion: row.fecha_publicacion,
       }, row.id);
       if (!existing) counts.anuncios++;

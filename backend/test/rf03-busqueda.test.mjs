@@ -46,6 +46,16 @@ describe('RF-03 · Consulta y búsqueda', () => {
     assert(body.anuncios.every(ad => ad.categoriaId === 1 && ad.subcategoria === 'Motos' && ad.zona === 'Puno' && ad.precio <= 5000));
   });
 
+  it('El filtro de operación separa ventas de alquileres', async () => {
+    const rentals = await search('tipo=alquiler&limit=48');
+    assert.equal(rentals.total, 3); assert(rentals.anuncios.every(ad => ad.tipoOperacion === 'alquiler'));
+    assert(rentals.anuncios.some(ad => ad.titulo === 'Departamento luminoso de 2 habitaciones'));
+    const sales = await search('tipo=venta&limit=48');
+    assert.equal(sales.total, 14); assert(sales.anuncios.every(ad => ad.tipoOperacion === 'venta'));
+    const invalid = await app.request('/anuncios?tipo=permuta');
+    assert.equal(invalid.response.status, 422); assert(invalid.body.fields.tipo);
+  });
+
   it('La búsqueda ignora tildes y mayúsculas', async () => {
     const body = await search('q=HABITACION');
     assert(body.anuncios.some(ad => ad.titulo.includes('Habitación')));

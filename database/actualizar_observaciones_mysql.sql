@@ -17,4 +17,11 @@ END$$
 DELIMITER ;
 -- Nombre público del vendedor (ya no se deriva del correo).
 CALL avisosur_agregar_columna('usuarios','nombre','VARCHAR(60) NOT NULL DEFAULT ''''');
+-- Venta o alquiler: los avisos existentes quedan como venta.
+CALL avisosur_agregar_columna('anuncios','tipo_operacion','VARCHAR(10) NOT NULL DEFAULT ''venta''');
 DROP PROCEDURE avisosur_agregar_columna;
+-- Solo los avisos DEMO del seed que son alquileres mensuales según su descripción.
+UPDATE anuncios SET tipo_operacion='alquiler' WHERE es_demo=1 AND tipo_operacion='venta'
+  AND titulo IN ('Departamento luminoso de 2 habitaciones','Habitación cerca de la UNA Puno','Local comercial cerca del mercado')
+  AND NOT EXISTS(SELECT 1 FROM metadata WHERE clave='tipo_operacion_demo_v1');
+INSERT IGNORE INTO metadata(clave,valor) VALUES('tipo_operacion_demo_v1','1');

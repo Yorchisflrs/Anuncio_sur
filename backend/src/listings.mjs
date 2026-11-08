@@ -5,7 +5,7 @@ export const listingSelect = `SELECT a.*, c.nombre AS categoria, c.activa AS cat
   FROM anuncios a JOIN categorias c ON c.id = a.categoria_id`;
 
 export function serializeListing(row) {
-  return { id: row.id, usuarioId: row.usuario_id, titulo: row.titulo, descripcion: row.descripcion, precio: row.precio === undefined ? row.precio_centimos / 100 : Number(row.precio), zona: row.zona, categoriaId: row.categoria_id, categoria: row.categoria, subcategoria: row.subcategoria, estado: row.estado, fechaPublicacion: row.fecha_publicacion, imagen: row.imagen, demo: Boolean(row.es_demo),
+  return { id: row.id, usuarioId: row.usuario_id, titulo: row.titulo, descripcion: row.descripcion, precio: row.precio === undefined ? row.precio_centimos / 100 : Number(row.precio), zona: row.zona, categoriaId: row.categoria_id, categoria: row.categoria, subcategoria: row.subcategoria, tipoOperacion: row.tipo_operacion === 'alquiler' ? 'alquiler' : 'venta', estado: row.estado, fechaPublicacion: row.fecha_publicacion, imagen: row.imagen, demo: Boolean(row.es_demo),
     moderacion: row.moderacion, estadoPago: row.estado_pago, fechaAprobacion: row.fecha_aprobacion || null, fechaVencimiento: row.fecha_vencimiento || null,
     diasVigencia: Number(row.dias_vigencia), diasPromocion: Number(row.dias_promocion), montoPublicacion: row.monto_publicacion_centimos / 100,
     planId: row.plan_id, destacado: Boolean(row.destacado), motivoRevision: row.motivo_revision || '', direccion: row.direccion || '', referencia: row.referencia || '', contacto: row.contacto || '',
@@ -30,6 +30,7 @@ export async function getCatalog(db, query) {
   if (filters.categoriaId) { conditions.push('a.categoria_id = ?'); values.push(filters.categoriaId); }
   if (filters.subcategoria) { conditions.push('a.subcategoria = ?'); values.push(filters.subcategoria); }
   if (filters.zona) { conditions.push('a.zona = ?'); values.push(filters.zona); }
+  if (filters.tipo) { conditions.push('a.tipo_operacion = ?'); values.push(filters.tipo); }
   const priceColumn = db.kind === 'mysql' ? 'a.precio' : 'a.precio_centimos';
   if (filters.min !== undefined) { conditions.push(priceColumn + ' >= ?'); values.push(db.kind === 'mysql' ? (filters.min / 100).toFixed(2) : filters.min); }
   if (filters.max !== undefined) { conditions.push(priceColumn + ' <= ?'); values.push(db.kind === 'mysql' ? (filters.max / 100).toFixed(2) : filters.max); }

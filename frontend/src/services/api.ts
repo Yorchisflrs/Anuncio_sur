@@ -21,4 +21,7 @@ export async function api<T>(endpoint: string, options: RequestInit = {}): Promi
 
 export const errorMessage = (error: unknown) => error instanceof Error ? error.message : 'Ocurrió un problema. Inténtalo de nuevo.';
 export const price = (value: number) => 'S/ ' + new Intl.NumberFormat('es-PE', { maximumFractionDigits: 2 }).format(value);
+/** Precio de lo que se ofrece: en un alquiler se indica que es mensual («S/ 950 al mes»). */
+export const listingPrice = (listing: { precio: number; tipoOperacion?: string }) => price(listing.precio) + (listing.tipoOperacion === 'alquiler' ? ' al mes' : '');
+export const operationLabel = (listing: { tipoOperacion?: string }) => listing.tipoOperacion === 'alquiler' ? 'Alquiler' : 'Venta';
 export const date = (value: string) => new Intl.DateTimeFormat('es-PE', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'America/Lima' }).format(new Date(value));

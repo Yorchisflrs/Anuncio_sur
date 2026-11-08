@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import { ArrowLeft, ArrowRight, ArrowUpRight, CalendarDays, MapPin, MessageCircle, UserRound, X } from 'lucide-react';
 import type { ListingDetail } from '../types';
 import { useResource } from '../hooks/useResource';
-import { date, price } from '../services/api';
+import { date, listingPrice } from '../services/api';
 import '../detail-publish.css';
 
 export function ListingPreviewModal({ id, onClose }: { id: number; onClose: () => void }) {
@@ -62,7 +62,7 @@ export function ListingPreviewModal({ id, onClose }: { id: number; onClose: () =
           <p className="modal-media-caption"><MapPin size={17} aria-hidden="true"/>{ad.zona}</p>
         </div>
         <div className="listing-modal-info">
-          <span className="section-kicker">{ad.categoria}{ad.subcategoria ? ' / ' + ad.subcategoria : ''}</span><h2 id="preview-title">{ad.titulo}</h2><p className="modal-price">{price(ad.precio)}</p>
+          <span className="section-kicker">{ad.tipoOperacion === 'alquiler' ? 'Alquiler · ' : ''}{ad.categoria}{ad.subcategoria ? ' / ' + ad.subcategoria : ''}</span><h2 id="preview-title">{ad.titulo}</h2><p className="modal-price">{listingPrice(ad)}</p>
           <div className="modal-metadata"><span><MapPin size={17} aria-hidden="true"/>{ad.zona}</span><span><CalendarDays size={17} aria-hidden="true"/>Publicado el {date(ad.fechaPublicacion)}</span></div>
           <div className="modal-description"><h3>Descripción del anuncio</h3><p id="preview-description">{ad.descripcion}</p>{ad.direccion&&<p><strong>Dirección:</strong> {ad.direccion}</p>}{ad.referencia&&<p><strong>Referencia:</strong> {ad.referencia}</p>}</div>
           <div className="modal-seller"><span className="seller-avatar"><UserRound size={24} aria-hidden="true"/></span><div><small>Publicado por</small><strong>{ad.vendedor.nombre}</strong><span>{ad.vendedor.demo ? 'Cuenta de ejemplo' : 'Vendedor de AvisoSur'}</span></div></div>

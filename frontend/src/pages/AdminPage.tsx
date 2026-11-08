@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import { ArrowLeft, ArrowUpRight, CalendarDays, Check, CheckCircle2, ChevronRight, Clock3, CreditCard, FileCheck2, ImagePlus, Inbox, LoaderCircle, MapPin, PackageCheck, Phone, QrCode, RefreshCw, Save, Search, ShieldCheck, SlidersHorizontal, Star, Tag, Users, XCircle } from 'lucide-react';
 import type { AdminResumen, ConfigPago, ListingDetail, PlanPublicacion } from '../types';
 import { useResource } from '../hooks/useResource';
-import { api, errorMessage, price } from '../services/api';
+import { api, errorMessage, listingPrice, price } from '../services/api';
 import { ErrorState, Loading } from '../components/States';
 import '../admin.css';
 
@@ -113,7 +113,7 @@ function AdminListingDetail({ listing: ad, plans, onSaved }: { listing: ListingD
     <div className="admin-detail-heading"><div><span className="admin-overline">SOLICITUD #{ad.id}</span><h2>{ad.titulo}</h2></div><span className={'admin-status admin-status-' + reviewStatus(ad)}>{statusLabel(ad)}</span></div>
     <div className="admin-detail-photo"><img src={photos[photo]?.archivo || ad.imagen} referrerPolicy="no-referrer" alt={ad.titulo + ' · fotografía ' + (photo + 1)}/><span>{photo + 1} / {photos.length}</span></div>
     {photos.length > 1 && <div className="admin-photo-thumbnails" aria-label="Fotografías del anuncio">{photos.map((item, index) => <button key={item.id} onClick={() => setPhoto(index)} aria-pressed={index === photo} aria-label={'Ver fotografía ' + (index + 1)}><img src={item.archivo} referrerPolicy="no-referrer" alt=""/></button>)}</div>}
-    <div className="admin-ad-price"><strong>{price(ad.precio)}</strong><span>Precio del producto</span></div>
+    <div className="admin-ad-price"><strong>{listingPrice(ad)}</strong><span>{ad.tipoOperacion === 'alquiler' ? 'Alquiler mensual' : 'Precio de venta'}</span></div>
     <div className="admin-facts"><Fact icon={Tag} label="Categoría" value={ad.categoria + (ad.subcategoria ? ' · ' + ad.subcategoria : '')}/><Fact icon={MapPin} label="Localidad" value={ad.zona}/><Fact icon={MapPin} label="Dirección" value={ad.direccion || 'No indicada'}/><Fact icon={MapPin} label="Referencia" value={ad.referencia || 'No indicada'}/><Fact icon={Users} label="Publicado por" value={ad.vendedor.nombre}/><Fact icon={Phone} label="Contacto del anuncio" value={ad.contacto || ad.vendedor.celular}/></div>
     <section className="admin-detail-section"><h3>Descripción completa</h3><p className="admin-full-description">{ad.descripcion}</p></section>
     <section className="admin-detail-section"><h3><CalendarDays size={18}/>Plan y vigencia</h3><dl className="admin-data-list"><div><dt>Plan solicitado</dt><dd>{plan?.nombre || (ad.planId ? 'Plan #' + ad.planId : 'Sin plan registrado')}</dd></div><div><dt>Monto de publicación</dt><dd>{price(ad.montoPublicacion)}</dd></div><div><dt>Vigencia contratada</dt><dd>{ad.diasVigencia} días</dd></div><div><dt>Días promocionales</dt><dd>{ad.diasPromocion} días</dd></div><div><dt>Destacado</dt><dd>{ad.destacado ? 'Sí' : 'No'}</dd></div><div><dt>Solicitud recibida</dt><dd>{timestamp(ad.fechaPublicacion)}</dd></div><div><dt>Aprobación</dt><dd>{timestamp(ad.fechaAprobacion)}</dd></div><div><dt>Vencimiento</dt><dd>{timestamp(ad.fechaVencimiento)}</dd></div></dl></section>

@@ -8,7 +8,12 @@ const sqliteColumns = {
   fecha_aprobacion: 'TEXT', fecha_vencimiento: 'TEXT', motivo_revision: "TEXT NOT NULL DEFAULT ''",
   direccion: "TEXT NOT NULL DEFAULT ''", referencia: "TEXT NOT NULL DEFAULT ''", contacto: "TEXT NOT NULL DEFAULT ''",
   comprobante_archivo: 'TEXT', referencia_pago: "TEXT NOT NULL DEFAULT ''", fecha_comprobante: 'TEXT', fecha_confirmacion: 'TEXT',
+  tipo_operacion: "TEXT NOT NULL DEFAULT 'venta' CHECK(tipo_operacion IN ('venta','alquiler'))",
 };
+// Avisos DEMO del seed que son alquileres mensuales según su propia descripción.
+// Solo se corrigen filas marcadas como DEMO, una vez; los avisos reales no se tocan.
+const DEMO_RENTALS = ['Departamento luminoso de 2 habitaciones', 'Habitación cerca de la UNA Puno', 'Local comercial cerca del mercado'];
+const demoRentalsSql = `UPDATE anuncios SET tipo_operacion = 'alquiler' WHERE es_demo = 1 AND tipo_operacion = 'venta' AND titulo IN (${DEMO_RENTALS.map(() => '?').join(',')})`;
 export function migrateSqlite(db) {
   db.exec('BEGIN IMMEDIATE');
   try {
@@ -40,6 +45,10 @@ export function migrateSqlite(db) {
       (1,'Semanal',500,7,0,0,1),(2,'Diario',NULL,1,0,0,0),(3,'Mensual',NULL,30,0,0,0);
       CREATE INDEX IF NOT EXISTS idx_moderacion_vigencia ON anuncios(moderacion,estado_pago,fecha_vencimiento);
       INSERT OR IGNORE INTO metadata (clave,valor) VALUES ('moderacion_v1','1');`);
+    if (!db.prepare("SELECT 1 FROM metadata WHERE clave = 'tipo_operacion_demo_v1'").get()) {
+      db.prepare(demoRentalsSql).run(...DEMO_RENTALS);
+      db.exec("INSERT INTO metadata (clave,valor) VALUES ('tipo_operacion_demo_v1','1')");
+    }
     db.exec('COMMIT');
   } catch (error) { db.exec('ROLLBACK'); throw error; }
 }
@@ -65,6 +74,7 @@ export async function migrateMysql(pool) {
     fecha_aprobacion:'DATETIME(3) NULL',fecha_vencimiento:'DATETIME(3) NULL',motivo_revision:"VARCHAR(1000) NOT NULL DEFAULT ''",
     direccion:"VARCHAR(200) NOT NULL DEFAULT ''",referencia:"VARCHAR(300) NOT NULL DEFAULT ''",contacto:"VARCHAR(100) NOT NULL DEFAULT ''",
     comprobante_archivo:'VARCHAR(100) NULL',referencia_pago:"VARCHAR(160) NOT NULL DEFAULT ''",fecha_comprobante:'DATETIME(3) NULL',fecha_confirmacion:'DATETIME(3) NULL',
+    tipo_operacion:"VARCHAR(10) NOT NULL DEFAULT 'venta'",
   };
   for (const [name,type] of Object.entries(mysqlColumns)) if (!names.has(name)) await pool.query(`ALTER TABLE anuncios ADD COLUMN ${name} ${type}`);
   const [photoColumns] = await pool.query('SHOW COLUMNS FROM fotos');
@@ -86,4 +96,9 @@ export async function migrateMysql(pool) {
   if(!indexes.length)await pool.query('CREATE INDEX idx_moderacion_vigencia ON anuncios(moderacion,estado_pago,fecha_vencimiento)');
   await pool.query("INSERT IGNORE INTO planes_publicacion (id,nombre,precio_centimos,dias,bono_primer_anuncio,destacado,activo) VALUES (1,'Semanal',500,7,0,0,1),(2,'Diario',NULL,1,0,0,0),(3,'Mensual',NULL,30,0,0,0)");
   await pool.query("INSERT IGNORE INTO metadata (clave,valor) VALUES ('moderacion_v1','1')");
+  const [rentalFix] = await pool.query("SELECT clave FROM metadata WHERE clave = 'tipo_operacion_demo_v1'");
+  if (!rentalFix.length) {
+    await pool.query(demoRentalsSql, DEMO_RENTALS);
+    await pool.query("INSERT IGNORE INTO metadata (clave,valor) VALUES ('tipo_operacion_demo_v1','1')");
+  }
 }

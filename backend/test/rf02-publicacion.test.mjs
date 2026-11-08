@@ -81,6 +81,15 @@ describe('RF-02 · Publicación de anuncios', () => {
     assert(profile.body.some(item => item.id === ad.id && item.estado === 'dado_de_baja'));
   });
 
+  it('El aviso indica si es venta o alquiler; sin el campo se guarda como venta', async () => {
+    const rent = await app.listing(seller.cookie, { titulo: 'Cuarto amoblado cerca de la UNA', categoriaId: '2', subcategoria: 'Habitaciones', precio: '300', tipoOperacion: 'alquiler' });
+    assert.equal(rent.response.status, 201, JSON.stringify(rent.body)); assert.equal(rent.body.tipoOperacion, 'alquiler');
+    const sale = await app.listing(seller.cookie, { titulo: 'Moto sin tipo de operación' });
+    assert.equal(sale.response.status, 201); assert.equal(sale.body.tipoOperacion, 'venta');
+    const invalid = await app.listing(seller.cookie, { titulo: 'Tipo de operación inválido', tipoOperacion: 'permuta' });
+    assert.equal(invalid.response.status, 422); assert(invalid.body.fields.tipoOperacion);
+  });
+
   it('El aviso muestra el nombre elegido por el vendedor, nunca una parte de su correo', async () => {
     const named = await app.register('correo-privado-rf02', { nombre: 'Rosa Quispe' });
     const ad = await app.publish(named.cookie, { titulo: 'Aviso con nombre para mostrar' });

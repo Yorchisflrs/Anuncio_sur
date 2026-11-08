@@ -11,7 +11,7 @@ import { CATEGORY_ICONS } from '../data/directory';
 
 export function ExplorePage() {
   const [params, setParams] = useSearchParams();
-  const [draft, setDraft] = useState({ q: '', categoriaId: '', subcategoria: '', zona: '', min: '', max: '' });
+  const [draft, setDraft] = useState({ q: '', categoriaId: '', subcategoria: '', tipo: '', zona: '', min: '', max: '' });
   const [rangeError, setRangeError] = useState('');
   const [showFilters, setShowFilters] = useState(false);
   // La lista es la vista inicial: permite comparar precios de un vistazo.
@@ -19,7 +19,7 @@ export function ExplorePage() {
   const catalog = useResource<CatalogResult>('/anuncios?' + params.toString());
   const categories = useResource<Category[]>('/categorias');
   useEffect(() => {
-    setDraft({ q: params.get('q') || '', categoriaId: params.get('categoriaId') || '', subcategoria: params.get('subcategoria') || '', zona: params.get('zona') || '', min: params.get('min') || '', max: params.get('max') || '' });
+    setDraft({ q: params.get('q') || '', categoriaId: params.get('categoriaId') || '', subcategoria: params.get('subcategoria') || '', tipo: params.get('tipo') || '', zona: params.get('zona') || '', min: params.get('min') || '', max: params.get('max') || '' });
     setRangeError('');
   }, [params]);
   useEffect(() => { const close = (event: KeyboardEvent) => { if (event.key === 'Escape') setShowFilters(false); }; if (showFilters) window.addEventListener('keydown', close); return () => window.removeEventListener('keydown', close); }, [showFilters]);
@@ -46,7 +46,7 @@ export function ExplorePage() {
   }
   const activeFilters = Array.from(params.entries()).filter(([key]) => !['page', 'limit', 'sort'].includes(key));
   const categoryLabel = (value: string) => categories.data?.find(category => String(category.id) === value)?.nombre || value;
-  const filterLabel = (key: string, value: string) => key === 'categoriaId' ? categoryLabel(value) : key === 'min' ? 'Desde S/ ' + value : key === 'max' ? 'Hasta S/ ' + value : key === 'zona' && value.startsWith('Otras') ? 'Sur del Perú' : value;
+  const filterLabel = (key: string, value: string) => key === 'categoriaId' ? categoryLabel(value) : key === 'tipo' ? (value === 'alquiler' ? 'En alquiler' : 'En venta') : key === 'min' ? 'Desde S/ ' + value : key === 'max' ? 'Hasta S/ ' + value : key === 'zona' && value.startsWith('Otras') ? 'Sur del Perú' : value;
   function page(value: number) {
     const next = new URLSearchParams(params); next.set('page', String(value)); setParams(next);
     window.scrollTo({ top: 140, behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth' });
@@ -67,6 +67,7 @@ export function ExplorePage() {
           <label className="form-field">Categoría<select value={draft.categoriaId} onChange={event => setDraft({ ...draft, categoriaId: event.target.value, subcategoria: '' })}><option value="">Todas las categorías</option>{categories.data?.map(category => <option key={category.id} value={category.id}>{category.nombre}</option>)}</select></label>
           {categories.error && <p className="field-error">{categories.error}</p>}
           <label className="form-field">Subcategoría<select value={draft.subcategoria} disabled={!selectedCategory} onChange={event => setDraft({ ...draft, subcategoria: event.target.value })}><option value="">Todas las subcategorías</option>{selectedCategory?.subcategorias.map(value => <option key={value}>{value}</option>)}</select></label>
+          <label className="form-field">Venta o alquiler<select value={draft.tipo} onChange={event => setDraft({ ...draft, tipo: event.target.value })}><option value="">Venta y alquiler</option><option value="venta">Solo en venta</option><option value="alquiler">Solo en alquiler</option></select></label>
           <label className="form-field">Ubicación<select value={draft.zona} onChange={event => setDraft({ ...draft, zona: event.target.value })}><option value="">Todo el sur del Perú</option>{ZONES.map(zone => <option key={zone}>{zone}</option>)}</select></label>
           <div className="filter-divider"/><span className="field-label">Tu presupuesto</span>
           <div className="price-fields"><label><span>Desde S/</span><input type="number" min="0" max="99999999.99" step="0.01" aria-label="Precio mínimo" placeholder="0" value={draft.min} onChange={event => setDraft({ ...draft, min: event.target.value })}/></label><label><span>Hasta S/</span><input type="number" min="0" max="99999999.99" step="0.01" aria-label="Precio máximo" placeholder="Sin límite" value={draft.max} onChange={event => setDraft({ ...draft, max: event.target.value })}/></label></div>
