@@ -1,7 +1,8 @@
 import { describe, it, before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import bcrypt from 'bcryptjs';
-import { createIsolatedApp, isolatedApp, jsonRequest, cookieFrom, TEST_PASSWORD } from './support.mjs';
+import { createIsolatedApp, isolatedApp, jsonRequest, cookieFrom, TEST_PASSWORD, DEMO_TEST_PASSWORD } from './support.mjs';
+import { DEMO_USER } from '../src/seed.mjs';
 
 // RF-01: registro, acceso con correo o celular, sesión persistente y cierre de sesión.
 describe('RF-01 · Cuenta y acceso', () => {
@@ -108,5 +109,15 @@ describe('RNF-03 · Protección del acceso', () => {
     }
     const blocked = await app.request('/auth/login', jsonRequest({ identificador: '900000199', password: 'incorrecta' }));
     assert.equal(blocked.response.status, 429); assert.match(blocked.body.message, /varios intentos/);
+  });
+
+  it('La cuenta demo no tiene una contraseña escrita en el código: sin DEMO_PASSWORD recibe una clave aleatoria', async t => {
+    assert.equal('password' in DEMO_USER, false);
+    const app = await isolatedApp(t, { demoPassword: '' });
+    const { password_hash: hash } = await app.db.get('SELECT password_hash FROM usuarios WHERE es_demo = 1');
+    assert.match(hash, /^[$]2[aby][$]12[$]/, 'Se guarda como hash bcrypt de costo 12, igual que las demás cuentas.');
+    assert.equal(await bcrypt.compare(DEMO_TEST_PASSWORD, hash), false);
+    const login = await app.request('/auth/login', jsonRequest({ identificador: DEMO_USER.correo, password: DEMO_TEST_PASSWORD }));
+    assert.equal(login.response.status, 401);
   });
 });

@@ -7,6 +7,8 @@ import sharp from 'sharp';
 import { createApp } from '../src/app.mjs';
 
 export const TEST_PASSWORD = 'PruebaAislada2026!';
+/** Clave de la cuenta demo solo en la base temporal; en una instalación nueva es aleatoria. */
+export const DEMO_TEST_PASSWORD = 'DemoAislada2026!';
 const TEMPORARY_PREFIX = 'avisosur-test-';
 let picture;
 export async function testPicture() {
@@ -34,6 +36,7 @@ export async function createIsolatedApp(overrides = {}) {
     privateUploadDir: path.join(temporary, 'private'),
     frontendDist: path.join(temporary, 'no-frontend'),
     secureCookie: false,
+    demoPassword: DEMO_TEST_PASSWORD,
     ...overrides,
   };
   assert.equal(settings.databaseClient, 'sqlite', 'Esta fábrica nunca debe conectarse a MySQL.');

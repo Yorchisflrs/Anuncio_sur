@@ -1,6 +1,8 @@
+import { randomBytes } from 'node:crypto';
 import bcrypt from 'bcryptjs';
 
-export const DEMO_USER = { correo: 'demo@avisosur.local', celular: '900000000', password: 'AvisoSur2026!' };
+// La cuenta demo solo muestra los avisos de ejemplo: su contraseña no se escribe en el código.
+export const DEMO_USER = { correo: 'demo@avisosur.local', celular: '900000000' };
 export const CATEGORIES = [
   { id: 1, nombre: 'Vehículos', subcategorias: ['Motos', 'Autos', 'Mototaxis'] },
   { id: 2, nombre: 'Inmuebles', subcategorias: ['Departamentos', 'Habitaciones', 'Casas', 'Terrenos', 'Locales comerciales'] },
@@ -27,12 +29,13 @@ export const DEMO_LISTINGS = [
   ['Terreno urbano de 95 m²', 24500, 'Otras localidades del sur del Perú', 2, 'Terrenos', 'terreno', 'Terreno de ejemplo de 95 m² con acceso por vía local. Zona residencial referencial del sur del Perú. Coordinar visita y revisión de documentación.'],
 ];
 
-export async function seedDatabase(db) {
+export async function seedDatabase(db, { demoPassword = '' } = {}) {
   for (const category of CATEGORIES) {
     db.prepare('INSERT OR IGNORE INTO categorias (id, nombre, subcategorias) VALUES (?, ?, ?)').run(category.id, category.nombre, JSON.stringify(category.subcategorias));
   }
   if (db.prepare("SELECT valor FROM metadata WHERE clave = 'seed_v1'").get()) return;
-  const hash = await bcrypt.hash(DEMO_USER.password, 12);
+  // Sin DEMO_PASSWORD en .env, la clave es aleatoria y nadie la conoce: nadie puede entrar como demo.
+  const hash = await bcrypt.hash(demoPassword || randomBytes(24).toString('base64url'), 12);
   db.exec('BEGIN');
   try {
     const user = db.prepare("INSERT INTO usuarios (nombre, correo, celular, password_hash, es_demo, fecha_registro) VALUES ('Vendedor de demostración', ?, ?, ?, 1, ?)").run(DEMO_USER.correo, DEMO_USER.celular, hash, new Date().toISOString());

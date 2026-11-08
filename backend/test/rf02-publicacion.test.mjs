@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 import { randomBytes } from 'node:crypto';
 import sharp from 'sharp';
-import { createIsolatedApp, jsonRequest } from './support.mjs';
+import { createIsolatedApp, jsonRequest, DEMO_TEST_PASSWORD } from './support.mjs';
 import { DEMO_USER } from '../src/seed.mjs';
 
 // RF-02: publicación autenticada con fotos, validación en el servidor y baja del propietario.
@@ -120,8 +120,8 @@ describe('RF-02 · Publicación de anuncios', () => {
     assert.equal((await app.request('/anuncios/' + ad.id)).body.vendedor.nombre, 'Vendedor de AvisoSur');
   });
 
-  it('La cuenta demo de la documentación no puede publicar: su celular es ficticio y no está verificado', async () => {
-    const cookie = await app.login(DEMO_USER.correo, DEMO_USER.password);
+  it('La cuenta demo no puede publicar: su celular es ficticio y no está verificado', async () => {
+    const cookie = await app.login(DEMO_USER.correo, DEMO_TEST_PASSWORD);
     const before = await count('anuncios');
     const { response, body } = await app.listing(cookie, { titulo: 'Intento de publicar como vendedor de demostración' });
     assert.equal(response.status, 403); assert(body.fields.verificacion);
@@ -129,7 +129,7 @@ describe('RF-02 · Publicación de anuncios', () => {
   });
 
   it('Un aviso de una cuenta DEMO conserva la marca aunque el formulario intente quitarla', async () => {
-    const cookie = await app.login(DEMO_USER.correo, DEMO_USER.password);
+    const cookie = await app.login(DEMO_USER.correo, DEMO_TEST_PASSWORD);
     await app.verify(1); // Solo en la base temporal: la cuenta demo real no puede verificarse.
     const { response, body } = await app.listing(cookie, { titulo: 'Anuncio ficticio desde la cuenta demo', demo: 'false', es_demo: '0' });
     assert.equal(response.status, 201, JSON.stringify(body));

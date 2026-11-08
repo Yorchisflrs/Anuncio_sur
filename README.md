@@ -38,15 +38,11 @@ Abre **http://127.0.0.1:3001**. Para usar el MySQL de XAMPP, sigue [docs/MYSQL.m
 3. Aprueba los avisos que quieras mostrar en **Revisar anuncios**. Los 16 avisos DEMO se aprueban como cualquier otro.
 4. Las cuentas nuevas aparecen en **Verificar celulares**: genera el código y envíalo por WhatsApp, o verifica en persona.
 
-### Cuenta de demostración
+### Avisos de demostración
 
-| Dato | Valor ficticio |
-| --- | --- |
-| Correo | `demo@avisosur.local` |
-| Celular | `900000000` |
-| Contraseña | `AvisoSur2026!` |
+Los 16 avisos de ejemplo pertenecen a la cuenta «Vendedor de demostración» (`demo@avisosur.local`, celular ficticio `900000000`). Sus tarjetas dicen «Ejemplo» y sus imágenes son ilustraciones, no fotos reales.
 
-Sirve para recorrer la cuenta y el perfil. Su número es ficticio, así que **no se puede verificar ni publicar**: para publicar, crea tu propia cuenta. Las tarjetas de sus avisos dicen «Ejemplo», y sus imágenes son ilustraciones, no fotos reales.
+Esa cuenta **no tiene una contraseña escrita en el código**: al crear la base se le asigna una clave aleatoria que nadie conoce. Como su número es ficticio, tampoco se puede verificar ni publicar. Para probar el sistema, crea tu propia cuenta. Si para una exposición hace falta entrar como demo, define `DEMO_PASSWORD` en `.env` antes de que se cree la base SQLite.
 
 ## Funcionalidades
 
