@@ -63,7 +63,7 @@ export function ExplorePage() {
     <div className="catalog-layout">
       <aside id="catalog-filters" className={'filters-panel' + (showFilters ? ' filters-open' : '')}>
         <form onSubmit={apply}>
-          <div className="filters-title"><h2><SlidersHorizontal size={17}/>A tu medida</h2><button type="button" className="text-link" onClick={() => { setParams({}); setShowFilters(false); }}>Limpiar</button><button type="button" className="icon-button filter-close" aria-label="Cerrar filtros" onClick={() => setShowFilters(false)}><X size={17}/></button></div>
+          <div className="filters-title"><h2><SlidersHorizontal size={17}/>Filtros</h2><button type="button" className="text-link" onClick={() => { setParams({}); setShowFilters(false); }}>Limpiar</button><button type="button" className="icon-button filter-close" aria-label="Cerrar filtros" onClick={() => setShowFilters(false)}><X size={17}/></button></div>
           <label className="form-field">Categoría<select value={draft.categoriaId} onChange={event => setDraft({ ...draft, categoriaId: event.target.value, subcategoria: '' })}><option value="">Todas las categorías</option>{categories.data?.map(category => <option key={category.id} value={category.id}>{category.nombre}</option>)}</select></label>
           {categories.error && <p className="field-error">{categories.error}</p>}
           <label className="form-field">Subcategoría<select value={draft.subcategoria} disabled={!selectedCategory} onChange={event => setDraft({ ...draft, subcategoria: event.target.value })}><option value="">Todas las subcategorías</option>{selectedCategory?.subcategorias.map(value => <option key={value}>{value}</option>)}</select></label>

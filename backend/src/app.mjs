@@ -131,7 +131,8 @@ export async function createApp(overrides = {}) {
   app.use('/api', (_req, _res, next) => next(new ApiError(404, 'No encontramos este recurso.')));
   if (fs.existsSync(path.join(config.frontendDist, 'index.html'))) {
     app.use(express.static(config.frontendDist));
-    app.get('/{*path}', (_req, res) => res.sendFile(path.join(config.frontendDist, 'index.html')));
+    // Con `root`, la ruta funciona aunque una carpeta superior empiece con punto (por ejemplo, ~/.local).
+    app.get('/{*path}', (_req, res) => res.sendFile('index.html', { root: config.frontendDist }));
   }
   app.use((error, _req, res, _next) => {
     if (error.name === 'MulterError') {

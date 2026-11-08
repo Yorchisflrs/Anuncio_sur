@@ -9,7 +9,7 @@ export function HeroShowcase({ listings, total }: { listings: Listing[]; total: 
   const closePreview = useCallback(() => setSelectedId(null), []);
   return <div className="hero-bubble-showcase">
     <OrbitGallery listings={listings} compact paused={selectedId !== null} onSelect={setSelectedId}/>
-    <p className="hero-bubble-local"><MapPin size={16}/><span>{total === null ? 'Oportunidades de Puno y el sur' : `${total} anuncios para descubrir en el sur`}</span></p>
+    <p className="hero-bubble-local"><MapPin size={16}/><span>{total === null ? 'Avisos de Puno, Juliaca y el sur' : `${total} ${total === 1 ? 'aviso publicado' : 'avisos publicados'} en Puno, Juliaca y el sur`}</span></p>
     {selectedId !== null && <ListingPreviewModal id={selectedId} onClose={closePreview}/>}
   </div>;
 }
