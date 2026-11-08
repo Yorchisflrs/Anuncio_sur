@@ -12,7 +12,7 @@ export async function api<T>(endpoint: string, options: RequestInit = {}): Promi
     response = await fetch('/api' + endpoint, { ...options, credentials: 'include', headers: { ...(options.body instanceof FormData ? {} : { 'Content-Type': 'application/json' }), ...options.headers } });
   } catch (error) {
     if (error instanceof DOMException && error.name === 'AbortError') throw error;
-    throw new ApiError(0, 'No podemos conectar con AvisoSur. Comprueba que el servidor esté iniciado.');
+    throw new ApiError(0, 'No pudimos conectar con AvisoSur. Revisa tu conexión a internet e inténtalo de nuevo.');
   }
   const data = await response.json().catch(() => ({}));
   if (!response.ok) throw new ApiError(response.status, data.message || 'No se pudo completar la solicitud.', data.fields);
