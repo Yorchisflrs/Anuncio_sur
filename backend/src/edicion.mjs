@@ -45,6 +45,7 @@ export function registerEditRoutes(app, db, auth) {
         updates.push(columns[field] + ' = ?');
         values.push(field === 'precio' && tx.kind === 'mysql' ? (value / 100).toFixed(2) : value);
       }
+      if (ad.moderacion === 'rechazado') updates.push("moderacion = 'pendiente'");
       await tx.run('UPDATE anuncios SET ' + updates.join(', ') + ' WHERE id = ?', ...values, id);
     });
     res.json(await getListing(db, id, req.user));

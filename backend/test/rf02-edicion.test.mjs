@@ -1,6 +1,7 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import { isolatedApp, jsonRequest } from './support.mjs';
+import { registerEditRoutes } from '../src/edicion.mjs';
 
 // Cada caso tiene su propio servidor, vendedor, aviso y SQLite temporal.
 async function fixture(t) {
@@ -150,5 +151,86 @@ describe('RF-02 · Edición de un aviso antes de aprobarlo', () => {
     assert.equal((await app.approve((await app.admin()).cookie, ad.id)).response.status, 200);
     const published = await app.request('/anuncios');
     assert(published.body.anuncios.some(item => item.id === ad.id && item.titulo === 'Moto corregida para revisión'));
+  });
+
+  it('Un aviso rechazado vuelve a pendiente al editarlo y conserva el pago para revisión', async t => {
+    const { app, ad, row, edit } = await fixture(t);
+    const rejected = await app.request('/admin/anuncios/' + ad.id + '/rechazar', jsonRequest({ motivo: 'La descripción necesita más información.' }, (await app.admin()).cookie));
+    assert.equal(rejected.response.status, 200);
+    const before = await row();
+    const result = await edit({ descripcion: 'Motor revisado, documentos al día y entrega en Puno.' });
+    assert.equal(result.response.status, 200, JSON.stringify(result.body));
+    assert.equal(result.body.moderacion, 'pendiente');
+    assert.deepEqual(await row(), { ...before, descripcion: 'Motor revisado, documentos al día y entrega en Puno.', moderacion: 'pendiente' });
+    assert(!(await app.request('/anuncios')).body.anuncios.some(item => item.id === ad.id));
+  });
+
+  it('Una edición inválida de un aviso rechazado no lo devuelve a pendiente', async t => {
+    const { app, ad, row, edit } = await fixture(t);
+    assert.equal((await app.request('/admin/anuncios/' + ad.id + '/rechazar', jsonRequest({ motivo: 'Revisa los datos del aviso.' }, (await app.admin()).cookie))).response.status, 200);
+    const before = await row();
+    assert.equal((await edit({ titulo: '' })).response.status, 422);
+    assert.deepEqual(await row(), before);
+  });
+
+  it('Si tuvo fecha de aprobación, tampoco se edita aunque figure rechazado o vencido', async t => {
+    const { app, ad, row, edit } = await fixture(t);
+    assert.equal((await app.approve((await app.admin()).cookie, ad.id)).response.status, 200);
+    await app.db.run("UPDATE anuncios SET moderacion = 'rechazado', fecha_vencimiento = ? WHERE id = ?", new Date(Date.now() - 86400000).toISOString(), ad.id);
+    const before = await row();
+    assert.equal((await edit({ titulo: 'Intento de editar un aviso ya aprobado' })).response.status, 409);
+    assert.deepEqual(await row(), before);
+  });
+
+  it('Una aprobación concurrente impide guardar cambios después de aprobar', async t => {
+    const { app, seller, ad, edit } = await fixture(t);
+    const admin = await app.admin();
+    const [approval, edition] = await Promise.all([app.approve(admin.cookie, ad.id), edit({ titulo: 'Título corregido antes de aprobar' })]);
+    assert.equal(approval.response.status, 200, JSON.stringify(approval.body));
+    assert([200, 409].includes(edition.response.status));
+    const detail = await app.request('/anuncios/' + ad.id, { headers: { Cookie: seller.cookie } });
+    assert.equal(detail.body.moderacion, 'aprobado');
+    assert.equal(detail.body.titulo, edition.response.status === 200 ? 'Título corregido antes de aprobar' : ad.titulo);
+    assert.equal((await edit({ titulo: 'Este cambio posterior debe rechazarse' })).response.status, 409);
+  });
+
+  it('Acepta los extremos de precio y longitud sin perder los céntimos', async t => {
+    const { edit, row } = await fixture(t);
+    assert.equal((await edit({ precio: '0.01' })).response.status, 200);
+    assert.equal((await row()).precio_centimos, 1);
+    const result = await edit({ titulo: 'a'.repeat(100), descripcion: 'a'.repeat(3000), direccion: 'a'.repeat(200), referencia: 'a'.repeat(300), precio: '99999999.99' });
+    assert.equal(result.response.status, 200, JSON.stringify(result.body));
+    assert.equal((await row()).precio_centimos, 9999999999);
+    assert.equal(result.body.precio, 99999999.99);
+  });
+
+  it('MySQL bloquea el aviso y guarda el precio en soles con dos decimales', async () => {
+    // Contrato del adaptador: no abre una conexión ni usa las credenciales de MySQL.
+    let handler, update, transactionActive = false, selectedWithLock = false;
+    const ad = { id: 7, usuario_id: 3, fecha_aprobacion: null, estado: 'activo', moderacion: 'pendiente', precio: '150.25' };
+    const db = {
+      kind: 'mysql',
+      async transaction(work) { transactionActive = true; try { return await work(db); } finally { transactionActive = false; } },
+      async get(sql) {
+        if (sql.startsWith('SELECT * FROM anuncios')) {
+          selectedWithLock = transactionActive && sql.endsWith(' FOR UPDATE');
+          return ad;
+        }
+        if (sql.startsWith('SELECT id, nombre, celular')) return { id: 3, nombre: 'Vendedor de prueba', celular: '900000003' };
+        if (sql.startsWith('SELECT SUM')) return { publicados: 0, bajas: 0 };
+        if (sql.includes('FROM contactos_anuncio')) return { n: 0 };
+        return ad;
+      },
+      async all() { return []; },
+      async run(sql, ...values) { assert(transactionActive); update = { sql, values }; ad.precio = values[0]; },
+    };
+    registerEditRoutes({ patch(_path, _auth, route) { handler = route; } }, db, { requireUser() {} });
+    let response;
+    await handler({ params: { id: '7' }, user: { id: 3 }, body: { precio: '10.50' } }, { json(value) { response = value; } });
+    assert(selectedWithLock);
+    assert.match(update.sql, /SET precio = \?/);
+    assert.doesNotMatch(update.sql, /precio_centimos/);
+    assert.deepEqual(update.values, ['10.50', 7]);
+    assert.equal(response.precio, 10.5);
   });
 });
