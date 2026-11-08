@@ -15,7 +15,7 @@ export function AuthPage({ mode }: { mode: 'register' | 'login' }) {
   useEffect(() => { setData({ nombre: '', correo: '', celular: '', identificador: '', password: '', confirmacion: '' }); setFields({}); setMessage(''); setVisible(false); }, [mode]);
   useEffect(() => { if (message) errorRef.current?.focus(); }, [message]);
   const destination = params.get('next') || '';
-  const nextPath = ['/publicar', '/perfil', '/admin'].includes(destination) || /^\/mis-anuncios\/\d+\/pago$/.test(destination) ? destination : '/perfil';
+  const nextPath = ['/publicar', '/perfil', '/admin'].includes(destination) || /^\/mis-anuncios\/\d+\/pago$/.test(destination) || /^\/anuncios\/\d+$/.test(destination) ? destination : '/perfil';
   const nextQuery = nextPath !== '/perfil' ? '?next=' + encodeURIComponent(nextPath) : '';
   if (auth.user) return <Navigate to={nextPath} replace/>;
   function change(name: string, value: string) { setData(previous => ({ ...previous, [name]: value })); setFields(previous => ({ ...previous, [name]: '' })); }

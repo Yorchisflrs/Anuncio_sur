@@ -21,6 +21,13 @@ CALL avisosur_agregar_columna('usuarios','nombre','VARCHAR(60) NOT NULL DEFAULT 
 CALL avisosur_agregar_columna('usuarios','celular_verificado','TINYINT(1) NOT NULL DEFAULT 0');
 CALL avisosur_agregar_columna('usuarios','fecha_verificacion','DATETIME(3) NULL');
 CALL avisosur_agregar_columna('usuarios','metodo_verificacion','VARCHAR(20) NOT NULL DEFAULT ''''');
+-- Reportes de estafa: detalle opcional, revisión del moderador y aviso oculto por reportes.
+CALL avisosur_agregar_columna('reportes','detalle','VARCHAR(500) NOT NULL DEFAULT ''''');
+CALL avisosur_agregar_columna('reportes','fecha_revision','DATETIME(3) NULL');
+CALL avisosur_agregar_columna('reportes','revisado_por','BIGINT UNSIGNED NULL');
+CALL avisosur_agregar_columna('reportes','resolucion','VARCHAR(20) NOT NULL DEFAULT ''''');
+CALL avisosur_agregar_columna('anuncios','revision_reportes','TINYINT(1) NOT NULL DEFAULT 0');
+CALL avisosur_agregar_columna('anuncios','fecha_revision_reportes','DATETIME(3) NULL');
 -- Venta o alquiler: los avisos existentes quedan como venta.
 CALL avisosur_agregar_columna('anuncios','tipo_operacion','VARCHAR(10) NOT NULL DEFAULT ''venta''');
 DROP PROCEDURE avisosur_agregar_columna;
@@ -43,3 +50,19 @@ CREATE TABLE IF NOT EXISTS verificaciones_celular (
  intentos INT UNSIGNED NOT NULL DEFAULT 0, enviado DATETIME(3) NULL,
  CONSTRAINT fk_verificaciones_usuario FOREIGN KEY (usuario_id) REFERENCES usuarios (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+-- Un reporte por persona y aviso (solo si la tabla no tiene duplicados) e índice para la página del moderador.
+DELIMITER $$
+DROP PROCEDURE IF EXISTS avisosur_indices_reportes$$
+CREATE PROCEDURE avisosur_indices_reportes()
+BEGIN
+ IF NOT EXISTS(SELECT 1 FROM information_schema.STATISTICS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='reportes' AND INDEX_NAME='uq_reportes_anuncio_usuario')
+    AND NOT EXISTS(SELECT 1 FROM reportes GROUP BY anuncio_id, usuario_id HAVING COUNT(*) > 1) THEN
+  ALTER TABLE reportes ADD UNIQUE KEY uq_reportes_anuncio_usuario (anuncio_id, usuario_id);
+ END IF;
+ IF NOT EXISTS(SELECT 1 FROM information_schema.STATISTICS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='reportes' AND INDEX_NAME='idx_reportes_estado') THEN
+  CREATE INDEX idx_reportes_estado ON reportes(estado, anuncio_id);
+ END IF;
+END$$
+DELIMITER ;
+CALL avisosur_indices_reportes();
+DROP PROCEDURE avisosur_indices_reportes;

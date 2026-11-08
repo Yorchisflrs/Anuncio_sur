@@ -99,7 +99,11 @@ export function registerModerationRoutes(app, db, auth, config) {
       SUM(CASE WHEN estado_pago='confirmado' AND es_demo=0 THEN 1 ELSE 0 END) AS pagosConfirmados,
       SUM(CASE WHEN estado_pago='confirmado' AND es_demo=0 THEN monto_publicacion_centimos ELSE 0 END) AS ingreso_centimos FROM anuncios`,now,now);
     const users = await db.get('SELECT COUNT(*) AS total FROM usuarios');
-    res.json({ anuncios:Number(totals.anuncios),usuarios:Number(users.total),pendientes:Number(totals.pendientes||0),aprobados:Number(totals.aprobados||0),rechazados:Number(totals.rechazados||0),activos:Number(totals.activos||0),vencidos:Number(totals.vencidos||0),pagosEnRevision:Number(totals.pagosEnRevision||0),pagosConfirmados:Number(totals.pagosConfirmados||0),ingresos:Number(totals.ingreso_centimos||0)/100 });
+    const reports = await db.get("SELECT COUNT(*) AS total, COUNT(DISTINCT anuncio_id) AS avisos FROM reportes WHERE estado = 'pendiente'");
+    const hidden = await db.get('SELECT COUNT(*) AS n FROM anuncios WHERE revision_reportes = 1');
+    const unverified = await db.get('SELECT COUNT(*) AS n FROM usuarios WHERE celular_verificado = 0 AND es_demo = 0');
+    res.json({ anuncios:Number(totals.anuncios),usuarios:Number(users.total),pendientes:Number(totals.pendientes||0),aprobados:Number(totals.aprobados||0),rechazados:Number(totals.rechazados||0),activos:Number(totals.activos||0),vencidos:Number(totals.vencidos||0),pagosEnRevision:Number(totals.pagosEnRevision||0),pagosConfirmados:Number(totals.pagosConfirmados||0),ingresos:Number(totals.ingreso_centimos||0)/100,
+      reportesPendientes:Number(reports.total||0),avisosReportados:Number(reports.avisos||0),ocultosPorReportes:Number(hidden.n||0),celularesSinVerificar:Number(unverified.n||0) });
   });
   app.get('/api/admin/anuncios', auth.requireAdmin, async (req,res) => {
     const where = [], values = [];

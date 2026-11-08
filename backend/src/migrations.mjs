@@ -9,7 +9,11 @@ const sqliteColumns = {
   direccion: "TEXT NOT NULL DEFAULT ''", referencia: "TEXT NOT NULL DEFAULT ''", contacto: "TEXT NOT NULL DEFAULT ''",
   comprobante_archivo: 'TEXT', referencia_pago: "TEXT NOT NULL DEFAULT ''", fecha_comprobante: 'TEXT', fecha_confirmacion: 'TEXT',
   tipo_operacion: "TEXT NOT NULL DEFAULT 'venta' CHECK(tipo_operacion IN ('venta','alquiler'))",
+  // Oculto por reportes de cuentas verificadas mientras administración lo revisa.
+  revision_reportes: 'INTEGER NOT NULL DEFAULT 0 CHECK(revision_reportes IN (0, 1))', fecha_revision_reportes: 'TEXT',
 };
+const sqliteReportColumns = { detalle: "TEXT NOT NULL DEFAULT ''", fecha_revision: 'TEXT', revisado_por: 'INTEGER REFERENCES usuarios(id)', resolucion: "TEXT NOT NULL DEFAULT ''" };
+const duplicateReportsSql = 'SELECT anuncio_id FROM reportes GROUP BY anuncio_id, usuario_id HAVING COUNT(*) > 1 LIMIT 1';
 // Avisos DEMO del seed que son alquileres mensuales según su propia descripción.
 // Solo se corrigen filas marcadas como DEMO, una vez; los avisos reales no se tocan.
 const DEMO_RENTALS = ['Departamento luminoso de 2 habitaciones', 'Habitación cerca de la UNA Puno', 'Local comercial cerca del mercado'];
@@ -53,6 +57,11 @@ export function migrateSqlite(db) {
       (1,'Semanal',500,7,0,0,1),(2,'Diario',NULL,1,0,0,0),(3,'Mensual',NULL,30,0,0,0);
       CREATE INDEX IF NOT EXISTS idx_moderacion_vigencia ON anuncios(moderacion,estado_pago,fecha_vencimiento);
       INSERT OR IGNORE INTO metadata (clave,valor) VALUES ('moderacion_v1','1');`);
+    const reportColumns = new Set(db.prepare('PRAGMA table_info(reportes)').all().map(row => row.name));
+    for (const [name, type] of Object.entries(sqliteReportColumns)) if (!reportColumns.has(name)) db.exec(`ALTER TABLE reportes ADD COLUMN ${name} ${type}`);
+    // Una persona reporta un aviso una sola vez. Si una base antigua ya tuviera duplicados, la API lo sigue impidiendo.
+    if (!db.prepare(duplicateReportsSql).get()) db.exec('CREATE UNIQUE INDEX IF NOT EXISTS uq_reportes_anuncio_usuario ON reportes(anuncio_id, usuario_id)');
+    db.exec('CREATE INDEX IF NOT EXISTS idx_reportes_estado ON reportes(estado, anuncio_id)');
     // Quién pidió el contacto de cada aviso: una fila por persona (cuenta o IP con hash).
     db.exec(`CREATE TABLE IF NOT EXISTS contactos_anuncio (
       id INTEGER PRIMARY KEY, anuncio_id INTEGER NOT NULL REFERENCES anuncios(id),
@@ -96,6 +105,7 @@ export async function migrateMysql(pool) {
     direccion:"VARCHAR(200) NOT NULL DEFAULT ''",referencia:"VARCHAR(300) NOT NULL DEFAULT ''",contacto:"VARCHAR(100) NOT NULL DEFAULT ''",
     comprobante_archivo:'VARCHAR(100) NULL',referencia_pago:"VARCHAR(160) NOT NULL DEFAULT ''",fecha_comprobante:'DATETIME(3) NULL',fecha_confirmacion:'DATETIME(3) NULL',
     tipo_operacion:"VARCHAR(10) NOT NULL DEFAULT 'venta'",
+    revision_reportes:'TINYINT(1) NOT NULL DEFAULT 0',fecha_revision_reportes:'DATETIME(3) NULL',
   };
   for (const [name,type] of Object.entries(mysqlColumns)) if (!names.has(name)) await pool.query(`ALTER TABLE anuncios ADD COLUMN ${name} ${type}`);
   const [photoColumns] = await pool.query('SHOW COLUMNS FROM fotos');
@@ -117,6 +127,14 @@ export async function migrateMysql(pool) {
   if(!indexes.length)await pool.query('CREATE INDEX idx_moderacion_vigencia ON anuncios(moderacion,estado_pago,fecha_vencimiento)');
   await pool.query("INSERT IGNORE INTO planes_publicacion (id,nombre,precio_centimos,dias,bono_primer_anuncio,destacado,activo) VALUES (1,'Semanal',500,7,0,0,1),(2,'Diario',NULL,1,0,0,0),(3,'Mensual',NULL,30,0,0,0)");
   await pool.query("INSERT IGNORE INTO metadata (clave,valor) VALUES ('moderacion_v1','1')");
+  const [reportColumns] = await pool.query('SHOW COLUMNS FROM reportes');
+  const reportAdditions = { detalle: "VARCHAR(500) NOT NULL DEFAULT ''", fecha_revision: 'DATETIME(3) NULL', revisado_por: 'BIGINT UNSIGNED NULL', resolucion: "VARCHAR(20) NOT NULL DEFAULT ''" };
+  for (const [name, type] of Object.entries(reportAdditions)) if (!reportColumns.some(row => row.Field === name)) await pool.query(`ALTER TABLE reportes ADD COLUMN ${name} ${type}`);
+  const [uniqueReports] = await pool.query("SHOW INDEX FROM reportes WHERE Key_name='uq_reportes_anuncio_usuario'");
+  const [duplicateReports] = await pool.query(duplicateReportsSql);
+  if (!uniqueReports.length && !duplicateReports.length) await pool.query('ALTER TABLE reportes ADD UNIQUE KEY uq_reportes_anuncio_usuario (anuncio_id, usuario_id)');
+  const [reportIndex] = await pool.query("SHOW INDEX FROM reportes WHERE Key_name='idx_reportes_estado'");
+  if (!reportIndex.length) await pool.query('CREATE INDEX idx_reportes_estado ON reportes(estado, anuncio_id)');
   await pool.query(`CREATE TABLE IF NOT EXISTS contactos_anuncio (
     id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY, anuncio_id BIGINT UNSIGNED NOT NULL,
     visitante CHAR(64) CHARACTER SET ascii COLLATE ascii_bin NOT NULL, fecha DATETIME(3) NOT NULL,

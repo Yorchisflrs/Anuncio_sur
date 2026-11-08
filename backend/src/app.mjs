@@ -15,6 +15,7 @@ import { upload, preparePhotos, persistPhotos, MAX_IMAGE_MB } from './uploads.mj
 import { publicationPlan, registerModerationRoutes } from './moderation.mjs';
 import { registerContactRoutes } from './contact.mjs';
 import { registerVerificationRoutes, requestVerification, requireVerified } from './verification.mjs';
+import { registerReportRoutes } from './reports.mjs';
 
 export async function createApp(overrides = {}) {
   const config = { ...defaultConfig, ...overrides };
@@ -88,6 +89,7 @@ export async function createApp(overrides = {}) {
   app.get('/api/anuncios/:id', async (req, res) => res.json(await getListing(db, Number(req.params.id), req.user)));
   registerContactRoutes(app, db, config);
   registerVerificationRoutes(app, db, auth);
+  registerReportRoutes(app, db, auth);
   // Sin celular verificado se puede mirar, pero no publicar. Se comprueba antes de recibir las fotos.
   app.post('/api/anuncios', auth.requireUser, requireVerified, upload, async (req, res) => {
     const data = await validateListing(req.body || {}, db, req.files?.length || 0);

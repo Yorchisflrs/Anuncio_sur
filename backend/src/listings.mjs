@@ -11,14 +11,15 @@ export function serializeListing(row, { privado = false } = {}) {
     moderacion: row.moderacion, estadoPago: row.estado_pago, fechaAprobacion: row.fecha_aprobacion || null, fechaVencimiento: row.fecha_vencimiento || null,
     diasVigencia: Number(row.dias_vigencia), diasPromocion: Number(row.dias_promocion), montoPublicacion: row.monto_publicacion_centimos / 100,
     planId: row.plan_id, destacado: Boolean(row.destacado), motivoRevision: row.motivo_revision || '', direccion: row.direccion || '', referencia: row.referencia || '',
-    vendedorVerificado: Boolean(Number(row.vendedor_verificado)),
+    vendedorVerificado: Boolean(Number(row.vendedor_verificado)), revisionReportes: Boolean(Number(row.revision_reportes)),
     ...(privado ? { contacto: row.contacto || '' } : {}),
   };
 }
 
-export const publicCondition = (alias = 'a') => `${alias}.estado = 'activo' AND ${alias}.moderacion = 'aprobado' AND ${alias}.estado_pago = 'confirmado' AND ${alias}.fecha_aprobacion IS NOT NULL AND ${alias}.fecha_vencimiento > ?`;
+// Un aviso con tres reportes de cuentas verificadas queda oculto (revision_reportes = 1) hasta que lo revise administración.
+export const publicCondition = (alias = 'a') => `${alias}.estado = 'activo' AND ${alias}.moderacion = 'aprobado' AND ${alias}.estado_pago = 'confirmado' AND ${alias}.fecha_aprobacion IS NOT NULL AND ${alias}.fecha_vencimiento > ? AND ${alias}.revision_reportes = 0`;
 /** La misma regla que publicCondition, aplicada a una fila ya leída. */
-export const isPublicRow = row => Boolean(row && row.estado === 'activo' && row.moderacion === 'aprobado' && row.estado_pago === 'confirmado' && row.fecha_aprobacion && Date.parse(row.fecha_vencimiento) > Date.now() && row.categoria_activa);
+export const isPublicRow = row => Boolean(row && row.estado === 'activo' && row.moderacion === 'aprobado' && row.estado_pago === 'confirmado' && row.fecha_aprobacion && Date.parse(row.fecha_vencimiento) > Date.now() && row.categoria_activa && !Number(row.revision_reportes));
 
 export async function getCatalog(db, query) {
   const filters = parseFilters(query);

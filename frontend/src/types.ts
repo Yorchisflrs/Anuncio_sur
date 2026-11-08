@@ -10,7 +10,7 @@ export interface Listing {
   estadoPago: 'pendiente' | 'en_revision' | 'confirmado' | 'rechazado';
   fechaAprobacion: string | null; fechaVencimiento: string | null;
   diasVigencia: number; diasPromocion: number; montoPublicacion: number; planId: number | null;
-  destacado: boolean; motivoRevision: string; direccion: string; referencia: string; vendedorVerificado: boolean;
+  destacado: boolean; motivoRevision: string; direccion: string; referencia: string; vendedorVerificado: boolean; revisionReportes: boolean;
   /** Solo en vistas privadas (propietario y administración). */
   contacto?: string; contactos?: number;
 }
@@ -22,6 +22,8 @@ export interface ListingDetail extends Listing {
 export interface PlanPublicacion { id: number; nombre: string; precio: number | null; dias: number; bonoPrimerAnuncio: number; destacado: boolean; activo: boolean }
 export interface ConfigPago { configurado: boolean; metodo: string; titular: string; numero: string; qrUrl: string | null; instrucciones: string }
 export interface PublicacionConfig { planes: (PlanPublicacion & { precio: number })[]; pago: ConfigPago }
-export interface AdminResumen { anuncios: number; usuarios: number; pendientes: number; aprobados: number; rechazados: number; activos: number; vencidos: number; pagosEnRevision: number; pagosConfirmados: number; ingresos: number }
+export interface AdminResumen { anuncios: number; usuarios: number; pendientes: number; aprobados: number; rechazados: number; activos: number; vencidos: number; pagosEnRevision: number; pagosConfirmados: number; ingresos: number; reportesPendientes: number; avisosReportados: number; ocultosPorReportes: number; celularesSinVerificar: number }
+export interface ReportItem { id: number; motivo: string; motivoTexto: string; detalle: string; fecha: string; reportante: { id: number; nombre: string; verificado: boolean } }
+export interface ReportGroup { anuncio: ListingDetail; reportes: ReportItem[]; reportantesVerificados: number }
 export interface CatalogResult { anuncios: Listing[]; total: number; page: number; totalPages: number }
 export const ZONES = ['Puno', 'Juliaca', 'Otras localidades del sur del Perú'];

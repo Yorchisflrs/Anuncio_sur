@@ -1,6 +1,14 @@
 import { CarFront, Building2, Refrigerator } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
+// Motivos fijos del reporte; las claves coinciden con REPORT_REASONS de backend/src/reports.mjs.
+export const REPORT_REASONS = [
+  { value: 'pide_adelanto', label: 'Pide un adelanto antes de mostrar el producto' },
+  { value: 'precio_sospechoso', label: 'El precio es sospechoso' },
+  { value: 'no_existe', label: 'El producto o el inmueble no existe' },
+  { value: 'ya_vendido', label: 'Ya se vendió o ya se alquiló' },
+];
+
 // Íconos de las categorías activas en el backend (por id). Solo se muestran las que existen.
 export const CATEGORY_ICONS: Record<number, LucideIcon> = { 1: CarFront, 2: Building2, 3: Refrigerator };
 
@@ -34,6 +42,7 @@ export const INFO_TOPICS: Record<string, InfoTopic> = {
       'Coordina la entrega en lugares públicos y concurridos: Plaza de Armas de Puno, Terminal Terrestre de Juliaca o centros cívicos.',
       'Revisa el producto o visita el inmueble antes de entregar cualquier pago.',
       'Desconfía de precios demasiado bajos o de quien te pida adelantos por transferencia.',
+      'Prefiere vendedores con la insignia «Celular verificado». Si un aviso te parece falso, usa «Reportar este aviso»: con tres reportes de personas verificadas se oculta hasta que administración lo revise.',
       'Para vehículos e inmuebles, verifica los documentos en SUNARP antes de cerrar el trato.',
       'Nunca compartas contraseñas ni códigos que lleguen a tu celular.'
     ]
