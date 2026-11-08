@@ -1,6 +1,7 @@
 import { describe, it, before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
+import { randomBytes } from 'node:crypto';
 import sharp from 'sharp';
 import { createIsolatedApp, jsonRequest } from './support.mjs';
 import { DEMO_USER } from '../src/seed.mjs';
@@ -63,9 +64,28 @@ describe('RF-02 · Publicación de anuncios', () => {
     assert.equal(await count('anuncios'), ads); assert.deepEqual(await uploaded(), files);
   });
 
-  it('Una foto de más de 2 MB se rechaza con un mensaje sobre el tamaño', async () => {
-    const { response, body } = await app.listingWith(seller.cookie, {}, [{ buffer: Buffer.alloc(2 * 1024 * 1024 + 1), name: 'grande.png', type: 'image/png' }]);
-    assert.equal(response.status, 422); assert.match(body.fields.fotos, /2 MB/);
+  it('Una foto de celular de más de 2 MB se acepta y se guarda reducida a 1600 px en WebP', async () => {
+    const [width, height] = [2400, 1800];
+    const noise = await sharp(randomBytes(width * height * 3), { raw: { width, height, channels: 3 } }).jpeg({ quality: 92 }).toBuffer();
+    assert(noise.length > 2 * 1024 * 1024 && noise.length < 10 * 1024 * 1024, 'La foto de prueba pesa ' + noise.length + ' bytes.');
+    const { response, body } = await app.listingWith(seller.cookie, { titulo: 'Foto grande tomada con el celular' }, [{ buffer: noise, name: 'IMG_20261108.jpg', type: 'image/jpeg' }]);
+    assert.equal(response.status, 201, JSON.stringify(body));
+    const stored = await sharp(Buffer.from(await (await fetch(app.base + body.fotos[0].archivo)).arrayBuffer())).metadata();
+    assert.equal(stored.format, 'webp'); assert.equal(Math.max(stored.width, stored.height), 1600);
+  });
+
+  it('Las fotos WebP y AVIF también se aceptan', async () => {
+    const webp = await sharp({ create: { width: 640, height: 480, channels: 3, background: '#e07a1f' } }).webp().toBuffer();
+    const avif = await sharp({ create: { width: 640, height: 480, channels: 3, background: '#2f7a3a' } }).avif().toBuffer();
+    const { response, body } = await app.listingWith(seller.cookie, { titulo: 'Fotos en formatos modernos' }, [{ buffer: webp, name: 'foto.webp', type: 'image/webp' }, { buffer: avif, name: 'foto.avif', type: 'image/avif' }]);
+    assert.equal(response.status, 201, JSON.stringify(body)); assert.equal(body.fotos.length, 2);
+  });
+
+  it('Una foto de más de 10 MB o en un formato no permitido se rechaza con un mensaje claro', async () => {
+    const large = await app.listingWith(seller.cookie, {}, [{ buffer: Buffer.alloc(10 * 1024 * 1024 + 1), name: 'grande.jpg', type: 'image/jpeg' }]);
+    assert.equal(large.response.status, 422); assert.match(large.body.fields.fotos, /10 MB/);
+    const svg = await app.listingWith(seller.cookie, {}, [{ buffer: Buffer.from('<svg xmlns="http://www.w3.org/2000/svg"/>'), name: 'dibujo.svg', type: 'image/svg+xml' }]);
+    assert.equal(svg.response.status, 422); assert.match(svg.body.fields.fotos, /JPG, PNG, WebP o HEIC/);
   });
 
   it('Solo el propietario da de baja su anuncio; el registro se conserva y deja de ser público', async () => {

@@ -66,8 +66,8 @@ export function registerModerationRoutes(app, db, auth, config) {
     const id = validId(req.params.id);
     await ensureOwner(req,id);
     const reference = req.body?.referenciaPago === undefined ? null : text(req.body.referenciaPago,160,'referenciaPago');
-    if (!req.file) throw new ApiError(422,'Adjunta una imagen JPG o PNG del comprobante.',{comprobante:'Selecciona el comprobante.'});
-    const photos = await preparePhotos([req.file]);
+    if (!req.file) throw new ApiError(422,'Adjunta una imagen del comprobante (JPG, PNG, WebP o HEIC).',{comprobante:'Selecciona el comprobante.'});
+    const photos = await preparePhotos([req.file],{field:'comprobante'});
     const saved = await persistPhotos(photos,privateDir);
     let oldFile;
     try {
@@ -159,8 +159,8 @@ export function registerModerationRoutes(app, db, auth, config) {
     res.json(publicPayment(payment));
   });
   app.post('/api/admin/configuracion/qr', auth.requireAdmin, singleImage('qr'), async (req,res)=>{
-    if (!req.file) throw new ApiError(422,'Selecciona una imagen JPG o PNG del QR.',{qr:'Selecciona el QR de tu cuenta.'});
-    const photos=await preparePhotos([req.file],{lossless:true}),saved=await persistPhotos(photos,privateDir);
+    if (!req.file) throw new ApiError(422,'Selecciona una imagen del QR (JPG, PNG o WebP).',{qr:'Selecciona el QR de tu cuenta.'});
+    const photos=await preparePhotos([req.file],{lossless:true,field:'qr'}),saved=await persistPhotos(photos,privateDir);
     let payment,oldFile;
     try { await db.transaction(async tx=>{ payment=await readPayment(tx,true);oldFile=payment.qrArchivo;payment.qrArchivo=photos[0].filename;payment.configurado=Boolean(payment.metodo&&payment.titular);await writePayment(tx,payment); }); }
     catch(error){await Promise.allSettled(saved.map(file=>fs.unlink(file)));throw error;}

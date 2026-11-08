@@ -7,6 +7,7 @@ import { ZONES } from '../types';
 import { useResource } from '../hooks/useResource';
 import { api, ApiError, errorMessage, listingPrice, price } from '../services/api';
 import { validatePublication } from '../services/validation';
+import { IMAGE_ACCEPT, isImageFile, prepareImage, readAsDataUrl } from '../services/images';
 import { ErrorState, FieldError } from '../components/States';
 import { useAuth } from '../context/AuthContext';
 import '../detail-publish.css';
@@ -49,7 +50,7 @@ export function PublishPage() {
   const successRef = useRef<HTMLDivElement>(null);
   const [data, setData] = useState({ titulo: '', descripcion: '', categoriaId: '', subcategoria: '', tipoOperacion: 'venta', precio: '', zona: '', direccion: '', referencia: '', contacto: '', planId: '' });
   const renting = data.tipoOperacion === 'alquiler';
-  const [photos, setPhotos] = useState<SelectedPhoto[]>([]); const [photoLink, setPhotoLink] = useState(''); const [checkingPhotoLink, setCheckingPhotoLink] = useState(false); const fileInput = useRef<HTMLInputElement>(null); const errorRef = useRef<HTMLDivElement>(null);
+  const [photos, setPhotos] = useState<SelectedPhoto[]>([]); const [photoLink, setPhotoLink] = useState(''); const [checkingPhotoLink, setCheckingPhotoLink] = useState(false); const [preparingPhotos, setPreparingPhotos] = useState(false); const fileInput = useRef<HTMLInputElement>(null); const errorRef = useRef<HTMLDivElement>(null);
   const [fields, setFields] = useState<Record<string, string>>({}); const [message, setMessage] = useState(''); const [busy, setBusy] = useState(false); const [dragging, setDragging] = useState(false);
   const [published, setPublished] = useState<ListingDetail | null>(null);
   const submissionInFlight = useRef(false);
@@ -61,23 +62,24 @@ export function PublishPage() {
   const plan = publication.data?.planes.find(item => String(item.id) === data.planId);
   function change(name: string, value: string) { setData(previous => ({ ...previous, [name]: value, ...(name === 'categoriaId' ? { subcategoria: '' } : {}) })); setFields(previous => ({ ...previous, [name]: '' })); }
   async function addFiles(files: FileList | File[] | null) {
-    if (!files?.length) return;
+    if (!files?.length || preparingPhotos) return;
     const selected = Array.from(files);
     let error = '';
     if (photos.length + selected.length > 7) error = 'Puedes añadir hasta 7 fotografías.';
-    else if (selected.some(file => !['image/jpeg', 'image/png'].includes(file.type) || !/\.(jpe?g|png)$/i.test(file.name))) error = 'Selecciona únicamente fotografías JPG o PNG.';
-    else if (selected.some(file => file.size > 2 * 1024 * 1024)) error = 'Cada fotografía debe pesar como máximo 2 MB.';
+    else if (selected.some(file => !isImageFile(file))) error = 'Selecciona fotografías JPG, PNG, WebP o HEIC.';
     if (error) { setFields(previous => ({ ...previous, fotos: error })); return; }
+    setPreparingPhotos(true);
     try {
-      const previews = await Promise.all(selected.map(file => new Promise<SelectedPhoto>((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => typeof reader.result === 'string' ? resolve({ file, url: reader.result, source: 'archivo' }) : reject(new Error('No se pudo preparar la vista previa.'));
-        reader.onerror = () => reject(new Error('No se pudo leer la fotografía. Inténtalo de nuevo.'));
-        reader.readAsDataURL(file);
-      })));
+      const previews: SelectedPhoto[] = [];
+      // Una por una: reducir varias fotos grandes a la vez puede agotar la memoria de un celular.
+      for (const original of selected) {
+        const file = await prepareImage(original);
+        previews.push({ file, url: await readAsDataUrl(file), source: 'archivo' });
+      }
       setPhotos(previous => [...previous, ...previews].slice(0, 7));
       setFields(previous => ({ ...previous, fotos: '' }));
     } catch (error) { setFields(previous => ({ ...previous, fotos: errorMessage(error) })); }
+    finally { setPreparingPhotos(false); }
   }
   async function addPhotoLink() {
     if (photos.length >= 7 || checkingPhotoLink || busy || published) return;
@@ -138,8 +140,8 @@ export function PublishPage() {
           <legend className="sr-only">Completa tu anuncio</legend>
           <section className="form-section" id="publicar-paso-1" aria-labelledby="publish-photos-title">
             <div className="form-section-heading"><span><ImagePlus size={25} aria-hidden="true"/></span><div><h2 id="publish-photos-title">1. Fotos <span className="required">*</span></h2><p>Muestra lo que ofreces. La primera foto será la principal.</p></div></div>
-            <input ref={fileInput} type="file" accept="image/jpeg,image/png,.jpg,.jpeg,.png" multiple hidden aria-label="Seleccionar fotos del anuncio" onChange={event => { addFiles(event.target.files); event.target.value = ''; }}/>
-            <button type="button" className={'upload-zone' + (dragging ? ' dragging' : '')} disabled={photos.length >= 7 || busy || Boolean(published)} aria-describedby="publish-photo-hint fotos-error" onClick={() => fileInput.current?.click()} onDragOver={event => { event.preventDefault(); setDragging(true); }} onDragLeave={() => setDragging(false)} onDrop={event => { event.preventDefault(); setDragging(false); if (!busy && !published) addFiles(event.dataTransfer.files); }}><span><ImagePlus size={30} aria-hidden="true"/></span><strong>{photos.length >= 7 ? 'Ya añadiste 7 fotos' : 'Subir fotos desde mi equipo'}</strong><small id="publish-photo-hint">Elige de 1 a 7 fotos JPG o PNG, de hasta 2 MB cada una.<br/>La primera será la portada. También puedes arrastrarlas aquí.</small></button>
+            <input ref={fileInput} type="file" accept={IMAGE_ACCEPT} multiple hidden aria-label="Seleccionar fotos del anuncio" onChange={event => { addFiles(event.target.files); event.target.value = ''; }}/>
+            <button type="button" className={'upload-zone' + (dragging ? ' dragging' : '')} disabled={photos.length >= 7 || busy || preparingPhotos || Boolean(published)} aria-describedby="publish-photo-hint fotos-error" onClick={() => fileInput.current?.click()} onDragOver={event => { event.preventDefault(); setDragging(true); }} onDragLeave={() => setDragging(false)} onDrop={event => { event.preventDefault(); setDragging(false); if (!busy && !published) addFiles(event.dataTransfer.files); }}><span>{preparingPhotos ? <LoaderCircle size={30} className="spin" aria-hidden="true"/> : <ImagePlus size={30} aria-hidden="true"/>}</span><strong>{preparingPhotos ? 'Preparando tus fotos…' : photos.length >= 7 ? 'Ya añadiste 7 fotos' : 'Subir fotos desde mi celular o equipo'}</strong><small id="publish-photo-hint">Elige de 1 a 7 fotos JPG, PNG, WebP o HEIC.<br/>Las fotos grandes se reducen solas. La primera será la portada.</small></button>
             <div className="photo-link-box"><div className="photo-link-heading"><Link2 size={22} aria-hidden="true"/><div><strong>¿La foto ya está en internet?</strong><span>Pega aquí el enlace público directo a la imagen.</span></div></div><div className="photo-link-row"><input type="url" inputMode="url" autoComplete="url" value={photoLink} onChange={event => { setPhotoLink(event.target.value); setFields(previous => ({ ...previous, fotos: '' })); }} onKeyDown={event => { if (event.key === 'Enter') { event.preventDefault(); void addPhotoLink(); } }} placeholder="https://sitio.com/imagen.jpg" aria-label="Enlace público directo a la foto" disabled={photos.length >= 7 || busy || Boolean(published) || checkingPhotoLink}/><button type="button" className="button button-outline photo-link-add" onClick={addPhotoLink} disabled={!photoLink.trim() || photos.length >= 7 || busy || Boolean(published) || checkingPhotoLink}>{checkingPhotoLink ? <LoaderCircle size={19} className="spin" aria-hidden="true"/> : <Link2 size={19} aria-hidden="true"/>}{checkingPhotoLink ? 'Comprobando foto…' : 'Añadir enlace'}</button></div><p>Usa una dirección HTTPS que abra la foto directamente. Los enlaces a perfiles, publicaciones o álbumes de Facebook no son enlaces de imagen.</p></div>
             <FieldError id="fotos-error" message={fields.fotos}/>
             {photos.length > 0 && <><p className="publish-photo-count" role="status">{photos.length} de 7 fotos añadidas</p><div className="photo-previews">{photos.map((photo, index) => <div key={photo.url}><img src={photo.url} referrerPolicy="no-referrer" alt={'Vista previa de fotografía ' + (index + 1)}/><span>{index === 0 ? 'Principal' : 'Foto ' + (index + 1)} · {photo.source === 'enlace' ? 'Enlace' : 'Archivo'}</span><button type="button" aria-label={'Quitar foto ' + (index + 1)} onClick={() => removePhoto(index)} disabled={busy || Boolean(published)}><X size={18} aria-hidden="true"/>Quitar</button></div>)}</div></>}
@@ -167,7 +169,7 @@ export function PublishPage() {
           </section>
         </fieldset>
         {/* Bloque 4: acción principal que guarda el Anuncio. */}
-        <div className="publish-actions"><span><ShieldCheck size={20}/>{plan?`${price(plan.precio)} por ${plan.dias} días · Revisión y confirmación de pago`:'Elige un plan para continuar'}</span><div><Link className="button button-outline" to="/perfil">Cancelar</Link><button type="submit" className="button button-primary publish-submit" disabled={busy || Boolean(published) || categories.loading || publication.loading || !plan}>{busy ? 'Enviando…' : published ? 'Anuncio enviado' : 'Enviar para revisión'}<ArrowRight size={20}/></button></div></div>
+        <div className="publish-actions"><span><ShieldCheck size={20}/>{plan?`${price(plan.precio)} por ${plan.dias} días · Revisión y confirmación de pago`:'Elige un plan para continuar'}</span><div><Link className="button button-outline" to="/perfil">Cancelar</Link><button type="submit" className="button button-primary publish-submit" disabled={busy || preparingPhotos || Boolean(published) || categories.loading || publication.loading || !plan}>{busy ? 'Enviando…' : published ? 'Anuncio enviado' : 'Enviar para revisión'}<ArrowRight size={20}/></button></div></div>
         {/* Bloque 5: estado posterior a la publicación. */}
         {published && <div className="publish-success" role="status" aria-live="polite" ref={successRef} tabIndex={-1}><CheckCircle2 size={24}/><div><p>Tu anuncio se envió para revisión.</p><span>Aún no se muestra al público. Completa el pago y adjunta tu comprobante.</span><Link to={'/mis-anuncios/' + published.id + '/pago'}>Continuar con el pago <ArrowRight size={18}/></Link></div></div>}
       </form>

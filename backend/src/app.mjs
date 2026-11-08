@@ -11,7 +11,7 @@ import { openDatabase } from './database.mjs';
 import { authServices, publicUser } from './auth.mjs';
 import { ApiError, validateRegistration, validateListing, validateDisplayName } from './validation.mjs';
 import { getCatalog, getListing, getOwnListings, publicCondition } from './listings.mjs';
-import { upload, preparePhotos, persistPhotos } from './uploads.mjs';
+import { upload, preparePhotos, persistPhotos, MAX_IMAGE_MB } from './uploads.mjs';
 import { publicationPlan, registerModerationRoutes } from './moderation.mjs';
 
 export async function createApp(overrides = {}) {
@@ -127,7 +127,7 @@ export async function createApp(overrides = {}) {
   app.use((error, _req, res, _next) => {
     if (error.name === 'MulterError') {
       const field = _req.path.endsWith('/comprobante') ? 'comprobante' : _req.path.endsWith('/qr') ? 'qr' : 'fotos';
-      const message = error.code === 'LIMIT_FILE_SIZE' ? 'Cada imagen debe pesar como máximo 2 MB.' : field === 'fotos' ? 'Puedes subir hasta siete fotografías JPG o PNG.' : 'Selecciona una sola imagen JPG o PNG.';
+      const message = error.code === 'LIMIT_FILE_SIZE' ? `Cada imagen debe pesar como máximo ${MAX_IMAGE_MB} MB.` : field === 'fotos' ? 'Puedes subir hasta siete fotografías.' : 'Selecciona una sola imagen.';
       return res.status(422).json({ message, fields: { [field]: message } });
     }
     if (error.type === 'entity.parse.failed') return res.status(400).json({ message: 'La solicitud no tiene un formato válido.' });

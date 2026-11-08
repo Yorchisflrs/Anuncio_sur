@@ -64,7 +64,8 @@ export const INFO_TOPICS: Record<string, InfoTopic> = {
     kicker: 'AYUDA', title: 'Ayuda para publicar',
     intro: '¿Tienes problemas para publicar o ingresar? Revisa estas soluciones rápidas.',
     points: [
-      'Las fotos deben estar en formato JPG o PNG.',
+      'Puedes subir fotos JPG, PNG, WebP o HEIC del celular; las fotos grandes se reducen automáticamente.',
+      'Si una foto HEIC del iPhone no se abre, elige «Más compatible» en Ajustes > Cámara > Formatos o compártela como JPG.',
       'Si no puedes ingresar, revisa que tu correo o celular estén bien escritos.',
       'Tu aviso aparece en el catálogo cuando administración confirma el pago y lo aprueba. Revisa su estado en Mi cuenta.',
       'Si tu aviso fue observado, abre «Pago y revisión» en Mi cuenta para leer el motivo y corregirlo.'
