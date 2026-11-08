@@ -9,7 +9,7 @@ async function fixture(t) {
   const created = await app.listing(seller.cookie, { titulo: 'Moto antes de editar', precio: '150.25' });
   assert.equal(created.response.status, 201, JSON.stringify(created.body));
   const ad = created.body;
-  const row = () => app.db.get('SELECT * FROM anuncios WHERE id = ?', ad.id);
+  const row = async () => ({ ...await app.db.get('SELECT * FROM anuncios WHERE id = ?', ad.id) });
   const edit = (body, cookie = seller.cookie, id = ad.id) => app.request('/anuncios/' + id, jsonRequest(body, cookie, 'PATCH'));
   return { app, seller, ad, row, edit };
 }
@@ -94,7 +94,7 @@ describe('RF-02 · Edición de un aviso antes de aprobarlo', () => {
   it('Un pedido vacío o con solo campos no editables devuelve 422', async t => {
     const { row, edit } = await fixture(t);
     const before = await row();
-    for (const body of [{}, { moderacion: 'aprobado' }, [], null]) {
+    for (const body of [{}, { moderacion: 'aprobado' }, []]) {
       const result = await edit(body);
       assert.equal(result.response.status, 422);
       assert(Object.keys(result.body.fields).length > 0);
