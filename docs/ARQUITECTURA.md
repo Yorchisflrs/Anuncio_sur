@@ -1,54 +1,81 @@
 # Arquitectura de AvisoSur
 
-Aplicación monolítica local con frontend separado: React solicita la API REST de Express. Express valida datos, consulta SQLite o MySQL según `DB_CLIENT` y almacena imágenes WebP en disco. En desarrollo, Vite actúa como proxy; después de compilar, Express también entrega el frontend y resuelve las rutas de React Router.
+Aplicación monolítica local con frontend separado. React consume la API REST de Express. Express valida los datos, consulta SQLite o MySQL según `DB_CLIENT` y guarda las imágenes WebP en disco. En desarrollo, Vite actúa como proxy; después de compilar, Express también entrega el frontend y resuelve las rutas de React Router.
 
-## Modelo
+## Modelo de datos
 
-| Entidad | Campos principales y relaciones |
+| Tabla | Campos principales y relaciones |
 | --- | --- |
-| `usuarios` | id, correo único sin distinguir mayúsculas, celular único, password_hash, fecha_registro, es_demo. |
-| `categorias` | id, nombre, subcategorias como JSON y activa. |
-| `anuncios` | id, usuario_id → usuarios, categoria_id → categorias, título, descripción, precio_centimos en SQLite o precio DECIMAL(10,2) en MySQL, zona, subcategoria, estado, fecha_publicacion y es_demo. |
-| `fotos` | id, anuncio_id → anuncios, archivo, orden de 0 a 2 y fecha_subida. Orden único por anuncio. |
-| `reportes` | id, anuncio_id → anuncios, usuario_id → usuarios, motivo, fecha y estado pendiente/revisado. Preparado para la segunda iteración. |
-| `sesiones` | token_hash → SHA-256 del token aleatorio, usuario_id → usuarios y expira. |
-| `metadata` | Registro de la versión del seed para evitar duplicados. |
+| `usuarios` | id, **nombre** para mostrar, correo único, celular único, password_hash, rol (`usuario`/`admin`), es_demo, **celular_verificado**, **fecha_verificacion**, **metodo_verificacion** (`codigo`/`presencial`), fecha_registro. |
+| `verificaciones_celular` | usuario_id → usuarios, solicitado, codigo_hash (SHA-256), expira, intentos, enviado. Una fila por cuenta pendiente; se borra al verificar. |
+| `categorias` | id, nombre, subcategorias (JSON) y activa. |
+| `anuncios` | id, usuario_id → usuarios, categoria_id → categorias, título, descripción, precio (céntimos en SQLite, `DECIMAL` en MySQL), zona, subcategoría, **tipo_operacion** (`venta`/`alquiler`), estado (`activo`/`dado_de_baja`), moderación, estado del pago, plan, monto y días de vigencia, fechas de aprobación y vencimiento, dirección, referencia, contacto, comprobante, **revision_reportes** y **fecha_revision_reportes**. |
+| `fotos` | id, anuncio_id → anuncios, archivo (ruta local o enlace HTTPS de hasta 2048 caracteres), orden de 0 a 6 y fecha_subida. |
+| `reportes` | id, anuncio_id → anuncios, usuario_id → usuarios, motivo, **detalle**, fecha, estado (`pendiente`/`revisado`), **fecha_revision**, **revisado_por**, **resolucion**. Único por (anuncio_id, usuario_id). |
+| `contactos_anuncio` | id, anuncio_id → anuncios, visitante (SHA-256 con sal de la instalación), fecha. Único por (anuncio_id, visitante). |
+| `planes_publicacion` | id, nombre, precio, días, bono del primer anuncio, destacado y activo. |
+| `sesiones` | token_hash (SHA-256 del token aleatorio), usuario_id → usuarios y expira. |
+| `metadata` | Versiones del seed y de las migraciones, configuración del pago y sal de contactos. |
 
-SQLite habilita claves foráneas, modo WAL y espera ante bloqueo. MySQL usa InnoDB, claves foráneas y transacciones; `database/avisosur_mysql.sql` crea su esquema. Los anuncios solo tienen estados `activo` y `dado_de_baja`; dar de baja cambia el estado y no borra filas ni fotos. La colección de subcategorías se guarda por categoría porque es pequeña y fija en esta iteración. No hay roles persistidos: una cuenta puede comprar y vender; el administrador queda pendiente.
+Las columnas en negrita se agregaron para las observaciones de la Práctica 9. `backend/src/migrations.mjs` las agrega al iniciar, tanto en SQLite como en MySQL, sin borrar ni reescribir datos; los mismos cambios están en `database/actualizar_observaciones_mysql.sql`. La única corrección de datos marca como alquiler los tres avisos DEMO del seed que lo son, una sola vez y solo en filas `es_demo = 1`.
+
+### Cuándo un aviso es público
+
+Una sola regla, `publicCondition` en `listings.mjs`, decide qué ve el público y se usa en el catálogo, los contadores de categorías, el detalle y el resumen de administración. Un aviso es público si está activo, aprobado, con pago confirmado, sin vencer, en una categoría activa y **no está oculto por reportes**. El propietario y administración pueden abrir sus avisos no públicos.
 
 ## API
+
+Las respuestas de error tienen la forma `{ message, fields }`. Códigos principales: 401 sin sesión, 403 sin permiso u origen ajeno, 404 recurso inexistente o no público, 409 conflicto (duplicado o estado que no lo permite), 422 datos inválidos y 429 demasiados pedidos.
 
 | Método y ruta | Acceso | Resultado |
 | --- | --- | --- |
 | GET `/api/health` | Público | Estado del servicio. |
-| GET `/api/categorias` | Público | Categorías, subcategorías y recuentos activos. |
+| GET `/api/categorias` | Público | Categorías, subcategorías y avisos públicos por categoría. |
 | GET `/api/auth/me` | Público | Usuario de la sesión o `null`. |
-| POST `/api/auth/registro` | Público | Valida correo, celular, password y confirmación, registra e inicia sesión. |
-| POST `/api/auth/login` | Público | Valida identificador y contraseña, crea una sesión. |
-| POST `/api/auth/logout` | Público | Revoca la sesión y borra la cookie. |
-| GET `/api/anuncios` | Público | Catálogo paginado de activos. |
-| GET `/api/anuncios/:id` | Público / propietario | Detalle activo; el propietario puede consultar sus anuncios retirados. |
-| POST `/api/anuncios` | Autenticado | Multipart con campos y `fotos`, hasta tres. |
-| GET `/api/perfil/anuncios` | Autenticado | Todas las publicaciones del usuario actual. |
-| PATCH `/api/anuncios/:id/baja` | Propietario | Cambia el estado y conserva los registros. |
+| POST `/api/auth/registro` | Público | Registra con nombre, correo, celular y contraseña; inicia sesión y deja pendiente la verificación del celular. |
+| POST `/api/auth/login` | Público | Acceso con correo o celular. |
+| POST `/api/auth/logout` | Público | Revoca la sesión. |
+| PATCH `/api/perfil` | Cuenta | Cambia el nombre para mostrar. |
+| GET `/api/perfil/anuncios` | Cuenta | Avisos propios, con su contacto y cuántas personas lo pidieron. |
+| GET `/api/perfil/verificacion` | Cuenta | Estado de la verificación del celular. |
+| POST `/api/perfil/verificacion` | Cuenta | Pide un código nuevo. |
+| POST `/api/perfil/verificacion/confirmar` | Cuenta | Confirma el código (422 si es incorrecto, 429 tras 5 intentos). |
+| GET `/api/anuncios` | Público | Catálogo paginado. Filtros: `q`, `categoriaId`, `subcategoria`, `tipo`, `zona`, `min`, `max`, `sort`, `page` y `limit`. Sin celulares. |
+| GET `/api/anuncios/:id` | Público / propietario / admin | Detalle sin celular; el propietario y administración ven además el contacto y el pago. |
+| GET `/api/anuncios/:id/contacto` | Público, con límite | Celular y enlace de WhatsApp de un aviso público; registra a la persona interesada. |
+| POST `/api/anuncios` | Cuenta verificada | Crea una solicitud con fotos o enlaces (403 si el celular no está verificado). |
+| PATCH `/api/anuncios/:id/baja` | Propietario | Da de baja el aviso y conserva el registro. |
+| POST `/api/anuncios/:id/reportes` | Cuenta | Reporta un aviso público con un motivo fijo (409 si ya lo reportó). |
+| GET `/api/publicacion` | Público | Planes activos y datos de pago. |
+| GET `/api/publicacion/qr` | Público | Imagen del QR de pago. |
+| POST `/api/anuncios/:id/comprobante` | Propietario | Adjunta el comprobante de pago. |
+| GET `/api/anuncios/:id/comprobante` | Propietario / admin | Imagen privada del comprobante. |
+| GET `/api/admin/resumen` | Admin | Contadores de revisión, pagos, reportes y celulares sin verificar. |
+| GET `/api/admin/anuncios` | Admin | Bandeja de revisión. |
+| POST `/api/admin/anuncios/:id/aprobar` | Admin | Confirma el pago y aprueba (exige confirmación explícita). |
+| POST `/api/admin/anuncios/:id/rechazar` | Admin | Rechaza con motivo. |
+| GET `/api/admin/reportes` | Admin | Reportes pendientes agrupados por aviso, primero los ocultos. |
+| POST `/api/admin/anuncios/:id/reportes/resolver` | Admin | `restaurar` (devuelve los días que estuvo oculto) o `dar_de_baja`. |
+| GET `/api/admin/verificaciones` | Admin | Cuentas sin verificar. |
+| POST `/api/admin/verificaciones/:usuarioId/codigo` | Admin | Genera un código y el enlace de WhatsApp para enviarlo. |
+| POST `/api/admin/verificaciones/:usuarioId/presencial` | Admin | Verifica en persona, con confirmación explícita. |
+| GET `/api/admin/configuracion` | Admin | Datos de pago. |
+| PUT `/api/admin/configuracion` | Admin | Edita los datos de pago. |
+| POST `/api/admin/configuracion/qr` | Admin | Sube el QR (se guarda sin pérdida en la carpeta privada). |
+| GET `/api/admin/planes` | Admin | Planes. |
+| POST `/api/admin/planes` | Admin | Crea un plan. |
+| PATCH `/api/admin/planes/:id` | Admin | Edita un plan. |
 
-Filtros del catálogo: `q`, `categoriaId`, `subcategoria`, `zona`, `min`, `max`, `sort`, `page`, `limit`. Ordenamientos: `recent`, `price_asc`, `price_desc`. Por defecto: 24 registros por página; máximo: 48. Los límites se convierten a centavos y se comparan con `>=` y `<=`.
+## Flujos principales
 
-Las respuestas de error tienen `{ message, fields }`; códigos principales: 401 sin sesión o credenciales incorrectas, 403 falta de propiedad/origen, 404 anuncio inexistente o retirado, 409 cuenta duplicada y 422 datos inválidos. Los errores de base de datos no se muestran al cliente.
+**Publicar.** La sesión y el celular verificado se comprueban antes de recibir archivos. Luego se validan los campos, la cantidad y el contenido de las fotos (hasta 10 MB y 50 megapíxeles), una por una: se corrige la orientación, se reduce a 1600 px y se guarda WebP sin metadatos. El aviso y sus fotos se insertan en una transacción; si falla, se borran los archivos nuevos. El aviso queda pendiente hasta que administración confirme el pago.
 
-## Publicación
+**Contacto.** El catálogo y el detalle nunca incluyen el celular. Al pulsar «Ver contacto», `GET /api/anuncios/:id/contacto` lo entrega con el enlace `wa.me/51…` y el mensaje preparado. El límite es de 20 pedidos cada 15 minutos por cuenta o por IP. Cada persona se registra una vez por aviso.
 
-1. Verificar sesión antes de aceptar archivos.
-2. Comprobar campos, cantidad y tamaño de imágenes.
-3. Detectar formato JPG/PNG por contenido y decodificar con límite de píxeles.
-4. Corregir orientación, reducir dimensiones y recodificar WebP sin metadatos originales.
-5. Guardar con nombres aleatorios; insertar anuncio y fotos dentro de una transacción.
-6. Limpiar los archivos nuevos si falla la transacción. Devolver el detalle con la URL de WhatsApp.
+**Verificación del celular.** Al registrarse, la cuenta queda pendiente. Administración genera un código de 6 dígitos (se guarda solo su hash) y lo envía por WhatsApp desde el celular de AvisoSur; la persona lo escribe en «Mi cuenta». El código vence en 24 horas y admite 5 intentos. Administración también puede verificar en persona.
 
-La UI mantiene su estado y las vistas previas si falla la validación. Tras éxito muestra la confirmación debajo del botón y un enlace al detalle; bloquea una segunda publicación desde el mismo formulario. Los precios nunca se calculan con valores provenientes del frontend sin validación de servidor.
+**Reportes.** Una cuenta reporta un aviso público una sola vez, con un motivo fijo. Si hay tres reportes pendientes de cuentas verificadas distintas, el aviso se oculta (`revision_reportes = 1`) dentro de la misma transacción. El moderador lo restaura, devolviendo los días que estuvo oculto, o lo da de baja; los reportes pasan a «revisado».
 
-## Seguridad de sesión
+## Seguridad
 
-Contraseñas bcrypt con costo 12, tokens aleatorios de 256 bits y únicamente su SHA-256 guardado en la base seleccionada. La cookie es HttpOnly y SameSite=Strict, expira a los siete días y se revoca al cerrar sesión. La API nunca serializa el hash ni el token. Las escrituras con encabezado Origin ajeno se rechazan. El acceso y registro admiten 30 intentos por IP en 15 minutos. Todas las consultas que contienen datos de usuario usan parámetros.
-
-El alcance es HTTP local enlazado a loopback. Para una operación comercial se necesitarían HTTPS, revisión adicional de seguridad, verificación de identidad/contacto, backups, monitoreo y medidas frente al abuso.
+Contraseñas con bcrypt de costo 12. Tokens de sesión aleatorios de 256 bits, guardados solo como SHA-256. Cookie HttpOnly y SameSite=Strict, que vence en 7 días y se revoca al cerrar sesión. Las escrituras con un `Origin` ajeno se rechazan. Hay límites de intentos de acceso y de pedidos de contacto, y los roles se comprueban en el servidor. Todas las consultas usan parámetros. Los comprobantes y el QR están en una carpeta privada que el servidor estático no expone. El alcance es HTTP local enlazado a `127.0.0.1`; una operación pública necesitaría HTTPS, respaldos, monitoreo y una revisión de seguridad adicional.
