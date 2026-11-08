@@ -37,7 +37,7 @@ export async function createApp(overrides = {}) {
   app.use('/uploads', express.static(config.uploadDir, { dotfiles: 'deny', index: false, maxAge: '7d' }));
   app.use('/demo', express.static(path.join(projectRoot, 'frontend', 'public', 'demo'), { maxAge: '7d' }));
 
-  const loginLimit = rateLimit({ windowMs: 15 * 60 * 1000, limit: 30, standardHeaders: 'draft-8', legacyHeaders: false, message: { message: 'Has realizado varios intentos. Espera unos minutos y vuelve a intentarlo.' } });
+  const loginLimit = rateLimit({ windowMs: 15 * 60 * 1000, limit: config.authAttemptLimit ?? 30, standardHeaders: 'draft-8', legacyHeaders: false, message: { message: 'Has realizado varios intentos. Espera unos minutos y vuelve a intentarlo.' } });
   app.get('/api/health', (_req, res) => res.json({ status: 'ok', nombre: 'AvisoSur' }));
   app.get('/api/categorias', async (_req, res) => {
     const rows = await db.all(`SELECT c.*, (SELECT COUNT(*) FROM anuncios a WHERE a.categoria_id = c.id AND ${publicCondition()}) AS total FROM categorias c WHERE c.activa = 1 ORDER BY c.id`,new Date().toISOString());
