@@ -71,7 +71,7 @@ export async function openDatabase(config) {
   db.function('normalizar', { deterministic: true }, value => String(value || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase());
   migrateSqlite(db);
   db.prepare('DELETE FROM sesiones WHERE expira <= ?').run(new Date().toISOString());
-  if (config.seed !== false) await seedDatabase(db);
+  if (config.seed !== false) await seedDatabase(db, config);
   const raw = {
     kind: 'sqlite',
     prepare: sql => db.prepare(sql), // Disponible para las pruebas existentes.

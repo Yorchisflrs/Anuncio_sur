@@ -1,7 +1,7 @@
 import { describe, it, before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
-import { createIsolatedApp, jsonRequest } from './support.mjs';
+import { createIsolatedApp, jsonRequest, DEMO_TEST_PASSWORD } from './support.mjs';
 import { DEMO_USER } from '../src/seed.mjs';
 
 // Novedad propuesta en la Práctica 9 (1 de 2): celular verificado con un código.
@@ -123,7 +123,7 @@ describe('Novedad · Celular verificado', () => {
   });
 
   it('La cuenta demo, con un número ficticio, no se puede verificar', async () => {
-    const cookie = await app.login(DEMO_USER.correo, DEMO_USER.password);
+    const cookie = await app.login(DEMO_USER.correo, DEMO_TEST_PASSWORD);
     assert.equal((await app.request('/perfil/verificacion', jsonRequest({}, cookie))).response.status, 403);
     assert.equal((await app.request('/admin/verificaciones/1/codigo', jsonRequest({}, admin.cookie))).response.status, 403);
   });

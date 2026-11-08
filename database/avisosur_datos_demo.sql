@@ -14,7 +14,7 @@ INSERT INTO categorias (nombre, subcategorias, activa) SELECT 'Inmuebles', '["De
 
 INSERT INTO categorias (nombre, subcategorias, activa) SELECT 'Electrodomésticos', '["Refrigeradoras","Lavadoras","Televisores","Cocinas","Otros"]', 1 WHERE NOT EXISTS (SELECT 1 FROM categorias WHERE nombre = 'Electrodomésticos');
 
-INSERT INTO usuarios (nombre, correo, celular, password_hash, es_demo, fecha_registro) SELECT 'Vendedor de demostración', 'demo@avisosur.local', '900000000', '$2b$12$9LHa2Uwxagz6qj9LVbzitOoteWzmzlq.sR6uXTMRjshMoVENMyhSC', 1, UTC_TIMESTAMP(3) WHERE NOT EXISTS (SELECT 1 FROM usuarios WHERE correo = 'demo@avisosur.local' OR celular = '900000000');
+INSERT INTO usuarios (nombre, correo, celular, password_hash, es_demo, fecha_registro) SELECT 'Vendedor de demostración', 'demo@avisosur.local', '900000000', '$2b$12$PCSLglQxc6qS8XDzY0feW.DlJbmkb09eKosWlJdRUnld.A7ekxq42', 1, UTC_TIMESTAMP(3) WHERE NOT EXISTS (SELECT 1 FROM usuarios WHERE correo = 'demo@avisosur.local' OR celular = '900000000');
 
 INSERT INTO anuncios (usuario_id, categoria_id, titulo, descripcion, precio, zona, subcategoria, estado, es_demo, fecha_publicacion) SELECT u.id, c.id, 'Moto Honda CB190R · lista para rodar', 'Moto de uso particular, modelo 2021. Motor de 190 cc, mantenimiento al día y documentación de ejemplo. Incluye casco. Ideal para moverse por la ciudad.', 5000.00, 'Puno', 'Motos', 'activo', 1, UTC_TIMESTAMP(3) FROM usuarios u JOIN categorias c ON c.nombre = 'Vehículos' WHERE u.correo = 'demo@avisosur.local' AND NOT EXISTS (SELECT 1 FROM anuncios a WHERE a.usuario_id = u.id AND a.titulo = 'Moto Honda CB190R · lista para rodar' AND a.es_demo = 1);
 

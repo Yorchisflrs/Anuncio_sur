@@ -1,122 +1,137 @@
 <?xml version="1.0" encoding="utf-8"?>
 <testsuites>
-	<testcase name="La migración SQLite conserva datos, relaciones y sesiones; aplica revisión y permite siete fotos" time="0.352686" classname="test" file="backend\test\migration.test.mjs"/>
-	<testsuite name="Moderación, pagos manuales y planes" time="4.852825" disabled="0" errors="0" tests="16" failures="0" skipped="0" hostname="USER-HP">
-		<testcase name="La instalación inicia con anuncios pendientes y sin simular un QR o un pago" time="0.940002" classname="test" file="backend\test\moderation.test.mjs"/>
-		<testcase name="El registro ignora el rol enviado y las operaciones administrativas exigen admin" time="0.409571" classname="test" file="backend\test\moderation.test.mjs"/>
-		<testcase name="Siete fotos se guardan en orden; el anuncio pendiente sólo lo ven propietario y admin" time="0.090359" classname="test" file="backend\test\moderation.test.mjs"/>
-		<testcase name="El comprobante es privado, válido como imagen y no publica automáticamente" time="0.081987" classname="test" file="backend\test\moderation.test.mjs"/>
-		<testcase name="Aprobar exige administrador, confirmación explícita y comprobante o referencia" time="0.037347" classname="test" file="backend\test\moderation.test.mjs"/>
-		<testcase name="La aprobación con comprobante inicia siete días y publica sin exponer el pago" time="0.064682" classname="test" file="backend\test\moderation.test.mjs"/>
-		<testcase name="Una doble aprobación concurrente conserva las fechas y no duplica la vigencia" time="0.032431" classname="test" file="backend\test\moderation.test.mjs"/>
-		<testcase name="Los valores del plan vienen del servidor y la edición posterior no cambia un pendiente" time="0.057261" classname="test" file="backend\test\moderation.test.mjs"/>
-		<testcase name="La promoción configurable corresponde sólo a la primera publicación pagada" time="0.426402" classname="test" file="backend\test\moderation.test.mjs"/>
-		<testcase name="Un plan borrador necesita precio antes de activarse y sólo aparece al habilitarse" time="0.045670" classname="test" file="backend\test\moderation.test.mjs"/>
-		<testcase name="El rechazo exige motivo y el propietario puede leerlo sin publicar el anuncio" time="0.034188" classname="test" file="backend\test\moderation.test.mjs"/>
-		<testcase name="La vigencia vencida desaparece del catálogo, contadores y detalle público sin cron" time="0.053813" classname="test" file="backend\test\moderation.test.mjs"/>
-		<testcase name="Una aprobación sin pago confirmado o sin fecha no se filtra al catálogo público" time="0.039742" classname="test" file="backend\test\moderation.test.mjs"/>
-		<testcase name="El administrador configura el destino y un QR real; su imagen se entrega como archivo" time="0.026580" classname="test" file="backend\test\moderation.test.mjs"/>
-		<testcase name="El identificador DEMO lo determina la cuenta y sobrevive la moderación" time="0.394541" classname="test" file="backend\test\moderation.test.mjs"/>
-		<testcase name="El resumen administrativo calcula ingresos confirmados y excluye ejemplos DEMO" time="0.037365" classname="test" file="backend\test\moderation.test.mjs"/>
+	<testsuite name="Integración · Recorrido completo de un cuarto en alquiler (acta CA-01 a CA-12)" time="3.279472" disabled="0" errors="0" tests="12" failures="0" skipped="0" hostname="USER-HP">
+		<testcase name="CA-01 · El arrendador crea su cuenta con un nombre para mostrar y queda con la sesión abierta" time="0.388080" classname="test" file="backend\test\integracion-recorrido.test.mjs"/>
+		<testcase name="CA-02 · Puede volver a entrar con su celular en vez del correo" time="0.355156" classname="test" file="backend\test\integracion-recorrido.test.mjs"/>
+		<testcase name="CA-05 · Sin celular verificado no puede publicar, y no queda nada guardado" time="0.022022" classname="test" file="backend\test\integracion-recorrido.test.mjs"/>
+		<testcase name="CA-06 · Administración le envía un código: el equivocado se rechaza y el correcto verifica el celular" time="0.017592" classname="test" file="backend\test\integracion-recorrido.test.mjs"/>
+		<testcase name="CA-07 · Publica el cuarto en alquiler con una foto grande tomada con el celular" time="0.350718" classname="test" file="backend\test\integracion-recorrido.test.mjs"/>
+		<testcase name="CA-08 · Adjunta el comprobante de Yape y administración aprueba el pago: el aviso se publica" time="0.033883" classname="test" file="backend\test\integracion-recorrido.test.mjs"/>
+		<testcase name="CA-03 · Una estudiante, sin cuenta, lo encuentra buscando alquileres hasta S/ 300 en Puno" time="0.014521" classname="test" file="backend\test\integracion-recorrido.test.mjs"/>
+		<testcase name="CA-04 · El celular no está en el catálogo ni en el detalle: aparece solo al pedir el contacto" time="0.009816" classname="test" file="backend\test\integracion-recorrido.test.mjs"/>
+		<testcase name="CA-09 · El arrendador ve en su perfil cuántas personas pidieron su contacto, contando una vez a cada una" time="1.088768" classname="test" file="backend\test\integracion-recorrido.test.mjs"/>
+		<testcase name="CA-10 y CA-11 · Reportan el aviso: la misma persona no puede repetir y con dos reportes sigue publicado" time="0.019304" classname="test" file="backend\test\integracion-recorrido.test.mjs"/>
+		<testcase name="CA-10 · El tercer reporte de otra cuenta verificada oculta el aviso del catálogo, del detalle y del contacto" time="0.013727" classname="test" file="backend\test\integracion-recorrido.test.mjs"/>
+		<testcase name="CA-12 · El moderador revisa los tres motivos y lo restaura: vuelve al catálogo y los reportes quedan revisados" time="0.021262" classname="test" file="backend\test\integracion-recorrido.test.mjs"/>
 	</testsuite>
-	<testcase name="MySQL/MariaDB temporal: migración legado, moderación, siete fotos y vigencia" time="0.002063" classname="test" file="backend\test\mysql-integration.test.mjs">
+	<testcase name="La migración SQLite conserva datos, relaciones y sesiones; aplica revisión y permite siete fotos" time="0.271510" classname="test" file="backend\test\migration.test.mjs"/>
+	<testsuite name="Moderación, pagos manuales y planes" time="4.105839" disabled="0" errors="0" tests="16" failures="0" skipped="0" hostname="USER-HP">
+		<testcase name="La instalación inicia con anuncios pendientes y sin simular un QR o un pago" time="0.849949" classname="test" file="backend\test\moderation.test.mjs"/>
+		<testcase name="El registro ignora el rol enviado y las operaciones administrativas exigen admin" time="0.357192" classname="test" file="backend\test\moderation.test.mjs"/>
+		<testcase name="Siete fotos se guardan en orden; el anuncio pendiente sólo lo ven propietario y admin" time="0.068819" classname="test" file="backend\test\moderation.test.mjs"/>
+		<testcase name="El comprobante es privado, válido como imagen y no publica automáticamente" time="0.064334" classname="test" file="backend\test\moderation.test.mjs"/>
+		<testcase name="Aprobar exige administrador, confirmación explícita y comprobante o referencia" time="0.023217" classname="test" file="backend\test\moderation.test.mjs"/>
+		<testcase name="La aprobación con comprobante inicia siete días y publica sin exponer el pago" time="0.071630" classname="test" file="backend\test\moderation.test.mjs"/>
+		<testcase name="Una doble aprobación concurrente conserva las fechas y no duplica la vigencia" time="0.024145" classname="test" file="backend\test\moderation.test.mjs"/>
+		<testcase name="Los valores del plan vienen del servidor y la edición posterior no cambia un pendiente" time="0.052332" classname="test" file="backend\test\moderation.test.mjs"/>
+		<testcase name="La promoción configurable corresponde sólo a la primera publicación pagada" time="0.371733" classname="test" file="backend\test\moderation.test.mjs"/>
+		<testcase name="Un plan borrador necesita precio antes de activarse y sólo aparece al habilitarse" time="0.051131" classname="test" file="backend\test\moderation.test.mjs"/>
+		<testcase name="El rechazo exige motivo y el propietario puede leerlo sin publicar el anuncio" time="0.025822" classname="test" file="backend\test\moderation.test.mjs"/>
+		<testcase name="La vigencia vencida desaparece del catálogo, contadores y detalle público sin cron" time="0.037858" classname="test" file="backend\test\moderation.test.mjs"/>
+		<testcase name="Una aprobación sin pago confirmado o sin fecha no se filtra al catálogo público" time="0.040625" classname="test" file="backend\test\moderation.test.mjs"/>
+		<testcase name="El administrador configura el destino y un QR real; su imagen se entrega como archivo" time="0.017730" classname="test" file="backend\test\moderation.test.mjs"/>
+		<testcase name="El identificador DEMO lo determina la cuenta y sobrevive la moderación" time="0.345371" classname="test" file="backend\test\moderation.test.mjs"/>
+		<testcase name="El resumen administrativo calcula ingresos confirmados y excluye ejemplos DEMO" time="0.024070" classname="test" file="backend\test\moderation.test.mjs"/>
+	</testsuite>
+	<testcase name="MySQL/MariaDB temporal: migración legado, moderación, siete fotos y vigencia" time="0.001403" classname="test" file="backend\test\mysql-integration.test.mjs">
 		<skipped type="skipped" message="Activar expresamente con AVISOSUR_TEST_MYSQL=1; no se conecta a MySQL por defecto."/>
 	</testcase>
-	<testcase name="consultas MySQL usan precio decimal y parámetros, sin sintaxis SQLite" time="0.012133" classname="test" file="backend\test\mysql.test.mjs"/>
-	<testcase name="validación acepta categorías JSON decodificadas por MySQL" time="0.003934" classname="test" file="backend\test\mysql.test.mjs"/>
-	<testsuite name="Novedad · Celular verificado" time="6.048334" disabled="0" errors="0" tests="11" failures="0" skipped="0" hostname="USER-HP">
-		<testcase name="Un usuario sin verificar puede mirar avisos, pero si intenta publicar recibe 403" time="0.501118" classname="test" file="backend\test\novedad-celular-verificado.test.mjs"/>
-		<testcase name="Al registrarse, la cuenta queda pendiente en la lista de administración" time="0.435178" classname="test" file="backend\test\novedad-celular-verificado.test.mjs"/>
-		<testcase name="Un código equivocado devuelve 422 y descuenta un intento" time="0.444766" classname="test" file="backend\test\novedad-celular-verificado.test.mjs"/>
-		<testcase name="Después de cinco intentos fallidos el código deja de servir" time="0.470729" classname="test" file="backend\test\novedad-celular-verificado.test.mjs"/>
-		<testcase name="Un código vencido no sirve" time="0.399233" classname="test" file="backend\test\novedad-celular-verificado.test.mjs"/>
-		<testcase name="Con el código correcto el celular queda verificado y ya puede publicar" time="0.450641" classname="test" file="backend\test\novedad-celular-verificado.test.mjs"/>
-		<testcase name="El código no se guarda en texto plano" time="0.381146" classname="test" file="backend\test\novedad-celular-verificado.test.mjs"/>
-		<testcase name="Administración puede verificar en persona, con una confirmación explícita" time="0.382237" classname="test" file="backend\test\novedad-celular-verificado.test.mjs"/>
-		<testcase name="Solo administración ve la lista, genera códigos o verifica en persona" time="0.713294" classname="test" file="backend\test\novedad-celular-verificado.test.mjs"/>
-		<testcase name="La insignia aparece en el catálogo y el detalle muestra avisos publicados y dados de baja" time="0.373200" classname="test" file="backend\test\novedad-celular-verificado.test.mjs"/>
-		<testcase name="La cuenta demo, con un número ficticio, no se puede verificar" time="0.336215" classname="test" file="backend\test\novedad-celular-verificado.test.mjs"/>
+	<testcase name="consultas MySQL usan precio decimal y parámetros, sin sintaxis SQLite" time="0.008396" classname="test" file="backend\test\mysql.test.mjs"/>
+	<testcase name="validación acepta categorías JSON decodificadas por MySQL" time="0.004246" classname="test" file="backend\test\mysql.test.mjs"/>
+	<testsuite name="Novedad · Celular verificado" time="5.231854" disabled="0" errors="0" tests="11" failures="0" skipped="0" hostname="USER-HP">
+		<testcase name="Un usuario sin verificar puede mirar avisos, pero si intenta publicar recibe 403" time="0.417975" classname="test" file="backend\test\novedad-celular-verificado.test.mjs"/>
+		<testcase name="Al registrarse, la cuenta queda pendiente en la lista de administración" time="0.418445" classname="test" file="backend\test\novedad-celular-verificado.test.mjs"/>
+		<testcase name="Un código equivocado devuelve 422 y descuenta un intento" time="0.390259" classname="test" file="backend\test\novedad-celular-verificado.test.mjs"/>
+		<testcase name="Después de cinco intentos fallidos el código deja de servir" time="0.389210" classname="test" file="backend\test\novedad-celular-verificado.test.mjs"/>
+		<testcase name="Un código vencido no sirve" time="0.350052" classname="test" file="backend\test\novedad-celular-verificado.test.mjs"/>
+		<testcase name="Con el código correcto el celular queda verificado y ya puede publicar" time="0.391766" classname="test" file="backend\test\novedad-celular-verificado.test.mjs"/>
+		<testcase name="El código no se guarda en texto plano" time="0.334830" classname="test" file="backend\test\novedad-celular-verificado.test.mjs"/>
+		<testcase name="Administración puede verificar en persona, con una confirmación explícita" time="0.326199" classname="test" file="backend\test\novedad-celular-verificado.test.mjs"/>
+		<testcase name="Solo administración ve la lista, genera códigos o verifica en persona" time="0.636378" classname="test" file="backend\test\novedad-celular-verificado.test.mjs"/>
+		<testcase name="La insignia aparece en el catálogo y el detalle muestra avisos publicados y dados de baja" time="0.356365" classname="test" file="backend\test\novedad-celular-verificado.test.mjs"/>
+		<testcase name="La cuenta demo, con un número ficticio, no se puede verificar" time="0.307337" classname="test" file="backend\test\novedad-celular-verificado.test.mjs"/>
 	</testsuite>
-	<testsuite name="Novedad · Reporte de estafa y revisión automática" time="4.469952" disabled="0" errors="0" tests="11" failures="0" skipped="0" hostname="USER-HP">
-		<testcase name="Reportar un aviso exige iniciar sesión" time="0.049193" classname="test" file="backend\test\novedad-reportes.test.mjs"/>
-		<testcase name="Solo se aceptan los motivos de la lista y un detalle de hasta 500 caracteres" time="0.031675" classname="test" file="backend\test\novedad-reportes.test.mjs"/>
-		<testcase name="El vendedor no puede reportar su propio aviso" time="0.027179" classname="test" file="backend\test\novedad-reportes.test.mjs"/>
-		<testcase name="La misma persona reporta dos veces el mismo aviso → 409" time="0.029841" classname="test" file="backend\test\novedad-reportes.test.mjs"/>
-		<testcase name="Dos reportes de cuentas verificadas → el aviso sigue en el catálogo" time="0.037097" classname="test" file="backend\test\novedad-reportes.test.mjs"/>
-		<testcase name="El tercero de otra cuenta verificada → ya no aparece en /api/anuncios ni en el detalle público" time="0.049555" classname="test" file="backend\test\novedad-reportes.test.mjs"/>
-		<testcase name="Los reportes de cuentas sin verificar se guardan, pero no ocultan el aviso" time="0.053079" classname="test" file="backend\test\novedad-reportes.test.mjs"/>
-		<testcase name="Solo administración ve y resuelve los reportes" time="0.040788" classname="test" file="backend\test\novedad-reportes.test.mjs"/>
-		<testcase name="La página del moderador agrupa los reportes pendientes por aviso, primero los ocultos" time="0.045911" classname="test" file="backend\test\novedad-reportes.test.mjs"/>
-		<testcase name="El moderador restaura el aviso: vuelve al catálogo, recupera sus días y los reportes pasan a revisados" time="0.045333" classname="test" file="backend\test\novedad-reportes.test.mjs"/>
-		<testcase name="El moderador da de baja el aviso: no vuelve al catálogo y los reportes pasan a revisados" time="0.043126" classname="test" file="backend\test\novedad-reportes.test.mjs"/>
+	<testsuite name="Novedad · Reporte de estafa y revisión automática" time="3.829377" disabled="0" errors="0" tests="11" failures="0" skipped="0" hostname="USER-HP">
+		<testcase name="Reportar un aviso exige iniciar sesión" time="0.053878" classname="test" file="backend\test\novedad-reportes.test.mjs"/>
+		<testcase name="Solo se aceptan los motivos de la lista y un detalle de hasta 500 caracteres" time="0.021691" classname="test" file="backend\test\novedad-reportes.test.mjs"/>
+		<testcase name="El vendedor no puede reportar su propio aviso" time="0.018216" classname="test" file="backend\test\novedad-reportes.test.mjs"/>
+		<testcase name="La misma persona reporta dos veces el mismo aviso → 409" time="0.027723" classname="test" file="backend\test\novedad-reportes.test.mjs"/>
+		<testcase name="Dos reportes de cuentas verificadas → el aviso sigue en el catálogo" time="0.035165" classname="test" file="backend\test\novedad-reportes.test.mjs"/>
+		<testcase name="El tercero de otra cuenta verificada → ya no aparece en /api/anuncios ni en el detalle público" time="0.041810" classname="test" file="backend\test\novedad-reportes.test.mjs"/>
+		<testcase name="Los reportes de cuentas sin verificar se guardan, pero no ocultan el aviso" time="0.028910" classname="test" file="backend\test\novedad-reportes.test.mjs"/>
+		<testcase name="Solo administración ve y resuelve los reportes" time="0.033201" classname="test" file="backend\test\novedad-reportes.test.mjs"/>
+		<testcase name="La página del moderador agrupa los reportes pendientes por aviso, primero los ocultos" time="0.043206" classname="test" file="backend\test\novedad-reportes.test.mjs"/>
+		<testcase name="El moderador restaura el aviso: vuelve al catálogo, recupera sus días y los reportes pasan a revisados" time="0.035873" classname="test" file="backend\test\novedad-reportes.test.mjs"/>
+		<testcase name="El moderador da de baja el aviso: no vuelve al catálogo y los reportes pasan a revisados" time="0.033469" classname="test" file="backend\test\novedad-reportes.test.mjs"/>
 	</testsuite>
-	<testsuite name="RF-01 · Cuenta y acceso" time="5.850197" disabled="0" errors="0" tests="11" failures="0" skipped="0" hostname="USER-HP">
-		<testcase name="El registro guarda un hash bcrypt de costo 12 y abre sesión con cookie HttpOnly y SameSite=Strict" time="1.030768" classname="test" file="backend\test\rf01-cuenta.test.mjs"/>
-		<testcase name="La API no expone la contraseña, su hash ni el token; la base guarda solo el SHA-256 del token" time="0.434429" classname="test" file="backend\test\rf01-cuenta.test.mjs"/>
-		<testcase name="Datos inválidos devuelven 422 con un mensaje por cada campo" time="0.008636" classname="test" file="backend\test\rf01-cuenta.test.mjs"/>
-		<testcase name="El nombre para mostrar no acepta un correo, un enlace ni un número de teléfono" time="0.020911" classname="test" file="backend\test\rf01-cuenta.test.mjs"/>
-		<testcase name="Una cuenta puede cambiar su nombre para mostrar desde su perfil" time="0.427541" classname="test" file="backend\test\rf01-cuenta.test.mjs"/>
-		<testcase name="Un correo o celular ya registrado devuelve 409 sin crear otra cuenta" time="0.796535" classname="test" file="backend\test\rf01-cuenta.test.mjs"/>
-		<testcase name="Se puede iniciar sesión con el correo o con el celular" time="1.138155" classname="test" file="backend\test\rf01-cuenta.test.mjs"/>
-		<testcase name="Una contraseña incorrecta devuelve 401 con un mensaje comprensible" time="0.694054" classname="test" file="backend\test\rf01-cuenta.test.mjs"/>
-		<testcase name="Las rutas privadas exigen sesión" time="0.007508" classname="test" file="backend\test\rf01-cuenta.test.mjs"/>
-		<testcase name="Una escritura enviada desde otro sitio se rechaza con 403" time="0.353428" classname="test" file="backend\test\rf01-cuenta.test.mjs"/>
-		<testcase name="Cerrar sesión revoca el token: el perfil vuelve a pedir sesión" time="0.362302" classname="test" file="backend\test\rf01-cuenta.test.mjs"/>
+	<testsuite name="RF-01 · Cuenta y acceso" time="5.124303" disabled="0" errors="0" tests="11" failures="0" skipped="0" hostname="USER-HP">
+		<testcase name="El registro guarda un hash bcrypt de costo 12 y abre sesión con cookie HttpOnly y SameSite=Strict" time="0.825691" classname="test" file="backend\test\rf01-cuenta.test.mjs"/>
+		<testcase name="La API no expone la contraseña, su hash ni el token; la base guarda solo el SHA-256 del token" time="0.419654" classname="test" file="backend\test\rf01-cuenta.test.mjs"/>
+		<testcase name="Datos inválidos devuelven 422 con un mensaje por cada campo" time="0.013683" classname="test" file="backend\test\rf01-cuenta.test.mjs"/>
+		<testcase name="El nombre para mostrar no acepta un correo, un enlace ni un número de teléfono" time="0.022956" classname="test" file="backend\test\rf01-cuenta.test.mjs"/>
+		<testcase name="Una cuenta puede cambiar su nombre para mostrar desde su perfil" time="0.388008" classname="test" file="backend\test\rf01-cuenta.test.mjs"/>
+		<testcase name="Un correo o celular ya registrado devuelve 409 sin crear otra cuenta" time="0.698860" classname="test" file="backend\test\rf01-cuenta.test.mjs"/>
+		<testcase name="Se puede iniciar sesión con el correo o con el celular" time="1.011282" classname="test" file="backend\test\rf01-cuenta.test.mjs"/>
+		<testcase name="Una contraseña incorrecta devuelve 401 con un mensaje comprensible" time="0.626625" classname="test" file="backend\test\rf01-cuenta.test.mjs"/>
+		<testcase name="Las rutas privadas exigen sesión" time="0.004346" classname="test" file="backend\test\rf01-cuenta.test.mjs"/>
+		<testcase name="Una escritura enviada desde otro sitio se rechaza con 403" time="0.312913" classname="test" file="backend\test\rf01-cuenta.test.mjs"/>
+		<testcase name="Cerrar sesión revoca el token: el perfil vuelve a pedir sesión" time="0.311117" classname="test" file="backend\test\rf01-cuenta.test.mjs"/>
 	</testsuite>
-	<testsuite name="RNF-03 · Protección del acceso" time="1.559078" disabled="0" errors="0" tests="1" failures="0" skipped="0" hostname="USER-HP">
-		<testcase name="Superar el límite de intentos devuelve 429 con un mensaje claro" time="1.558461" classname="test" file="backend\test\rf01-cuenta.test.mjs"/>
+	<testsuite name="RNF-03 · Protección del acceso" time="2.336887" disabled="0" errors="0" tests="2" failures="0" skipped="0" hostname="USER-HP">
+		<testcase name="Superar el límite de intentos devuelve 429 con un mensaje claro" time="1.309507" classname="test" file="backend\test\rf01-cuenta.test.mjs"/>
+		<testcase name="La cuenta demo no tiene una contraseña escrita en el código: sin DEMO_PASSWORD recibe una clave aleatoria" time="1.027062" classname="test" file="backend\test\rf01-cuenta.test.mjs"/>
 	</testsuite>
-	<testsuite name="RF-02 · Publicación de anuncios" time="4.695932" disabled="0" errors="0" tests="15" failures="0" skipped="0" hostname="USER-HP">
-		<testcase name="Un anuncio por S/ 1 con tres fotos se guarda en menos de cinco segundos como solicitud privada" time="0.220295" classname="test" file="backend\test\rf02-publicacion.test.mjs"/>
-		<testcase name="Al aprobarse, el anuncio aparece en el catálogo y su foto se sirve como WebP" time="0.487558" classname="test" file="backend\test\rf02-publicacion.test.mjs"/>
-		<testcase name="Precio S/ 0 y categoría vacía devuelven 422 sin guardar el anuncio ni sus fotos" time="0.005863" classname="test" file="backend\test\rf02-publicacion.test.mjs"/>
-		<testcase name="La foto, la descripción y la zona son obligatorias" time="0.006232" classname="test" file="backend\test\rf02-publicacion.test.mjs"/>
-		<testcase name="Un archivo que no es una imagen real se rechaza aunque diga ser PNG" time="0.009709" classname="test" file="backend\test\rf02-publicacion.test.mjs"/>
-		<testcase name="Ocho fotos se rechazan sin dejar anuncios ni archivos huérfanos" time="0.013432" classname="test" file="backend\test\rf02-publicacion.test.mjs"/>
-		<testcase name="Una foto de celular de más de 2 MB se acepta y se guarda reducida a 1600 px en WebP" time="0.806244" classname="test" file="backend\test\rf02-publicacion.test.mjs"/>
-		<testcase name="Las fotos WebP y AVIF también se aceptan" time="0.196096" classname="test" file="backend\test\rf02-publicacion.test.mjs"/>
-		<testcase name="Una foto de más de 10 MB o en un formato no permitido se rechaza con un mensaje claro" time="0.071393" classname="test" file="backend\test\rf02-publicacion.test.mjs"/>
-		<testcase name="Solo el propietario da de baja su anuncio; el registro se conserva y deja de ser público" time="0.444035" classname="test" file="backend\test\rf02-publicacion.test.mjs"/>
-		<testcase name="El aviso indica si es venta o alquiler; sin el campo se guarda como venta" time="0.038839" classname="test" file="backend\test\rf02-publicacion.test.mjs"/>
-		<testcase name="El aviso muestra el nombre elegido por el vendedor, nunca una parte de su correo" time="0.413521" classname="test" file="backend\test\rf02-publicacion.test.mjs"/>
-		<testcase name="La cuenta demo de la documentación no puede publicar: su celular es ficticio y no está verificado" time="0.369334" classname="test" file="backend\test\rf02-publicacion.test.mjs"/>
-		<testcase name="Un aviso de una cuenta DEMO conserva la marca aunque el formulario intente quitarla" time="0.402754" classname="test" file="backend\test\rf02-publicacion.test.mjs"/>
-		<testcase name="Los campos de moderación enviados por el vendedor se ignoran" time="0.017185" classname="test" file="backend\test\rf02-publicacion.test.mjs"/>
+	<testsuite name="RF-02 · Publicación de anuncios" time="3.991486" disabled="0" errors="0" tests="15" failures="0" skipped="0" hostname="USER-HP">
+		<testcase name="Un anuncio por S/ 1 con tres fotos se guarda en menos de cinco segundos como solicitud privada" time="0.171204" classname="test" file="backend\test\rf02-publicacion.test.mjs"/>
+		<testcase name="Al aprobarse, el anuncio aparece en el catálogo y su foto se sirve como WebP" time="0.425574" classname="test" file="backend\test\rf02-publicacion.test.mjs"/>
+		<testcase name="Precio S/ 0 y categoría vacía devuelven 422 sin guardar el anuncio ni sus fotos" time="0.009313" classname="test" file="backend\test\rf02-publicacion.test.mjs"/>
+		<testcase name="La foto, la descripción y la zona son obligatorias" time="0.004980" classname="test" file="backend\test\rf02-publicacion.test.mjs"/>
+		<testcase name="Un archivo que no es una imagen real se rechaza aunque diga ser PNG" time="0.008986" classname="test" file="backend\test\rf02-publicacion.test.mjs"/>
+		<testcase name="Ocho fotos se rechazan sin dejar anuncios ni archivos huérfanos" time="0.014959" classname="test" file="backend\test\rf02-publicacion.test.mjs"/>
+		<testcase name="Una foto de celular de más de 2 MB se acepta y se guarda reducida a 1600 px en WebP" time="0.683280" classname="test" file="backend\test\rf02-publicacion.test.mjs"/>
+		<testcase name="Las fotos WebP y AVIF también se aceptan" time="0.126021" classname="test" file="backend\test\rf02-publicacion.test.mjs"/>
+		<testcase name="Una foto de más de 10 MB o en un formato no permitido se rechaza con un mensaje claro" time="0.082153" classname="test" file="backend\test\rf02-publicacion.test.mjs"/>
+		<testcase name="Solo el propietario da de baja su anuncio; el registro se conserva y deja de ser público" time="0.371981" classname="test" file="backend\test\rf02-publicacion.test.mjs"/>
+		<testcase name="El aviso indica si es venta o alquiler; sin el campo se guarda como venta" time="0.029368" classname="test" file="backend\test\rf02-publicacion.test.mjs"/>
+		<testcase name="El aviso muestra el nombre elegido por el vendedor, nunca una parte de su correo" time="0.377940" classname="test" file="backend\test\rf02-publicacion.test.mjs"/>
+		<testcase name="La cuenta demo no puede publicar: su celular es ficticio y no está verificado" time="0.336838" classname="test" file="backend\test\rf02-publicacion.test.mjs"/>
+		<testcase name="Un aviso de una cuenta DEMO conserva la marca aunque el formulario intente quitarla" time="0.343235" classname="test" file="backend\test\rf02-publicacion.test.mjs"/>
+		<testcase name="Los campos de moderación enviados por el vendedor se ignoran" time="0.016830" classname="test" file="backend\test\rf02-publicacion.test.mjs"/>
 	</testsuite>
-	<testsuite name="RF-03 · Consulta y búsqueda" time="2.271302" disabled="0" errors="0" tests="11" failures="0" skipped="0" hostname="USER-HP">
-		<testcase name="Una instalación nueva deja los 16 anuncios DEMO pendientes y el catálogo público vacío" time="0.480387" classname="test" file="backend\test\rf03-busqueda.test.mjs"/>
-		<testcase name="Los anuncios aprobados cubren las tres categorías, Puno y Juliaca" time="0.005441" classname="test" file="backend\test\rf03-busqueda.test.mjs"/>
-		<testcase name="El rango de precios incluye ambos extremos: Vehículos entre S/ 0 y S/ 5000" time="0.009716" classname="test" file="backend\test\rf03-busqueda.test.mjs"/>
-		<testcase name="Los filtros se combinan: categoría, subcategoría, zona, precio y texto" time="0.003337" classname="test" file="backend\test\rf03-busqueda.test.mjs"/>
-		<testcase name="El filtro de operación separa ventas de alquileres" time="0.007726" classname="test" file="backend\test\rf03-busqueda.test.mjs"/>
-		<testcase name="La búsqueda ignora tildes y mayúsculas" time="0.003499" classname="test" file="backend\test\rf03-busqueda.test.mjs"/>
-		<testcase name="Un rango con mínimo mayor que el máximo devuelve 422" time="0.002114" classname="test" file="backend\test\rf03-busqueda.test.mjs"/>
-		<testcase name="Una búsqueda sin coincidencias devuelve una lista vacía" time="0.003672" classname="test" file="backend\test\rf03-busqueda.test.mjs"/>
-		<testcase name="Un texto con SQL se busca como dato, sin alterar la consulta" time="0.004357" classname="test" file="backend\test\rf03-busqueda.test.mjs"/>
-		<testcase name="El orden por precio es ascendente o descendente según se pida" time="0.005585" classname="test" file="backend\test\rf03-busqueda.test.mjs"/>
-		<testcase name="La paginación respeta el límite pedido y calcula el total de páginas" time="0.004706" classname="test" file="backend\test\rf03-busqueda.test.mjs"/>
+	<testsuite name="RF-03 · Consulta y búsqueda" time="1.993309" disabled="0" errors="0" tests="11" failures="0" skipped="0" hostname="USER-HP">
+		<testcase name="Una instalación nueva deja los 16 anuncios DEMO pendientes y el catálogo público vacío" time="0.482903" classname="test" file="backend\test\rf03-busqueda.test.mjs"/>
+		<testcase name="Los anuncios aprobados cubren las tres categorías, Puno y Juliaca" time="0.003817" classname="test" file="backend\test\rf03-busqueda.test.mjs"/>
+		<testcase name="El rango de precios incluye ambos extremos: Vehículos entre S/ 0 y S/ 5000" time="0.012572" classname="test" file="backend\test\rf03-busqueda.test.mjs"/>
+		<testcase name="Los filtros se combinan: categoría, subcategoría, zona, precio y texto" time="0.003191" classname="test" file="backend\test\rf03-busqueda.test.mjs"/>
+		<testcase name="El filtro de operación separa ventas de alquileres" time="0.011226" classname="test" file="backend\test\rf03-busqueda.test.mjs"/>
+		<testcase name="La búsqueda ignora tildes y mayúsculas" time="0.005756" classname="test" file="backend\test\rf03-busqueda.test.mjs"/>
+		<testcase name="Un rango con mínimo mayor que el máximo devuelve 422" time="0.011407" classname="test" file="backend\test\rf03-busqueda.test.mjs"/>
+		<testcase name="Una búsqueda sin coincidencias devuelve una lista vacía" time="0.003842" classname="test" file="backend\test\rf03-busqueda.test.mjs"/>
+		<testcase name="Un texto con SQL se busca como dato, sin alterar la consulta" time="0.002678" classname="test" file="backend\test\rf03-busqueda.test.mjs"/>
+		<testcase name="El orden por precio es ascendente o descendente según se pida" time="0.005880" classname="test" file="backend\test\rf03-busqueda.test.mjs"/>
+		<testcase name="La paginación respeta el límite pedido y calcula el total de páginas" time="0.004213" classname="test" file="backend\test\rf03-busqueda.test.mjs"/>
 	</testsuite>
-	<testsuite name="RF-03 · Persistencia" time="1.292976" disabled="0" errors="0" tests="1" failures="0" skipped="0" hostname="USER-HP">
-		<testcase name="Los anuncios, fotos y sesiones persisten al reiniciar, y el seed no se duplica" time="1.292710" classname="test" file="backend\test\rf03-busqueda.test.mjs"/>
+	<testsuite name="RF-03 · Persistencia" time="1.123690" disabled="0" errors="0" tests="1" failures="0" skipped="0" hostname="USER-HP">
+		<testcase name="Los anuncios, fotos y sesiones persisten al reiniciar, y el seed no se duplica" time="1.122074" classname="test" file="backend\test\rf03-busqueda.test.mjs"/>
 	</testsuite>
-	<testsuite name="RF-04 · Contacto por WhatsApp" time="1.672605" disabled="0" errors="0" tests="6" failures="0" skipped="0" hostname="USER-HP">
-		<testcase name="GET /api/anuncios/:id ya no trae el celular ni el enlace de WhatsApp" time="0.007202" classname="test" file="backend\test\rf04-contacto.test.mjs"/>
-		<testcase name="El catálogo público tampoco incluye celulares" time="0.005193" classname="test" file="backend\test\rf04-contacto.test.mjs"/>
-		<testcase name="Al pedir el contacto se entrega el enlace con prefijo 51, el celular del anuncio y el mensaje exacto" time="0.006977" classname="test" file="backend\test\rf04-contacto.test.mjs"/>
-		<testcase name="Sin un celular propio en el anuncio se usa el de la cuenta, como el aviso DEMO" time="0.006311" classname="test" file="backend\test\rf04-contacto.test.mjs"/>
-		<testcase name="El contacto de un aviso que no es público devuelve 404" time="0.020800" classname="test" file="backend\test\rf04-contacto.test.mjs"/>
-		<testcase name="El propietario y la administración siguen viendo el celular en la vista privada" time="0.008975" classname="test" file="backend\test\rf04-contacto.test.mjs"/>
+	<testsuite name="RF-04 · Contacto por WhatsApp" time="1.381746" disabled="0" errors="0" tests="6" failures="0" skipped="0" hostname="USER-HP">
+		<testcase name="GET /api/anuncios/:id ya no trae el celular ni el enlace de WhatsApp" time="0.004579" classname="test" file="backend\test\rf04-contacto.test.mjs"/>
+		<testcase name="El catálogo público tampoco incluye celulares" time="0.006184" classname="test" file="backend\test\rf04-contacto.test.mjs"/>
+		<testcase name="Al pedir el contacto se entrega el enlace con prefijo 51, el celular del anuncio y el mensaje exacto" time="0.006929" classname="test" file="backend\test\rf04-contacto.test.mjs"/>
+		<testcase name="Sin un celular propio en el anuncio se usa el de la cuenta, como el aviso DEMO" time="0.004385" classname="test" file="backend\test\rf04-contacto.test.mjs"/>
+		<testcase name="El contacto de un aviso que no es público devuelve 404" time="0.019560" classname="test" file="backend\test\rf04-contacto.test.mjs"/>
+		<testcase name="El propietario y la administración siguen viendo el celular en la vista privada" time="0.005664" classname="test" file="backend\test\rf04-contacto.test.mjs"/>
 	</testsuite>
-	<testsuite name="RF-04 · Límite de pedidos y personas interesadas" time="3.349025" disabled="0" errors="0" tests="2" failures="0" skipped="0" hostname="USER-HP">
-		<testcase name="Una persona que pide demasiados contactos recibe 429" time="1.370488" classname="test" file="backend\test\rf04-contacto.test.mjs"/>
-		<testcase name="El vendedor ve cuántas personas distintas pidieron su contacto" time="1.977887" classname="test" file="backend\test\rf04-contacto.test.mjs"/>
+	<testsuite name="RF-04 · Límite de pedidos y personas interesadas" time="2.930969" disabled="0" errors="0" tests="2" failures="0" skipped="0" hostname="USER-HP">
+		<testcase name="Una persona que pide demasiados contactos recibe 429" time="1.187836" classname="test" file="backend\test\rf04-contacto.test.mjs"/>
+		<testcase name="El vendedor ve cuántas personas distintas pidieron su contacto" time="1.742678" classname="test" file="backend\test\rf04-contacto.test.mjs"/>
 	</testsuite>
-	<!-- tests 89 -->
-	<!-- suites 10 -->
-	<!-- pass 88 -->
+	<!-- tests 102 -->
+	<!-- suites 11 -->
+	<!-- pass 101 -->
 	<!-- fail 0 -->
 	<!-- cancelled 0 -->
 	<!-- skipped 1 -->
 	<!-- todo 0 -->
-	<!-- duration_ms 8483.9958 -->
+	<!-- duration_ms 8315.1397 -->
 </testsuites>

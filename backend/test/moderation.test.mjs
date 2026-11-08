@@ -1,7 +1,7 @@
 import { describe, it, before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
-import { createIsolatedApp, isolatedApp, jsonRequest, testPicture } from './support.mjs';
+import { createIsolatedApp, isolatedApp, jsonRequest, testPicture, DEMO_TEST_PASSWORD } from './support.mjs';
 import { DEMO_USER } from '../src/seed.mjs';
 
 const day = 24 * 60 * 60 * 1000;
@@ -261,7 +261,7 @@ describe('Moderación, pagos manuales y planes', () => {
   });
 
   it('El identificador DEMO lo determina la cuenta y sobrevive la moderación', async () => {
-    const cookie = await app.login(DEMO_USER.correo, DEMO_USER.password);
+    const cookie = await app.login(DEMO_USER.correo, DEMO_TEST_PASSWORD);
     await app.verify(1); // Solo en la base temporal: la cuenta demo real no puede verificarse ni publicar.
     const ad = listingOk(await app.listing(cookie, { titulo: 'DEMO conservado después de aprobar', demo: 'false', es_demo: '0' }));
     assert.equal(ad.demo, true); assert.equal(ad.vendedor.demo, true); assert.equal(ad.moderacion, 'pendiente');

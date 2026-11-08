@@ -38,15 +38,11 @@ Abre **http://127.0.0.1:3001**. Para usar el MySQL de XAMPP, sigue [docs/MYSQL.m
 3. Aprueba los avisos que quieras mostrar en **Revisar anuncios**. Los 16 avisos DEMO se aprueban como cualquier otro.
 4. Las cuentas nuevas aparecen en **Verificar celulares**: genera el código y envíalo por WhatsApp, o verifica en persona.
 
-### Cuenta de demostración
+### Avisos de demostración
 
-| Dato | Valor ficticio |
-| --- | --- |
-| Correo | `demo@avisosur.local` |
-| Celular | `900000000` |
-| Contraseña | `AvisoSur2026!` |
+Los 16 avisos de ejemplo pertenecen a la cuenta «Vendedor de demostración» (`demo@avisosur.local`, celular ficticio `900000000`). Sus tarjetas dicen «Ejemplo» y sus imágenes son ilustraciones, no fotos reales.
 
-Sirve para recorrer la cuenta y el perfil. Su número es ficticio, así que **no se puede verificar ni publicar**: para publicar, crea tu propia cuenta. Las tarjetas de sus avisos dicen «Ejemplo», y sus imágenes son ilustraciones, no fotos reales.
+Esa cuenta **no tiene una contraseña escrita en el código**: al crear la base se le asigna una clave aleatoria que nadie conoce. Como su número es ficticio, tampoco se puede verificar ni publicar. Para probar el sistema, crea tu propia cuenta. Si para una exposición hace falta entrar como demo, define `DEMO_PASSWORD` en `.env` antes de que se cree la base SQLite.
 
 ## Funcionalidades
 
@@ -104,7 +100,7 @@ backend/src/
   reports.mjs           Reportes, revisión automática y moderador
   moderation.mjs        Pago manual, aprobación, planes y resumen
   migrations.mjs        Migraciones aditivas SQLite y MySQL
-backend/test/           Pruebas por requisito (rf01…rf04), novedad, moderación y migración
+backend/test/           Pruebas por requisito (rf01…rf04), novedad, moderación, migración y recorrido completo
 database/               Esquema MySQL, datos DEMO y actualizaciones aditivas
 docs/                   Arquitectura, validación, acta, entrevistas, observaciones y evidencias
 ```
@@ -119,7 +115,7 @@ npm run check            # TypeScript
 npm run build            # compilación de producción
 ```
 
-Cada archivo de `backend/test/` corresponde a un requisito y cada caso es independiente: levanta el servidor real en un puerto libre, hace pedidos HTTP y usa una base y carpetas temporales que borra al terminar. La prueba de integración con MySQL crea y borra su propia base `avisosur_test_<aleatorio>`, y solo corre con `AVISOSUR_TEST_MYSQL=1`. Ninguna prueba toca `avisosur_db`.
+Cada archivo de `backend/test/` corresponde a un requisito y cada caso es independiente: levanta el servidor real en un puerto libre, hace pedidos HTTP y usa una base y carpetas temporales que borra al terminar. `integracion-recorrido.test.mjs` junta todo en una sola historia, en el orden del acta: un arrendador crea su cuenta, verifica su celular, publica un cuarto, paga y lo aprueban; una estudiante lo encuentra y pide el contacto; tres compradores lo reportan y el moderador decide. La prueba de integración con MySQL crea y borra su propia base `avisosur_test_<aleatorio>`, y solo corre con `AVISOSUR_TEST_MYSQL=1`. Ninguna prueba toca `avisosur_db`.
 
 Los resultados de la última ejecución están en [docs/VALIDACION.md](docs/VALIDACION.md). El acta Dado/Cuando/Entonces para otra mesa está en [docs/ACTA_ACEPTACION.md](docs/ACTA_ACEPTACION.md), y la guía de entrevistas en [docs/ENTREVISTAS.md](docs/ENTREVISTAS.md).
 
