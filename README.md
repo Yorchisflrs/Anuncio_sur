@@ -70,6 +70,7 @@ Esa cuenta **no tiene una contraseña escrita en el código**: al crear la base 
 | `/publicar` | Formulario de publicación |
 | `/perfil` | Mis publicaciones, verificación del celular y nombre para mostrar |
 | `/mis-anuncios/:id/pago` | Pago y comprobante de una publicación |
+| `/mis-anuncios/:id/editar` | Edición del aviso propio antes de su aprobación |
 | `/admin` | Revisión, reportes, verificación de celulares, pago y planes |
 
 ## Tecnologías y decisiones
@@ -126,7 +127,7 @@ Copia `.env.example` como `.env` para usar MySQL. Variables principales: `DB_CLI
 ## Límites conocidos
 
 - La verificación del celular depende de que administración envíe el código por WhatsApp; no hay SMS automático.
-- No hay recuperación de contraseña, edición de avisos ni notificaciones.
+- No hay recuperación de contraseña ni notificaciones.
 - Las fotos HEIC se convierten en el navegador cuando este puede abrirlas (Safari). En otros navegadores se pide enviarlas como JPG.
 - RNF-02 (98 % de disponibilidad en 30 días) y la medición de RNF-04 (menos de 4 s en 3G) siguen pendientes de un despliegue real.
 - Antes de operar públicamente faltan HTTPS, términos y privacidad revisados, libro de reclamaciones, respaldos y monitoreo.

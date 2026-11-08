@@ -45,6 +45,7 @@ Las respuestas de error tienen la forma `{ message, fields }`. Códigos principa
 | GET `/api/anuncios/:id/contacto` | Público, con límite | Celular y enlace de WhatsApp de un aviso público; registra a la persona interesada. |
 | POST `/api/anuncios` | Cuenta verificada | Crea una solicitud con fotos o enlaces (403 si el celular no está verificado). |
 | PATCH `/api/anuncios/:id/baja` | Propietario | Da de baja el aviso y conserva el registro. |
+| PATCH `/api/anuncios/:id` | Propietario | Edita título, descripción, precio, zona, venta/alquiler, dirección o referencia antes de la primera aprobación y si no está dado de baja; un rechazado vuelve a pendiente. |
 | POST `/api/anuncios/:id/reportes` | Cuenta | Reporta un aviso público con un motivo fijo (409 si ya lo reportó). |
 | GET `/api/publicacion` | Público | Planes activos y datos de pago. |
 | GET `/api/publicacion/qr` | Público | Imagen del QR de pago. |
