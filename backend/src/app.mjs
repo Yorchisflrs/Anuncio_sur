@@ -13,6 +13,7 @@ import { ApiError, validateRegistration, validateListing, validateDisplayName } 
 import { getCatalog, getListing, getOwnListings, publicCondition } from './listings.mjs';
 import { upload, preparePhotos, persistPhotos, MAX_IMAGE_MB } from './uploads.mjs';
 import { publicationPlan, registerModerationRoutes } from './moderation.mjs';
+import { registerRenewRoutes } from './renovacion.mjs';
 import { registerContactRoutes } from './contact.mjs';
 import { registerVerificationRoutes, requestVerification, requireVerified } from './verification.mjs';
 import { registerReportRoutes } from './reports.mjs';
@@ -130,6 +131,7 @@ export async function createApp(overrides = {}) {
     res.json({ message: 'Anuncio dado de baja. El registro se conserva.' });
   });
   registerModerationRoutes(app,db,auth,config);
+  registerRenewRoutes(app, db, auth);
   app.use('/api', (_req, _res, next) => next(new ApiError(404, 'No encontramos este recurso.')));
   if (fs.existsSync(path.join(config.frontendDist, 'index.html'))) {
     app.use(express.static(config.frontendDist));
