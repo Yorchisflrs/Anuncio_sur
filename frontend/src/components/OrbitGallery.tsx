@@ -9,19 +9,19 @@ import './OrbitGallery.css';
 
 /** One card drifting freely: position from the stage centre, a heading that wanders and a breathing depth. */
 type Floater = { x: number; y: number; heading: number; turn: number; speed: number; phase: number; pulse: number; scale: number };
-type Motion = { floaters: Floater[]; seededFor: string; visible: boolean; front: number };
+type Motion = { floaters: Floater[]; seededFor: string; hovered: number; visible: boolean; front: number };
 type Props = { listings: Listing[]; paused: boolean; onSelect: (id: number) => void; compact?: boolean; balanceCategories?: boolean };
 const wrap = (value: number, length: number) => ((value % length) + length) % length;
 const clamp = (value: number, limit: number) => Math.max(-limit, Math.min(limit, value));
 const angleDiff = (to: number, from: number) => Math.atan2(Math.sin(to - from), Math.cos(to - from));
 
-/** Cards float without a fixed path anywhere inside the stage and keep moving under the pointer. */
+/** Cards float without a fixed path anywhere inside the stage; hovering a card only slows it so it can be clicked. */
 export function OrbitGallery({ listings, paused, onSelect, compact = false, balanceCategories = true }: Props) {
   const rootRef = useRef<HTMLElement>(null);
   const sceneRef = useRef<HTMLDivElement>(null);
   const cardsRef = useRef<(HTMLButtonElement | null)[]>([]);
   const drawRef = useRef<() => void>(() => {});
-  const motion = useRef<Motion>({ floaters: [], seededFor: '', visible: true, front: 0 });
+  const motion = useRef<Motion>({ floaters: [], seededFor: '', hovered: -1, visible: true, front: 0 });
   const [width, setWidth] = useState(900);
   const [group, setGroup] = useState(0);
   const [view, setView] = useState<'bubble' | 'simple'>('bubble');
@@ -64,6 +64,7 @@ export function OrbitGallery({ listings, paused, onSelect, compact = false, bala
   useLayoutEffect(() => {
     cardsRef.current.length = count;
     motion.current.front = 0;
+    motion.current.hovered = -1;
     setFront(0);
   }, [visibleIds, count]);
 
@@ -140,8 +141,9 @@ export function OrbitGallery({ listings, paused, onSelect, compact = false, bala
           // Near an edge, steer gently back towards the open space.
           const nearEdge = Math.max(limitX ? Math.abs(floater.x) / limitX : 1, limitY ? Math.abs(floater.y) / limitY : 1);
           if (nearEdge > .8) floater.heading += angleDiff(Math.atan2(-floater.y, -floater.x), floater.heading) * Math.min(1, (nearEdge - .8) * 6 * seconds);
-          floater.x += Math.cos(floater.heading) * floater.speed * seconds;
-          floater.y += Math.sin(floater.heading) * floater.speed * seconds;
+          const speed = floater.speed * (index === state.hovered ? .2 : 1);
+          floater.x += Math.cos(floater.heading) * speed * seconds;
+          floater.y += Math.sin(floater.heading) * speed * seconds;
           if (Math.abs(floater.x) > limitX) { floater.x = clamp(floater.x, limitX); floater.heading = Math.PI - floater.heading; }
           if (Math.abs(floater.y) > limitY) { floater.y = clamp(floater.y, limitY); floater.heading = -floater.heading; }
         });
@@ -194,6 +196,7 @@ export function OrbitGallery({ listings, paused, onSelect, compact = false, bala
     <header className="bubble-heading"><div><span className="bubble-label"><Layers3 size={17}/>{compact ? 'DESCUBRE EL SUR' : 'ANUNCIOS EN MOVIMIENTO'}</span><p>{view === 'bubble' ? 'Elige y descubre cada detalle.' : 'Todos los detalles, a tu ritmo.'}</p></div><div className="bubble-view-switch" aria-label="Presentación de anuncios"><button type="button" data-action="bubble-view" aria-pressed={view === 'bubble'} onClick={() => setView('bubble')}><Layers3 size={16}/><span>Flotante</span></button><button type="button" data-action="simple-view" aria-pressed={view === 'simple'} onClick={() => setView('simple')}><List size={17}/><span>{compact ? 'Lista' : 'Vista sencilla'}</span></button></div></header>
     <div ref={sceneRef} className="bubble-stage" data-moving="false" style={{ '--bubble-card-width': cardWidth + 'px', '--bubble-stage-height': stageHeight + 'px' } as CSSProperties} onKeyDown={keyboard}>
       {visible.map((listing, index) => <button ref={element => { cardsRef.current[index] = element; }} key={listing.id} type="button" className="bubble-card" data-listing-id={listing.id} data-category={listing.categoriaId}
+        onPointerEnter={() => { motion.current.hovered = index; }} onPointerLeave={() => { if (motion.current.hovered === index) motion.current.hovered = -1; }}
         onClick={() => onSelect(listing.id)} aria-label={`Ver anuncio: ${listing.titulo}, ${price(listing.precio)}, ${listing.zona}`}><ListingCardContent listing={listing} eager/><span className="bubble-card-open">Ver detalles <ArrowUpRight size={16}/></span></button>)}
     </div>
     {view === 'bubble' && <div className="bubble-navigation" aria-label="Destacar anuncios"><button type="button" data-action="previous" onClick={() => highlight(-1)} disabled={count < 2}><ChevronLeft size={19}/><span>Anterior</span></button><button type="button" data-action="motion" className="bubble-motion" onClick={() => setMotionChoice(!autoEnabled)} aria-pressed={!autoEnabled} disabled={reducedMotion} title={reducedMotion ? 'Movimiento reducido activado. Usa Anterior y Siguiente.' : undefined}>{autoEnabled ? <Pause size={17}/> : <Play size={17}/>}<span>{autoEnabled ? 'Pausar' : 'Mover'}</span></button><button type="button" data-action="next" onClick={() => highlight(1)} disabled={count < 2}><span>Siguiente</span><ChevronRight size={19}/></button></div>}

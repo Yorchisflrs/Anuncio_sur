@@ -37,7 +37,7 @@
   --color-footer-light: #FFFFFF;
   --color-footer-line: #2C3F75;
   --landscape-text: #172447;
-  --landscape-muted: #2B3140;
+  --landscape-muted: #5B5F68;
   --landscape-highlight: var(--logo-blue);
   --landscape-panel: #FFFFFFEB;
   --landscape-panel-hover: #FFFFFF;
@@ -51,11 +51,11 @@
   --landscape-footer: var(--logo-navy);
   --landscape-error: #B3261E;
   --landscape-shadow: 0 10px 28px #12275E14;
-  /* Velo blanco transparente: el paisaje de Puno se ve con claridad detrás del contenido. */
-  --landscape-overlay: #FFFFFF8C;
+  /* Velo blanco plano sobre la foto del lago: se intuye el paisaje sin restar lectura. */
+  --landscape-overlay: #FFFFFFD1;
   --hero-base: #F7F8FA;
   --hero-text: #172447;
-  --hero-muted: #2B3140;
+  --hero-muted: #5B5F68;
   --hero-highlight: var(--logo-blue);
   --hero-line: var(--gray-line);
   --hero-glass: #FFFFFFE6;
@@ -90,14 +90,13 @@
 .site-shell .topbar svg { color: #FFFFFF; }
 .site-shell .site-header { background: var(--landscape-header); border-bottom: 1px solid var(--logo-blue-dark); backdrop-filter: none; box-shadow: 0 6px 18px #12275E26; }
 .site-shell .nav-inner { gap: 28px; }
-.site-shell .desktop-nav a { display: inline-flex; align-items: center; justify-content: center; gap: 7px; min-height: 48px; font-size: 13px; color: #FFFFFFE0; }
+.site-shell .desktop-nav a { display: inline-flex; align-items: center; justify-content: center; gap: 7px; min-height: 48px; font-size: 15px; color: #FFFFFFE0; }
 .site-shell .desktop-nav a:hover, .site-shell .desktop-nav a.active { color: #FFFFFF; background: #FFFFFF26; }
-.site-shell .nav-login { min-height: 48px; font-size: 13px; color: #FFFFFF; max-width: 200px; }
+.site-shell .nav-login { min-height: 48px; font-size: 15px; color: #FFFFFF; max-width: 200px; }
 .site-shell .button.nav-publish { min-height: 48px; font-size: 15px; color: var(--logo-blue); background: #FFFFFF; box-shadow: none; }
 .site-shell .button.nav-publish:hover:not(:disabled) { color: var(--logo-blue-dark); background: var(--blue-soft); }
 .site-shell .header-logo :is(.logo-accent,.logo-dot) { color: #FFFFFF; }
-.site-shell .logo-light img { background: none; border-radius: 0; padding: 0; }
-.site-shell .mobile-menu-button { min-width: 48px; min-height: 48px; align-items: center; justify-content: center; gap: 8px; font-size: 13px; font-weight: 650; color: #FFFFFF; background: #FFFFFF26; }
+.site-shell .mobile-menu-button { min-width: 48px; min-height: 48px; align-items: center; justify-content: center; gap: 8px; font-size: 15px; font-weight: 650; color: #FFFFFF; background: #FFFFFF26; }
 
 /* Buttons and accents. */
 .site-shell .button-primary { background: var(--logo-blue); box-shadow: 0 6px 16px #22419933; }
@@ -123,7 +122,7 @@
 .site-shell .section-kicker::before { content: ''; width: 18px; height: 3px; border-radius: 3px; background: var(--logo-gray); }
 .site-shell :is(.explore-intro h1>span,.directory-hero h1>span,.coverage-copy h2>span) { color: var(--logo-blue); }
 .site-shell :is(.page-heading p,.explore-intro p,.directory-hero p,.section-heading p,.section-aside,.coverage-copy>p,.steps-grid p,.recent-footer,.explore-region,.upcoming-label,.loading-state) { color: var(--landscape-muted); }
-.site-shell .breadcrumb { color: var(--landscape-muted); font-size: 12px; }
+.site-shell .breadcrumb { color: var(--landscape-muted); font-size: 14px; }
 .site-shell .breadcrumb a { min-height: 36px; display: inline-flex; align-items: center; }
 .site-shell .breadcrumb a:hover, .site-shell .breadcrumb>span:last-child { color: var(--landscape-text); }
 .site-shell .recent-footer strong { color: var(--landscape-text); }
@@ -165,7 +164,7 @@
 .site-shell .category-panel-cover { background: var(--landscape-softest); color: var(--landscape-category,var(--landscape-highlight)); border-bottom: 1px solid var(--landscape-border); }
 .site-shell .category-panel-cover::after { border-color: currentColor; }
 .site-shell .category-cover-link { color: var(--color-navy); }
-.site-shell .subcategory-list a { background: var(--landscape-softest); border-color: var(--landscape-border); color: var(--landscape-muted); min-height: 48px; font-size: 12px; }
+.site-shell .subcategory-list a { background: var(--landscape-softest); border-color: var(--landscape-border); color: var(--landscape-muted); min-height: 48px; font-size: 14px; }
 .site-shell .subcategory-list a:hover { background: var(--landscape-soft-hover); color: var(--landscape-text); }
 .site-shell .upcoming-badge { color: var(--landscape-muted); background: var(--landscape-soft); }
 .site-shell .upcoming-card .directory-icon { background: var(--landscape-softest); color: var(--landscape-muted); }
@@ -173,43 +172,43 @@
 /* Filters and fields. */
 .site-shell :is(.toolbar-label,.quick-filters select,.filters-title h2,.field-label,.form-field) { color: var(--landscape-text); }
 .site-shell .quick-filters label { border-color: var(--landscape-border); }
-.site-shell .quick-filters label>span { color: var(--landscape-muted); font-size: 11px; }
-.site-shell .quick-filters select { min-height: 36px; font-size: 13px; }
+.site-shell .quick-filters label>span { color: var(--landscape-muted); font-size: 13px; }
+.site-shell .quick-filters select { min-height: 36px; font-size: 15px; }
 .site-shell select option { color: var(--color-ink); background: var(--color-surface); }
-.site-shell .filters-title h2 { font-size: 15px; }
-.site-shell .filters-panel .form-field { font-size: 13px; }
-.site-shell .filters-panel .form-field>select { min-height: 48px; font-size: 13px; }
-.site-shell .field-label { font-size: 13px; }
+.site-shell .filters-title h2 { font-size: 17px; }
+.site-shell .filters-panel .form-field { font-size: 15px; }
+.site-shell .filters-panel .form-field>select { min-height: 48px; font-size: 15px; }
+.site-shell .field-label { font-size: 15px; }
 .site-shell .price-fields label { background: var(--color-surface); border-color: var(--color-border); }
 .site-shell .price-fields input { min-height: 36px; }
 .site-shell .filter-divider { background: var(--landscape-line); }
 .site-shell .filter-tip { background: var(--landscape-softest); border-color: var(--landscape-border); color: var(--landscape-highlight); }
 .site-shell .filter-tip p { color: var(--landscape-muted); }
-.site-shell .results-bar { color: var(--landscape-muted); font-size: 12px; }
+.site-shell .results-bar { color: var(--landscape-muted); font-size: 14px; }
 .site-shell .results-bar strong { color: var(--landscape-highlight); }
-.site-shell .results-bar select { color: var(--landscape-text); min-height: 48px; font-size: 12px; }
-.site-shell .explore-categories>button { min-height: 48px; background: var(--landscape-panel); color: var(--landscape-muted); border-color: var(--landscape-border); font-size: 12px; }
+.site-shell .results-bar select { color: var(--landscape-text); min-height: 48px; font-size: 14px; }
+.site-shell .explore-categories>button { min-height: 48px; background: var(--landscape-panel); color: var(--landscape-muted); border-color: var(--landscape-border); font-size: 14px; }
 .site-shell .explore-categories>button[aria-pressed=true] { color: #FFFFFF; background: var(--landscape-highlight); border-color: var(--landscape-highlight); }
 .site-shell .explore-categories>button:hover:not([aria-pressed=true]) { color: var(--landscape-text); border-color: var(--landscape-highlight); }
-.site-shell .filter-chips button { min-height: 48px; color: var(--landscape-text); background: var(--landscape-panel); border-color: var(--landscape-border); font-size: 12px; }
+.site-shell .filter-chips button { min-height: 48px; color: var(--landscape-text); background: var(--landscape-panel); border-color: var(--landscape-border); font-size: 14px; }
 .site-shell .filter-chips .clear-chip { color: var(--landscape-highlight); }
 .site-shell .pagination>span { color: var(--landscape-muted); }
-.site-shell .filter-toggle { min-height: 48px; font-size: 12px; }
+.site-shell .filter-toggle { min-height: 48px; font-size: 14px; }
 .site-shell :is(.form-field>input,.form-field>select,.form-field>textarea) { color: var(--color-ink); }
-.site-shell .field-hint { font-size: 12px; }
-.site-shell .field-error { color: var(--landscape-error); font-size: 12px; }
+.site-shell .field-hint { font-size: 14px; }
+.site-shell .field-error { color: var(--landscape-error); font-size: 14px; }
 
 /* Account and guidance pages. */
 .site-shell .auth-aside { background: var(--logo-blue); }
 .site-shell .auth-aside h2>span { color: #C9D3EC; }
 .site-shell .auth-aside>p { color: #FFFFFFD9; }
 .site-shell .auth-form-panel { background: var(--landscape-panel); }
-.site-shell .auth-tabs a { display: inline-flex; align-items: center; min-height: 48px; color: var(--landscape-muted); font-size: 13px; }
+.site-shell .auth-tabs a { display: inline-flex; align-items: center; min-height: 48px; color: var(--landscape-muted); font-size: 15px; }
 .site-shell .auth-tabs a[aria-current=page] { color: var(--landscape-highlight); border-bottom-color: var(--landscape-highlight); }
 .site-shell :is(.auth-switch a,.secure-note a,.demo-login button) { color: var(--landscape-highlight); }
-.site-shell .demo-login button { min-height: 48px; font-size: 12px; }
+.site-shell .demo-login button { min-height: 48px; font-size: 14px; }
 .site-shell .password-toggle { min-width: 48px; min-height: 48px; justify-content: center; align-items: center; }
-.site-shell .info-nav a { display: flex; align-items: center; min-height: 48px; color: var(--landscape-muted); font-size: 13px; }
+.site-shell .info-nav a { display: flex; align-items: center; min-height: 48px; color: var(--landscape-muted); font-size: 15px; }
 .site-shell .info-nav a.active { color: var(--landscape-highlight); background: var(--landscape-soft); }
 .site-shell .info-article li { color: var(--landscape-text); }
 .site-shell .info-article li svg { color: var(--landscape-highlight); }
@@ -218,7 +217,7 @@
 .site-shell .publish-progress>a.is-complete { color: var(--landscape-highlight); }
 .site-shell .publish-progress>a>span { color: var(--color-ink); }
 .site-shell .own-listing { color: var(--color-ink); }
-.site-shell .own-listing-actions button { min-height: 48px; font-size: 11px; }
+.site-shell .own-listing-actions button { min-height: 48px; font-size: 13px; }
 .site-shell .site-footer { background: var(--landscape-footer); border-top: 0; }
 .site-shell .footer-lead h2>span { color: #C9D3EC; }
 .site-shell :is(.footer-explore svg,.footer-region svg) { color: #FFFFFF; }
@@ -232,23 +231,23 @@
   .site-shell .nav-inner { justify-content: space-between; }
   .site-shell .mobile-menu-button { display: flex; }
   .site-shell .mobile-nav { position: absolute; top: 76px; left: 0; right: 0; display: grid; gap: 3px; padding: 16px 24px 20px; box-shadow: var(--shadow-card); }
-  .site-shell .mobile-nav>a:not(.mobile-register) { display: flex; align-items: center; justify-content: space-between; padding: 12px; border-radius: 9px; font-size: 14px; }
+  .site-shell .mobile-nav>a:not(.mobile-register) { display: flex; align-items: center; justify-content: space-between; padding: 12px; border-radius: 9px; font-size: 16px; }
   .site-shell .mobile-nav-auth { display: flex; gap: 8px; margin-top: 8px; padding-top: 16px; border-top: 1px solid var(--landscape-border); }
-  .site-shell .mobile-nav-auth .button { flex: 1; font-size: 13px; }
+  .site-shell .mobile-nav-auth .button { flex: 1; font-size: 15px; }
 }
 @media(max-width:800px) { .site-shell .mobile-nav { top: 70px; } }
 @media(max-width:600px) {
   .site-landscape img { object-position: 82% center; }
   .site-shell .topbar { font-size: 12px; }
   .site-shell .mobile-nav { top: 68px; padding-inline: 16px; }
-  .site-shell .quick-filters select { min-height: 40px; font-size: 13px; }
-  .site-shell .section-heading .text-link { font-size: 12px; }
+  .site-shell .quick-filters select { min-height: 40px; font-size: 15px; }
+  .site-shell .section-heading .text-link { font-size: 14px; }
   .site-shell .hero-search .button { min-height: 48px; }
   .site-shell .hero-links .button { min-height: 48px; }
-  .site-shell .explore-categories>button { font-size: 11px; padding-inline: 10px; }
-  .site-shell .results-bar { font-size: 11px; }
-  .site-shell .results-bar select { font-size: 11px; max-width: 120px; }
-  .site-shell .filter-toggle { font-size: 11px; padding-inline: 8px; }
-  .site-shell .breadcrumb { font-size: 11px; }
-  .site-shell .info-nav a { font-size: 12px; }
+  .site-shell .explore-categories>button { font-size: 13px; padding-inline: 10px; }
+  .site-shell .results-bar { font-size: 13px; }
+  .site-shell .results-bar select { font-size: 13px; max-width: 120px; }
+  .site-shell .filter-toggle { font-size: 13px; padding-inline: 8px; }
+  .site-shell .breadcrumb { font-size: 13px; }
+  .site-shell .info-nav a { font-size: 14px; }
 }
