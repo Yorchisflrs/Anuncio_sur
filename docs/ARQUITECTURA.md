@@ -50,6 +50,7 @@ Las respuestas de error tienen la forma `{ message, fields }`. Códigos principa
 | GET `/api/publicacion` | Público | Planes activos y datos de pago. |
 | GET `/api/publicacion/qr` | Público | Imagen del QR de pago. |
 | POST `/api/anuncios/:id/comprobante` | Propietario | Adjunta el comprobante de pago. |
+| POST `/api/anuncios/:id/renovar` | Propietario con celular verificado | Vuelve a publicar un aviso vencido: crea una solicitud nueva con los mismos datos y las mismas fotos en el mismo orden, pendiente de pago y revisión, y deja el anterior sin cambios. Acepta `planId` (por defecto, el plan 1). 409 si el aviso no venció, nunca se aprobó, está dado de baja o está oculto por reportes. |
 | GET `/api/anuncios/:id/comprobante` | Propietario / admin | Imagen privada del comprobante. |
 | GET `/api/admin/resumen` | Admin | Contadores de revisión, pagos, reportes y celulares sin verificar. |
 | GET `/api/admin/anuncios` | Admin | Bandeja de revisión. |

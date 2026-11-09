@@ -53,6 +53,7 @@ Esa cuenta **no tiene una contraseña escrita en el código**: al crear la base 
 | RF-03 · Consulta y búsqueda | Catálogo en lista o en tarjetas; filtros por texto, categoría, subcategoría, venta o alquiler, zona y rango de precio inclusivo; orden y paginación. |
 | RF-04 · Contacto | «Ver contacto del vendedor» entrega el celular y un enlace `wa.me` con el mensaje preparado, con un límite de pedidos por persona; el vendedor ve cuántas personas lo pidieron. |
 | Publicación pagada | Planes configurables, pago por Yape con comprobante privado, aprobación o rechazo con motivo, vigencia desde la aprobación y días extra en la primera publicación. |
+| Renovación | Un aviso vencido se vuelve a publicar con los mismos datos y fotos, y pasa otra vez por pago y revisión. |
 | Confianza (novedad) | Celular verificado con código o en persona; insignia «Celular verificado» con avisos publicados y dados de baja; reportes con motivos fijos; ocultamiento automático con tres reportes verificados; página del moderador. |
 | RNF-01 · Búsqueda rápida | Consultas parametrizadas e índices; prueba de carga con 500 avisos públicos y 50 clientes concurrentes. |
 | RNF-03 · Seguridad | bcrypt con costo 12, sesiones guardadas como SHA-256, cookie HttpOnly y SameSite=Strict, rechazo de origen ajeno, límite de intentos, roles verificados en el servidor y celulares fuera de las respuestas públicas. |
