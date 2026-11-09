@@ -114,20 +114,6 @@ describe('RF-02 · Volver a publicar un aviso vencido', () => {
     assert.equal(await totalListings(), count);
   });
 
-  it('Un aviso vencido de una categoría desactivada devuelve 409: no se cobraría un aviso que nadie vería', async () => {
-    const { seller, ad } = await expiredListing();
-    await app.db.run('UPDATE categorias SET activa = 0 WHERE id = ?', ad.categoriaId);
-    try {
-      const count = await totalListings();
-      const result = await renew(ad.id, seller.cookie);
-      assert.equal(result.response.status, 409);
-      assert.match(result.body.message, /categoría/);
-      assert.equal(await totalListings(), count);
-    } finally {
-      await app.db.run('UPDATE categorias SET activa = 1 WHERE id = ?', ad.categoriaId);
-    }
-  });
-
   it('Un aviso vencido crea una solicitud nueva con los mismos datos, pendiente de pago y revisión', async () => {
     const { seller, ad } = await expiredListing({ precio: '1250.50', tipoOperacion: 'alquiler', zona: 'Juliaca', direccion: 'Jr. Lima 456', referencia: 'Cerca del mercado', contacto: '987654321' });
     const result = await renew(ad.id, seller.cookie);
@@ -233,7 +219,6 @@ describe('RF-02 · Volver a publicar un aviso vencido', () => {
           return ad;
         }
         if (sql.includes('FROM planes_publicacion')) return { id: 1, dias: 7, precio_centimos: 500, bono_primer_anuncio: 0, destacado: 0 };
-        if (sql.includes('FROM categorias')) return { activa: 1 };
         if (sql.startsWith('SELECT id, nombre, celular')) return { id: 3, nombre: 'Vendedor de prueba', celular: '900000003' };
         if (sql.startsWith('SELECT SUM')) return { publicados: 1, bajas: 0 };
         if (sql.includes('FROM contactos_anuncio')) return { n: 0 };

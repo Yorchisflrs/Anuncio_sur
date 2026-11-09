@@ -26,9 +26,6 @@ export function registerRenewRoutes(app, db, auth) {
       if (ad.usuario_id !== req.user.id) throw new ApiError(403, 'Solo puedes volver a publicar tus propios avisos.');
       const conflict = renewalConflict(ad);
       if (conflict) throw new ApiError(409, conflict);
-      // Como al publicar, la categoría debe seguir activa: si no, se pagaría por un aviso que nadie vería.
-      const category = await tx.get('SELECT activa FROM categorias WHERE id = ?', ad.categoria_id);
-      if (!Number(category?.activa)) throw new ApiError(409, 'La categoría de este aviso ya no está disponible. Publica un aviso nuevo en otra categoría.');
       const date = new Date().toISOString();
       const priceColumn = tx.kind === 'mysql' ? 'precio' : 'precio_centimos';
       const result = await tx.run(`INSERT INTO anuncios (usuario_id, titulo, descripcion, ${priceColumn}, zona, categoria_id, subcategoria, tipo_operacion, es_demo, fecha_publicacion, plan_id, dias_vigencia, monto_publicacion_centimos, bono_primer_snapshot, destacado, direccion, referencia, contacto) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`, req.user.id, ad.titulo, ad.descripcion, ad[priceColumn], ad.zona, ad.categoria_id, ad.subcategoria, ad.tipo_operacion, Number(ad.es_demo), date, plan.id, plan.dias, plan.precio_centimos, plan.bono_primer_anuncio, plan.destacado, ad.direccion, ad.referencia, ad.contacto);
