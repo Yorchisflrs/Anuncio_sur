@@ -19,6 +19,7 @@ function renewalConflict(ad) {
 export function registerRenewRoutes(app, db, auth) {
   app.post('/api/anuncios/:id/renovar', auth.requireUser, requireVerified, async (req, res) => {
     const id = validId(req.params.id);
+    const plan = await publicationPlan(db, req.body?.planId);
     const nuevoId = await db.transaction(async tx => {
       const ad = await tx.get('SELECT * FROM anuncios WHERE id = ?' + (tx.kind === 'mysql' ? ' FOR UPDATE' : ''), id);
       if (!ad) throw new ApiError(404, 'No encontramos este anuncio.');
@@ -28,8 +29,6 @@ export function registerRenewRoutes(app, db, auth) {
       // Como al publicar, la categoría debe seguir activa: si no, se pagaría por un aviso que nadie vería.
       const category = await tx.get('SELECT activa FROM categorias WHERE id = ?', ad.categoria_id);
       if (!Number(category?.activa)) throw new ApiError(409, 'La categoría de este aviso ya no está disponible. Publica un aviso nuevo en otra categoría.');
-      // Dentro de la transacción se consulta con tx: en SQLite, db esperaría a que la transacción termine.
-      const plan = await publicationPlan(tx, req.body?.planId);
       const date = new Date().toISOString();
       const priceColumn = tx.kind === 'mysql' ? 'precio' : 'precio_centimos';
       const result = await tx.run(`INSERT INTO anuncios (usuario_id, titulo, descripcion, ${priceColumn}, zona, categoria_id, subcategoria, tipo_operacion, es_demo, fecha_publicacion, plan_id, dias_vigencia, monto_publicacion_centimos, bono_primer_snapshot, destacado, direccion, referencia, contacto) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`, req.user.id, ad.titulo, ad.descripcion, ad[priceColumn], ad.zona, ad.categoria_id, ad.subcategoria, ad.tipo_operacion, Number(ad.es_demo), date, plan.id, plan.dias, plan.precio_centimos, plan.bono_primer_anuncio, plan.destacado, ad.direccion, ad.referencia, ad.contacto);
