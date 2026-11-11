@@ -27,7 +27,7 @@ export function Layout() {
   }, []);
 
   return <div className="site-shell">
-    <div className="site-landscape" aria-hidden="true"><img src="/images/avisosur-titicaca-hero.webp" alt="" width={1672} height={941} fetchPriority="high"/></div>
+    <div className="site-landscape" aria-hidden="true"><img src="/images/avisosur-titicaca-hero.webp" srcSet="/images/avisosur-titicaca-hero-800.webp 800w, /images/avisosur-titicaca-hero.webp 1672w" sizes="100vw" alt="" width={1672} height={941} fetchPriority="low" decoding="async"/></div>
     <a className="skip-link" href="#contenido">Saltar al contenido</a>
     <div className="topbar"><div className="container topbar-inner">
       <span><ShieldCheck size={13}/>Cada aviso se revisa antes de publicarse</span>

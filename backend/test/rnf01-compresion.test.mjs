@@ -6,7 +6,7 @@ import os from 'node:os';
 import path from 'node:path';
 import zlib from 'node:zlib';
 import { createIsolatedApp } from './support.mjs';
-import { preferredEncoding } from '../src/static.mjs';
+import { escapeAttribute, preferredEncoding } from '../src/static.mjs';
 
 // RNF-01 (Práctica 10, Lighthouse): el JS y el CSS de la compilación viajan comprimidos y lo que tiene hash
 // se guarda en el navegador. Se usa una compilación falsa en una carpeta temporal.
@@ -17,7 +17,7 @@ describe('RNF-01 · Archivos de la aplicación comprimidos y en caché', () => {
   before(async () => {
     dist = await fs.mkdtemp(path.join(os.tmpdir(), 'avisosur-test-dist-'));
     await fs.mkdir(path.join(dist, 'assets'));
-    await fs.writeFile(path.join(dist, 'index.html'), '<!doctype html><title>AvisoSur</title><div id="root"></div>');
+    await fs.writeFile(path.join(dist, 'index.html'), '<!doctype html><html lang="es"><head><title>AvisoSur</title></head><body><div id="root"></div></body></html>');
     await fs.writeFile(path.join(dist, 'assets', 'index-abc123.js'), script);
     await fs.writeFile(path.join(dist, 'robots.txt'), 'User-agent: *\nAllow: /\n');
     app = await createIsolatedApp({ frontendDist: dist });
@@ -82,6 +82,25 @@ describe('RNF-01 · Archivos de la aplicación comprimidos y en caché', () => {
       const { body } = await raw(route);
       assert(!body.toString().includes('"dependencies"') && !body.toString().includes('loadEnvFile'), 'Se filtró un archivo de fuera con ' + route);
     }
+  });
+
+  it('El detalle de un aviso público anuncia su foto principal en el HTML; uno pendiente no revela la suya', async () => {
+    const seller = await app.register('vendedor-precarga', { celular: '987650001' });
+    const published = await app.publish(seller.cookie, { titulo: 'Moto con foto precargada', contacto: '987650001' });
+    const html = zlib.brotliDecompressSync((await raw('/anuncios/' + published.id, { 'Accept-Encoding': 'br' })).body).toString();
+    const photo = published.fotos[0].archivo;
+    assert(html.includes(`<link rel="preload" as="image" href="${photo}" fetchpriority="high" referrerpolicy="no-referrer"></head>`), html);
+    assert(!html.includes('987650001') && !html.includes('Moto con foto precargada'), 'Solo va la foto: ni el celular ni otros datos.');
+    const pending = await app.listing(seller.cookie, { titulo: 'Aviso pendiente sin precarga' });
+    assert.equal(pending.response.status, 201);
+    const hidden = (await raw('/anuncios/' + pending.body.id)).body.toString();
+    assert(!hidden.includes('rel="preload"') && !hidden.includes(pending.body.fotos[0].archivo), 'La foto de un aviso pendiente no aparece en el HTML.');
+    assert(!(await raw('/anuncios/999999')).body.toString().includes('rel="preload"'));
+    assert(!(await raw('/anuncios')).body.toString().includes('rel="preload"'), 'El catálogo no agrega precargas.');
+  });
+
+  it('La dirección de la foto va escapada dentro del atributo', () => {
+    assert.equal(escapeAttribute('https://ejemplo.pe/a.webp?x=1&y="2"<b>'), 'https://ejemplo.pe/a.webp?x=1&amp;y=&quot;2&quot;&lt;b&gt;');
   });
 
   it('La preferencia respeta lo que acepta el navegador', () => {

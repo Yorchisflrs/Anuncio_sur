@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import zlib from 'node:zlib';
+import { createHash } from 'node:crypto';
 
 // Archivos de texto de la compilación que vale la pena comprimir. Las fotos WebP, las fuentes WOFF2 y los PNG
 // ya vienen comprimidos y los sirve express.static tal cual.
@@ -12,6 +13,18 @@ const encode = {
   br: buffer => zlib.brotliCompressSync(buffer, { params: { [zlib.constants.BROTLI_PARAM_QUALITY]: 11, [zlib.constants.BROTLI_PARAM_SIZE_HINT]: buffer.length } }),
   gzip: buffer => zlib.gzipSync(buffer, { level: 9 }),
 };
+
+// El HTML con etiquetas propias de cada pedido pesa ~1 KB: se comprime al vuelo con un nivel rápido.
+function withHead(raw, head, encoding) {
+  // Con una función, los «$&» o «$'» que traiga el texto de un aviso no se interpretan como patrones.
+  const html = raw.toString('utf8').replace('</head>', () => head + '</head>');
+  const buffer = Buffer.from(html);
+  if (encoding === 'br') return zlib.brotliCompressSync(buffer, { params: { [zlib.constants.BROTLI_PARAM_QUALITY]: 5 } });
+  return encoding === 'gzip' ? zlib.gzipSync(buffer, { level: 6 }) : buffer;
+}
+
+/** Escapa un valor para ponerlo dentro de un atributo HTML entre comillas dobles. */
+export const escapeAttribute = value => String(value).replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char]);
 
 /** Elige la codificación que acepta el navegador: Brotli primero, luego gzip, o ninguna. */
 export function preferredEncoding(header = '') {
@@ -44,16 +57,17 @@ export function compressedStatic(root, { cacheControl = () => 'no-cache' } = {})
     return entry;
   }
 
-  function send(req, res, file, urlPath) {
+  function send(req, res, file, urlPath, head = '') {
     const entry = load(file);
     if (!entry) return false;
     const encoding = preferredEncoding(req.get('accept-encoding'));
     res.vary('Accept-Encoding');
     res.type(path.extname(file));
     res.set('Cache-Control', cacheControl(urlPath));
-    res.set('ETag', entry.etag);
+    // Con etiquetas extra en <head>, el contenido cambia: el ETag también.
+    res.set('ETag', head ? entry.etag.slice(0, -1) + '-' + createHash('sha1').update(head).digest('hex').slice(0, 12) + '"' : entry.etag);
     if (req.fresh) { res.status(304).end(); return true; }
-    const body = encoding ? (entry.encoded[encoding] ||= encode[encoding](entry.raw)) : entry.raw;
+    const body = head ? withHead(entry.raw, head, encoding) : encoding ? (entry.encoded[encoding] ||= encode[encoding](entry.raw)) : entry.raw;
     if (encoding) res.set('Content-Encoding', encoding);
     res.set('Content-Length', String(body.length));
     res.end(req.method === 'HEAD' ? undefined : body);
@@ -70,7 +84,7 @@ export function compressedStatic(root, { cacheControl = () => 'no-cache' } = {})
     if (!send(req, res, file, urlPath)) next();
   }
 
-  /** Envía un archivo concreto de la carpeta (por ejemplo, index.html para las rutas de React). */
-  middleware.sendFile = (req, res, name) => send(req, res, path.join(base, name), '/' + name);
+  /** Envía un archivo concreto de la carpeta (por ejemplo, index.html para las rutas de React), con etiquetas extra en <head>. */
+  middleware.sendFile = (req, res, name, head = '') => send(req, res, path.join(base, name), '/' + name, head);
   return middleware;
 }
