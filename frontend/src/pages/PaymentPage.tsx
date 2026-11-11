@@ -35,7 +35,7 @@ export function PaymentPage() {
     try{const body=new FormData();body.append('comprobante',file);body.append('referenciaPago',reference.trim());await api('/anuncios/'+id+'/comprobante',{method:'POST',body});setSuccess('Comprobante enviado. Administración verificará el pago y revisará tu anuncio.');setFile(null);setPreview('');listing.reload();}
     catch(error){setMessage(errorMessage(error));}finally{inFlight.current=false;setBusy(false);}
   }
-  if(listing.loading&&!listing.data)return <Loading label="Preparando tu publicación…"/>;
+  if(listing.loading&&!listing.data)return <Loading page label="Preparando tu publicación…"/>;
   if(listing.error||!listing.data)return <ErrorState message={listing.error||'No encontramos tu anuncio.'} retry={listing.reload}/>;
   const ad=listing.data, status=publicationStatus(ad), payment=configuration.data?.pago;
   const published=status.key==='activo',closed=['vencido','baja'].includes(status.key);

@@ -7,7 +7,7 @@ import { ZONES } from '../types';
 import { useResource } from '../hooks/useResource';
 import { ListingRow, ProductCard } from '../components/ProductCard';
 import { CardSkeletons, EmptyState, ErrorState } from '../components/States';
-import { CATEGORY_ICONS } from '../data/directory';
+import { CATEGORY_FALLBACK, CATEGORY_ICONS } from '../data/directory';
 
 export function ExplorePage() {
   const [params, setParams] = useSearchParams();
@@ -56,9 +56,9 @@ export function ExplorePage() {
     <div className="explore-intro"><div><h1>Avisos en Puno, <span>Juliaca y el sur.</span></h1><p>Filtra por categoría, zona y precio para comparar.</p></div>
       <form className="catalog-search" onSubmit={apply}><Search size={20}/><input type="search" aria-label="Buscar anuncios por texto" placeholder="¿Qué estás buscando?" value={draft.q} onChange={event => setDraft({ ...draft, q: event.target.value })} maxLength={100}/><button className="button button-primary">Buscar <ArrowRight size={16}/></button></form>
     </div>
-    <div className="explore-categories" aria-label="Filtrar por categoría"><button type="button" aria-pressed={!params.get('categoriaId')} onClick={() => selectCategory('')}><LayoutGrid size={16}/>Todo el catálogo</button>{categories.data?.map(category => {
+    <div className="explore-categories" aria-label="Filtrar por categoría"><button type="button" aria-pressed={!params.get('categoriaId')} onClick={() => selectCategory('')}><LayoutGrid size={16}/>Todo el catálogo</button>{(categories.data ?? CATEGORY_FALLBACK).map(category => {
       const Icon = CATEGORY_ICONS[category.id] || LayoutGrid;
-      return <button key={category.id} type="button" aria-pressed={params.get('categoriaId') === String(category.id)} onClick={() => selectCategory(String(category.id))}><Icon size={17}/>{category.nombre}<span>{category.total}</span></button>;
+      return <button key={category.id} type="button" aria-pressed={params.get('categoriaId') === String(category.id)} onClick={() => selectCategory(String(category.id))}><Icon size={17}/>{category.nombre}<span>{categories.data ? category.total : '—'}</span></button>;
     })}<span className="explore-region"><MapPin size={14}/>Puno y el sur</span></div>
     <div className="catalog-layout">
       <aside id="catalog-filters" className={'filters-panel' + (showFilters ? ' filters-open' : '')}>

@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /perfil
+Disallow: /publicar
+Disallow: /mis-anuncios/
+Disallow: /api/

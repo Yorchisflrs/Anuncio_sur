@@ -17,6 +17,25 @@ import { registerRenewRoutes } from './renovacion.mjs';
 import { registerContactRoutes } from './contact.mjs';
 import { registerVerificationRoutes, requestVerification, requireVerified } from './verification.mjs';
 import { registerReportRoutes } from './reports.mjs';
+import { compressedStatic, escapeAttribute, IMMUTABLE } from './static.mjs';
+
+/**
+ * En el detalle de un aviso público, la foto principal se anuncia desde el HTML para que el navegador la pida
+ * en paralelo con el JavaScript (LCP). Un aviso que no es público no agrega nada: su foto no se revela.
+ */
+async function listingHead(db, urlPath) {
+  const match = /^\/anuncios\/(\d{1,10})\/?$/.exec(urlPath);
+  if (!match) return '';
+  let listing;
+  try {
+    listing = await getListing(db, Number(match[1]), null);
+  } catch (error) {
+    if (error instanceof ApiError) return '';
+    throw error;
+  }
+  const photo = listing.fotos?.[0]?.archivo || listing.imagen;
+  return photo ? `<link rel="preload" as="image" href="${escapeAttribute(photo)}" fetchpriority="high" referrerpolicy="no-referrer">` : '';
+}
 import { registerEditRoutes } from './edicion.mjs';
 
 export async function createApp(overrides = {}) {
@@ -40,6 +59,7 @@ export async function createApp(overrides = {}) {
   if (privateRelative !== '..' && !privateRelative.startsWith('..' + path.sep) && !path.isAbsolute(privateRelative) && !privateRelative.split(path.sep)[0].startsWith('.')) throw new Error('Si PRIVATE_UPLOAD_DIR está dentro de UPLOAD_DIR, debe estar en una carpeta oculta que comience con punto.');
   if (!privateRelative.startsWith('..') && !path.isAbsolute(privateRelative)) app.use('/uploads/' + privateRelative.split(path.sep).join('/'), (_req,_res,next)=>next(new ApiError(404,'No encontramos este recurso.')));
   app.use('/uploads', express.static(config.uploadDir, { dotfiles: 'deny', index: false, maxAge: '7d' }));
+  app.use('/demo', compressedStatic(path.join(projectRoot, 'frontend', 'public', 'demo'), { cacheControl: () => 'public, max-age=604800' }));
   app.use('/demo', express.static(path.join(projectRoot, 'frontend', 'public', 'demo'), { maxAge: '7d' }));
 
   const loginLimit = rateLimit({ windowMs: 15 * 60 * 1000, limit: config.authAttemptLimit ?? 30, standardHeaders: 'draft-8', legacyHeaders: false, message: { message: 'Has realizado varios intentos. Espera unos minutos y vuelve a intentarlo.' } });
@@ -134,9 +154,14 @@ export async function createApp(overrides = {}) {
   registerRenewRoutes(app, db, auth);
   app.use('/api', (_req, _res, next) => next(new ApiError(404, 'No encontramos este recurso.')));
   if (fs.existsSync(path.join(config.frontendDist, 'index.html'))) {
-    app.use(express.static(config.frontendDist));
+    // JS, CSS, HTML y SVG van comprimidos con Brotli o gzip; lo que tiene hash en /assets se guarda un año en el navegador.
+    const frontend = compressedStatic(config.frontendDist, { cacheControl: urlPath => urlPath.startsWith('/assets/') ? IMMUTABLE : 'no-cache' });
+    app.use(frontend);
+    app.use(express.static(config.frontendDist, { index: false, setHeaders: (res, file) => { if (path.relative(config.frontendDist, file).startsWith('assets' + path.sep)) res.set('Cache-Control', IMMUTABLE); } }));
     // Con `root`, la ruta funciona aunque una carpeta superior empiece con punto (por ejemplo, ~/.local).
-    app.get('/{*path}', (_req, res) => res.sendFile('index.html', { root: config.frontendDist }));
+    app.get('/{*path}', async (req, res) => {
+      if (!frontend.sendFile(req, res, 'index.html', await listingHead(db, req.path))) res.sendFile('index.html', { root: config.frontendDist });
+    });
   }
   app.use((error, _req, res, _next) => {
     if (error.name === 'MulterError') {

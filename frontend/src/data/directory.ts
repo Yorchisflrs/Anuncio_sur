@@ -1,5 +1,6 @@
 import { CarFront, Building2, Refrigerator } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
+import type { Category } from '../types';
 
 // Motivos fijos del reporte; las claves coinciden con REPORT_REASONS de backend/src/reports.mjs.
 export const REPORT_REASONS = [
@@ -11,6 +12,9 @@ export const REPORT_REASONS = [
 
 // Íconos de las categorías activas en el backend (por id). Solo se muestran las que existen.
 export const CATEGORY_ICONS: Record<number, LucideIcon> = { 1: CarFront, 2: Building2, 3: Refrigerator };
+
+// Las mismas categorías mientras responde la API: la página se dibuja con su alto final y no salta (CLS).
+export const CATEGORY_FALLBACK: Category[] = [{ id: 1, nombre: 'Vehículos', subcategorias: [], total: 0 }, { id: 2, nombre: 'Inmuebles', subcategorias: [], total: 0 }, { id: 3, nombre: 'Electrodomésticos', subcategorias: [], total: 0 }];
 
 export const QUICK_SEARCHES = [
   { label: 'Cuartos en alquiler en Puno', to: '/anuncios?categoriaId=2&subcategoria=Habitaciones&zona=Puno&tipo=alquiler' },

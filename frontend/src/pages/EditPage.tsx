@@ -19,7 +19,7 @@ export function EditPage() {
   const { user } = useAuth();
   // useResource carga con api('/anuncios/' + id) y cancela el pedido al salir.
   const listing = useResource<ListingDetail>('/anuncios/' + id);
-  if (listing.loading) return <Loading label="Cargando tu aviso…"/>;
+  if (listing.loading) return <Loading page label="Cargando tu aviso…"/>;
   if (listing.error || !listing.data) return <div className="container page-section"><ErrorState message={listing.error || 'No encontramos este aviso.'} retry={listing.reload}/></div>;
   const ad = listing.data;
   if (ad.usuarioId !== user?.id || ad.fechaAprobacion !== null || ad.estado === 'dado_de_baja') {
