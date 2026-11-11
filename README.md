@@ -121,6 +121,8 @@ Cada archivo de `backend/test/` corresponde a un requisito y cada caso es indepe
 
 Los resultados de la última ejecución están en [docs/VALIDACION.md](docs/VALIDACION.md). El acta Dado/Cuando/Entonces para otra mesa está en [docs/ACTA_ACEPTACION.md](docs/ACTA_ACEPTACION.md), y la guía de entrevistas en [docs/ENTREVISTAS.md](docs/ENTREVISTAS.md).
 
+Las pruebas también corren solas en GitHub Actions, en cada push y en cada pull request ([.github/workflows/pruebas.yml](.github/workflows/pruebas.yml)). La medición con Lighthouse en modo celular, con el antes y el después de cada mejora, está en [docs/CALIDAD_P10.md](docs/CALIDAD_P10.md): catálogo y portada en 100 en las cuatro notas, y el detalle en 97 de rendimiento y 100 en las otras tres.
+
 ## Configuración
 
 Copia `.env.example` como `.env` para usar MySQL. Variables principales: `DB_CLIENT` (`mysql` o `sqlite`), `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER` y `DB_PASSWORD`. Además: `PORT` y `HOST` del servidor, `APP_ORIGIN` (el origen extra que puede enviar formularios), `DB_PATH` y `UPLOAD_DIR` para SQLite y fotos, y `COOKIE_SECURE=true` solo con HTTPS. El servidor escucha en `127.0.0.1`. No se incluye despliegue público.
