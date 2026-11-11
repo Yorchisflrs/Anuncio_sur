@@ -1,8 +1,9 @@
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { Link, NavLink, Outlet, useLocation } from 'react-router-dom';
 import { ArrowUpRight, MapPin, Menu, X, UserRound, ShieldCheck, Handshake, Plus, LogIn, House, Compass, LayoutGrid } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { Logo } from './Logo';
+import { Loading } from './States';
 import '../site-landscape.css';
 
 const NAV_ITEMS = [
@@ -54,7 +55,7 @@ export function Layout() {
       </nav>}
     </header>
     {error && <div className="connection-banner" role="alert">{error}</div>}
-    <main id="contenido"><Outlet/></main>
+    <main id="contenido"><Suspense fallback={<Loading page/>}><Outlet/></Suspense></main>
     <footer className="site-footer">
       <div className="container footer-lead"><h2>¿Buscas moto, cuarto<br/><span>o electrodoméstico?</span></h2><Link to="/anuncios" className="footer-explore">Ver los avisos <ArrowUpRight size={27}/></Link></div>
       <div className="container footer-columns">

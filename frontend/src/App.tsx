@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { lazy, useEffect } from 'react';
 import { Link, Route, Routes, useLocation } from 'react-router-dom';
 import { Layout } from './components/Layout';
 import { ProtectedRoute, AdminRoute } from './components/ProtectedRoute';
@@ -6,15 +6,18 @@ import { EmptyState } from './components/States';
 import { HomePage } from './pages/HomePage';
 import { ExplorePage } from './pages/ExplorePage';
 import { DetailPage } from './pages/DetailPage';
-import { AuthPage } from './pages/AuthPage';
-import { PublishPage } from './pages/PublishPage';
-import { ProfilePage } from './pages/ProfilePage';
 import { CategoriesPage } from './pages/CategoriesPage';
 import { InfoPage } from './pages/InfoPage';
 import { INFO_TOPICS } from './data/directory';
-import { AdminPage } from './pages/AdminPage';
-import { PaymentPage } from './pages/PaymentPage';
-import { EditPage } from './pages/EditPage';
+
+// Las páginas de cuenta, publicación, pago y administración se descargan aparte, solo cuando se abren:
+// quien mira el catálogo o un aviso no carga su JavaScript.
+const AuthPage = lazy(() => import('./pages/AuthPage').then(module => ({ default: module.AuthPage })));
+const PublishPage = lazy(() => import('./pages/PublishPage').then(module => ({ default: module.PublishPage })));
+const ProfilePage = lazy(() => import('./pages/ProfilePage').then(module => ({ default: module.ProfilePage })));
+const PaymentPage = lazy(() => import('./pages/PaymentPage').then(module => ({ default: module.PaymentPage })));
+const EditPage = lazy(() => import('./pages/EditPage').then(module => ({ default: module.EditPage })));
+const AdminPage = lazy(() => import('./pages/AdminPage').then(module => ({ default: module.AdminPage })));
 
 export function App() {
   const { pathname } = useLocation();
