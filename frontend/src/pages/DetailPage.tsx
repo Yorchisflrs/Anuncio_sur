@@ -15,7 +15,7 @@ export function DetailPage() {
   const { id } = useParams(); const listing = useResource<ListingDetail>('/anuncios/' + id); const [photo, setPhoto] = useState(0); const { user } = useAuth();
   useEffect(() => setPhoto(0), [id]);
   useEffect(() => { if (listing.data) document.title = listing.data.titulo + ' · AvisoSur'; }, [listing.data]);
-  if (listing.loading) return <Loading label="Cargando el anuncio…"/>;
+  if (listing.loading) return <Loading page label="Cargando el anuncio…"/>;
   if (listing.error || !listing.data) return <div className="container page-section"><Link to="/anuncios" className="text-link"><ArrowLeft size={16}/>Volver a explorar</Link><ErrorState message={listing.error} retry={listing.reload}/></div>;
   const ad = listing.data;
   const status = publicationStatus(ad);

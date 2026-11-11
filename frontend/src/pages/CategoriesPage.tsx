@@ -17,7 +17,7 @@ export function CategoriesPage() {
   return <div className="container page-section categories-page">
     <div className="breadcrumb"><Link to="/">Inicio</Link><ChevronRight size={12}/><span>Categorías</span></div>
     <div className="directory-hero"><div><span className="section-kicker">CATEGORÍAS</span><h1>Vehículos, inmuebles<br/><span>y electrodomésticos.</span></h1><p>Elige una categoría o subcategoría para ver sus avisos con precio, zona y fotos.</p></div><div className="directory-summary"><LayoutGrid size={30}/><strong>{total ?? '—'}</strong><span>anuncios activos</span><Link to="/anuncios">Ver todo el catálogo <ArrowUpRight size={17}/></Link></div></div>
-    {categories.loading ? <Loading label="Cargando categorías…"/> : categories.error ? <ErrorState message={categories.error} retry={categories.reload}/> : <div className="category-directory">{categories.data?.map((category, index) => {
+    {categories.loading ? <Loading page label="Cargando categorías…"/> : categories.error ? <ErrorState message={categories.error} retry={categories.reload}/> : <div className="category-directory">{categories.data?.map((category, index) => {
       const Icon = CATEGORY_ICONS[category.id] || LayoutGrid;
       return <article key={category.id} className="category-panel" data-category={category.id}>
         <Link to={'/anuncios?categoriaId=' + category.id} className="category-panel-cover"><span className="category-panel-number">0{index + 1}</span><Icon className="category-cover-icon" size={100}/><span className="category-cover-link"><ArrowUpRight size={24}/></span></Link>
