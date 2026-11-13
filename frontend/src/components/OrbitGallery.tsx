@@ -15,7 +15,7 @@ const wrap = (value: number, length: number) => ((value % length) + length) % le
 const clamp = (value: number, limit: number) => Math.max(-limit, Math.min(limit, value));
 const angleDiff = (to: number, from: number) => Math.atan2(Math.sin(to - from), Math.cos(to - from));
 
-/** Cards float without a fixed path anywhere inside the stage; hovering a card only slows it so it can be clicked. */
+/** Cards float without a fixed path anywhere inside the stage; hovering a card brings it on top, enlarges it and slows it so it can be clicked. */
 export function OrbitGallery({ listings, paused, onSelect, compact = false, balanceCategories = true }: Props) {
   const rootRef = useRef<HTMLElement>(null);
   const sceneRef = useRef<HTMLDivElement>(null);
@@ -95,7 +95,7 @@ export function OrbitGallery({ listings, paused, onSelect, compact = false, bala
           y: rows > 1 ? -limitY + (2 * limitY) * (row / (rows - 1)) : (Math.random() - .5) * limitY,
           heading: Math.random() * Math.PI * 2,
           turn: 0,
-          speed: (narrow ? 16 : 24) + Math.random() * 14,
+          speed: (narrow ? 20 : 30) + Math.random() * 17,
           phase: Math.random() * Math.PI * 2,
           pulse: .35 + Math.random() * .4,
           scale: baseScale,
@@ -112,9 +112,11 @@ export function OrbitGallery({ listings, paused, onSelect, compact = false, bala
         floater.x = clamp(floater.x, limitX);
         floater.y = clamp(floater.y, limitY);
         card.style.transform = `translate3d(-50%, -50%, 0) translate3d(${floater.x.toFixed(2)}px, ${floater.y.toFixed(2)}px, 0) scale(${floater.scale.toFixed(4)})`;
-        card.style.zIndex = String(index === state.front ? 400 : 100 + Math.round(floater.scale * 100));
+        // La tarjeta bajo el cursor (o con el foco) queda encima de todas, incluso de la destacada.
+        card.style.zIndex = String(index === state.hovered ? 500 : index === state.front ? 400 : 100 + Math.round(floater.scale * 100));
         card.style.opacity = '1';
         card.dataset.front = String(index === state.front);
+        card.dataset.hovered = String(index === state.hovered);
       });
     };
     drawRef.current = draw;
@@ -128,9 +130,10 @@ export function OrbitGallery({ listings, paused, onSelect, compact = false, bala
       if (isVisible) {
         const moving = autoEnabled && !paused;
         state.floaters.forEach((floater, index) => {
-          // Depth breathes slowly; the highlighted card stays in front and larger.
-          const breathing = moving ? Math.sin(now / 1000 * floater.pulse + floater.phase) * .045 : 0;
-          const target = (index === state.front ? frontScale : baseScale) + breathing;
+          // Depth breathes slowly; the highlighted card and the one under the cursor stay in front and larger.
+          const raised = index === state.front || index === state.hovered;
+          const breathing = moving && index !== state.hovered ? Math.sin(now / 1000 * floater.pulse + floater.phase) * .045 : 0;
+          const target = (raised ? frontScale : baseScale) + breathing;
           floater.scale += (target - floater.scale) * (1 - Math.exp(-seconds * 5));
           if (!moving) return;
           // The turning rate itself wanders at random, so the path never repeats.
@@ -181,6 +184,16 @@ export function OrbitGallery({ listings, paused, onSelect, compact = false, bala
     setAnnouncement(`Anuncio ${index + 1} de ${count}: ${visible[index].titulo}`);
     drawRef.current();
   }
+  /** Al pasar el cursor (o el foco) por una tarjeta, se pone encima de las demás de inmediato, sin esperar al siguiente cuadro. */
+  function raise(index: number) {
+    motion.current.hovered = index;
+    if (view === 'bubble') drawRef.current();
+  }
+  function lower(index: number) {
+    if (motion.current.hovered !== index) return;
+    motion.current.hovered = -1;
+    if (view === 'bubble') drawRef.current();
+  }
   function changeGroup(direction: -1 | 1) {
     setGroup(value => wrap(value + direction, groups));
     setAnnouncement('Mostrando otro grupo de anuncios.');
@@ -196,7 +209,7 @@ export function OrbitGallery({ listings, paused, onSelect, compact = false, bala
     <header className="bubble-heading"><div><span className="bubble-label"><Layers3 size={17}/>{compact ? 'AVISOS RECIENTES' : 'AVISOS PUBLICADOS'}</span><p>{view === 'bubble' ? 'Toca un aviso para ver precio, fotos y contacto.' : 'Precio, zona y fotos de cada aviso.'}</p></div><div className="bubble-view-switch" aria-label="Presentación de anuncios"><button type="button" data-action="bubble-view" aria-pressed={view === 'bubble'} onClick={() => setView('bubble')}><Layers3 size={16}/><span>Flotante</span></button><button type="button" data-action="simple-view" aria-pressed={view === 'simple'} onClick={() => setView('simple')}><List size={17}/><span>{compact ? 'Lista' : 'Vista sencilla'}</span></button></div></header>
     <div ref={sceneRef} className="bubble-stage" data-moving="false" style={{ '--bubble-card-width': cardWidth + 'px', '--bubble-stage-height': stageHeight + 'px' } as CSSProperties} onKeyDown={keyboard}>
       {visible.map((listing, index) => <button ref={element => { cardsRef.current[index] = element; }} key={listing.id} type="button" className="bubble-card" data-listing-id={listing.id} data-category={listing.categoriaId}
-        onPointerEnter={() => { motion.current.hovered = index; }} onPointerLeave={() => { if (motion.current.hovered === index) motion.current.hovered = -1; }}
+        onPointerEnter={() => raise(index)} onPointerLeave={() => lower(index)} onFocus={() => raise(index)} onBlur={() => lower(index)}
         onClick={() => onSelect(listing.id)} aria-label={`Ver anuncio: ${listing.titulo}, ${listingPrice(listing)}, ${listing.zona}`}><ListingCardContent listing={listing} eager/><span className="bubble-card-open">Ver detalles <ArrowUpRight size={16}/></span></button>)}
     </div>
     {view === 'bubble' && <div className="bubble-navigation" aria-label="Destacar anuncios"><button type="button" data-action="previous" onClick={() => highlight(-1)} disabled={count < 2}><ChevronLeft size={19}/><span>Anterior</span></button><button type="button" data-action="motion" className="bubble-motion" onClick={() => setMotionChoice(!autoEnabled)} aria-pressed={!autoEnabled} disabled={reducedMotion} title={reducedMotion ? 'Movimiento reducido activado. Usa Anterior y Siguiente.' : undefined}>{autoEnabled ? <Pause size={17}/> : <Play size={17}/>}<span>{autoEnabled ? 'Pausar' : 'Mover'}</span></button><button type="button" data-action="next" onClick={() => highlight(1)} disabled={count < 2}><span>Siguiente</span><ChevronRight size={19}/></button></div>}
