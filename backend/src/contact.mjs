@@ -32,6 +32,7 @@ export function registerContactRoutes(app, db, config) {
     if (!Number.isSafeInteger(id) || id < 1) throw new ApiError(404, 'Este anuncio no está disponible.');
     const row = await db.get(listingSelect + ' WHERE a.id = ?', id);
     if (!isPublicRow(row)) throw new ApiError(404, 'Este anuncio no está disponible.');
+    if (Number(row.es_demo)) throw new ApiError(404, 'Este anuncio es referencial y no tiene un vendedor disponible.');
     const seller = await db.get('SELECT celular FROM usuarios WHERE id = ?', row.usuario_id);
     const celular = row.contacto || seller.celular;
     if (req.user?.id !== row.usuario_id) {

@@ -7,7 +7,7 @@ export function ListingCardContent({ listing, eager = false }: { listing: Listin
   return <>
     <span className="product-image" data-category={listing.categoriaId}>
       <img src={listing.imagen} alt={listing.titulo} referrerPolicy="no-referrer" loading={eager ? 'eager' : 'lazy'} width="600" height="440" draggable={false}/>
-      {listing.demo && <span className="image-badge">Ejemplo</span>}
+      {listing.demo && <span className="image-badge">Referencial</span>}
       {listing.destacado && <span className="featured-badge">Destacado</span>}
       {listing.estado === 'dado_de_baja' && <span className="inactive-badge">Dado de baja</span>}
       <span className="card-arrow"><ArrowUpRight size={18}/></span>
@@ -29,7 +29,7 @@ export function ProductCard({ listing }: { listing: Listing }) {
 /** Fila compacta para comparar precios: foto, título, zona y precio a la vista. */
 export function ListingRow({ listing }: { listing: Listing }) {
   return <Link to={'/anuncios/' + listing.id} className="listing-row" data-category={listing.categoriaId}>
-    <span className="listing-row-image"><img src={listing.imagen} alt="" referrerPolicy="no-referrer" loading="lazy" width="160" height="120" draggable={false}/>{listing.demo && <span className="image-badge">Ejemplo</span>}</span>
+    <span className="listing-row-image"><img src={listing.imagen} alt="" referrerPolicy="no-referrer" loading="lazy" width="160" height="120" draggable={false}/>{listing.demo && <span className="image-badge">Referencial</span>}</span>
     <span className="listing-row-body">
       <span className="product-category">{listing.tipoOperacion === 'alquiler' ? 'Alquiler · ' : ''}{listing.categoria}{listing.subcategoria ? ' / ' + listing.subcategoria : ''}</span>
       <span className="listing-row-title">{listing.titulo}</span>

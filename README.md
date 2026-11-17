@@ -12,10 +12,11 @@ Requiere **Node.js 24 o superior** y npm. En PowerShell, si la política impide 
 
 ```powershell
 npm install
+npm run catalog:seed
 npm run dev
 ```
 
-Abre **http://127.0.0.1:5173**. La API escucha en **http://127.0.0.1:3001** y Vite le redirige `/api` y `/uploads`. Sin archivo `.env`, se usa SQLite en `backend/data/avisosur.sqlite`, que se crea con 16 avisos DEMO **pendientes de revisión**.
+Abre **http://127.0.0.1:5173**. La API escucha en **http://127.0.0.1:3001** y Vite le redirige `/api` y `/uploads`. Sin archivo `.env`, se usa SQLite en `backend/data/avisosur.sqlite`, que se crea con 16 avisos de muestra **pendientes de revisión**.
 
 Para servir la versión compilada con un solo servidor:
 
@@ -35,14 +36,20 @@ Abre **http://127.0.0.1:3001**. Para usar el MySQL de XAMPP, sigue [docs/MYSQL.m
    ```
 
 2. En **Administración → QR y datos de pago**, registra el medio de pago (titular, número y QR) y revisa los **Planes y tarifas**.
-3. Aprueba los avisos que quieras mostrar en **Revisar anuncios**. Los 16 avisos DEMO se aprueban como cualquier otro.
+3. Aprueba los avisos que quieras mostrar en **Revisar anuncios**. Para presentar un catálogo completo, carga las 50 fotografías referenciales con el comando indicado abajo.
 4. Las cuentas nuevas aparecen en **Verificar celulares**: genera el código y envíalo por WhatsApp, o verifica en persona.
 
-### Avisos de demostración
+### Catálogo fotográfico referencial
 
-Los 16 avisos de ejemplo pertenecen a la cuenta «Vendedor de demostración» (`demo@avisosur.local`, celular ficticio `900000000`). Sus tarjetas dicen «Ejemplo» y sus imágenes son ilustraciones, no fotos reales.
+Para poblar la portada y el catálogo en SQLite o MySQL con **50 anuncios de muestra y 50 fotografías reales**, ejecuta después de configurar la base de datos:
 
-Esa cuenta **no tiene una contraseña escrita en el código**: al crear la base se le asigna una clave aleatoria que nadie conoce. Como su número es ficticio, tampoco se puede verificar ni publicar. Para probar el sistema, crea tu propia cuenta. Si para una exposición hace falta entrar como demo, define `DEMO_PASSWORD` en `.env` antes de que se cree la base SQLite.
+```powershell
+npm run catalog:seed
+```
+
+El comando se puede repetir: actualiza los anuncios de la cuenta de muestra y no modifica los anuncios de otras cuentas. Las fotos están guardadas localmente en `frontend/public/images/catalogo/`; [docs/FOTOS_CATALOGO.md](docs/FOTOS_CATALOGO.md) registra autor, licencia y fuente de cada una. Las imágenes, precios, ubicaciones y ofertas son **referenciales**: no representan bienes realmente disponibles ni tienen contacto de venta. El sistema los marca como contenido de muestra y no suma sus importes a los ingresos de administración.
+
+La cuenta de muestra (`demo@avisosur.local`, celular ficticio `900000000`) no tiene una contraseña escrita en el código: al crear la base se le asigna una clave aleatoria que nadie conoce. Como su número es ficticio, tampoco se puede verificar ni publicar. Para probar la publicación real, crea tu propia cuenta. Si para una exposición necesitas entrar en esa cuenta, define `DEMO_PASSWORD` en `.env` antes de crear la base SQLite.
 
 ## Funcionalidades
 
