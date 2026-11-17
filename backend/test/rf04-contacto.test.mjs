@@ -42,9 +42,10 @@ describe('RF-04 · Contacto por WhatsApp', () => {
     assert.equal(url.searchParams.get('text'), 'Hola, vi tu anuncio de ' + ad.titulo + ' en AvisoSur y quisiera saber si todavía está disponible');
   });
 
-  it('Sin un celular propio en el anuncio se usa el de la cuenta, como el aviso DEMO', async () => {
-    const { body } = await app.request('/anuncios/1/contacto');
-    assert.equal(new URL(body.whatsappUrl).pathname, '/51' + DEMO_USER.celular);
+  it('Un aviso referencial no entrega el teléfono ficticio de la cuenta de muestra', async () => {
+    const { response, body } = await app.request('/anuncios/1/contacto');
+    assert.equal(response.status, 404);
+    assert.equal(body.celular, undefined);
   });
 
   it('El contacto de un aviso que no es público devuelve 404', async () => {
@@ -64,12 +65,13 @@ describe('RF-04 · Contacto por WhatsApp', () => {
 describe('RF-04 · Límite de pedidos y personas interesadas', () => {
   it('Una persona que pide demasiados contactos recibe 429', async t => {
     const app = await isolatedApp(t, { contactLimit: 3 });
-    assert.equal((await app.approve((await app.admin()).cookie, 1)).response.status, 200);
-    for (let request = 0; request < 3; request += 1) assert.equal((await app.request('/anuncios/1/contacto')).response.status, 200);
-    const blocked = await app.request('/anuncios/1/contacto');
+    const seller = await app.register('vendedor-limite');
+    const ad = await app.publish(seller.cookie, { titulo: 'Moto con contacto limitado' });
+    for (let request = 0; request < 3; request += 1) assert.equal((await app.request('/anuncios/' + ad.id + '/contacto')).response.status, 200);
+    const blocked = await app.request('/anuncios/' + ad.id + '/contacto');
     assert.equal(blocked.response.status, 429); assert.match(blocked.body.message, /muchos contactos/);
     const buyer = await app.register('comprador-con-cuenta');
-    assert.equal((await app.request('/anuncios/1/contacto', { headers: { Cookie: buyer.cookie } })).response.status, 200, 'El límite es por persona: otra cuenta conserva sus pedidos.');
+    assert.equal((await app.request('/anuncios/' + ad.id + '/contacto', { headers: { Cookie: buyer.cookie } })).response.status, 200, 'El límite es por persona: otra cuenta conserva sus pedidos.');
   });
 
   it('El vendedor ve cuántas personas distintas pidieron su contacto', async t => {

@@ -57,7 +57,7 @@ export async function getListing(db, id, user) {
   // Insignia de confianza: celular verificado y su historial de avisos publicados y dados de baja.
   const history = await db.get("SELECT SUM(CASE WHEN fecha_aprobacion IS NOT NULL THEN 1 ELSE 0 END) AS publicados, SUM(CASE WHEN estado = 'dado_de_baja' THEN 1 ELSE 0 END) AS bajas FROM anuncios WHERE usuario_id = ?", seller.id);
   // El nombre público es el que eligió el vendedor; nunca se deriva de su correo.
-  const vendedor = { id: seller.id, nombre: seller.es_demo ? 'Vendedor de demostración' : seller.nombre || 'Vendedor de AvisoSur', fechaRegistro: seller.fecha_registro, demo: Boolean(seller.es_demo),
+  const vendedor = { id: seller.id, nombre: seller.es_demo ? 'AvisoSur · contenido referencial' : seller.nombre || 'Vendedor de AvisoSur', fechaRegistro: seller.fecha_registro, demo: Boolean(seller.es_demo),
     verificado: Boolean(Number(seller.celular_verificado)), avisosPublicados: Number(history.publicados || 0), avisosDadosDeBaja: Number(history.bajas || 0) };
   const fotos = await db.all('SELECT id, archivo, orden FROM fotos WHERE anuncio_id = ? ORDER BY orden', row.id);
   if (!privileged) return { ...serializeListing(row), fotos, vendedor };

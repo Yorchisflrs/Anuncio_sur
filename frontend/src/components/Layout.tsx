@@ -16,7 +16,7 @@ export function Layout() {
   const [menu, setMenu] = useState(false);
   const location = useLocation();
   const { user, error } = useAuth();
-  const userName = user ? (user.demo ? 'Cuenta demo' : user.nombre || 'Mi cuenta') : '';
+  const userName = user ? (user.demo ? 'Cuenta de muestra' : user.nombre || 'Mi cuenta') : '';
   useEffect(() => {
     setMenu(false);
     window.scrollTo({ top: 0, behavior: 'instant' });
@@ -62,7 +62,7 @@ export function Layout() {
         <div className="footer-brand"><Logo light/><p>Avisos clasificados de Puno, Juliaca y otras localidades del sur del Perú.</p><span className="footer-region"><MapPin size={15}/>Puno · Juliaca · Sur del Perú</span></div>
         <div className="footer-links"><strong>Descubre</strong><Link to="/anuncios?categoriaId=1">Vehículos</Link><Link to="/anuncios?categoriaId=2">Inmuebles</Link><Link to="/anuncios?categoriaId=3">Electrodomésticos</Link><Link to="/categorias">Todas las categorías</Link></div>
         <div className="footer-links"><strong>Cerca de ti</strong><Link to="/anuncios?zona=Puno">Puno</Link><Link to="/anuncios?zona=Juliaca">Juliaca</Link><Link to={'/anuncios?zona=' + encodeURIComponent('Otras localidades del sur del Perú')}>Otras localidades del sur</Link><Link to="/publicar">Publica tu anuncio</Link></div>
-        <div className="footer-links"><strong>Estamos para orientarte</strong><Link to="/ayuda/seguridad">Consejos para comprar y vender</Link><Link to="/ayuda/terminos">Términos de publicación</Link><Link to="/ayuda/privacidad">Privacidad</Link><Link to="/ayuda/soporte">Ayuda para publicar</Link></div>
+        <div className="footer-links"><strong>Estamos para orientarte</strong><Link to="/ayuda/seguridad">Consejos para comprar y vender</Link><Link to="/ayuda/terminos">Términos de publicación</Link><Link to="/ayuda/privacidad">Privacidad</Link><Link to="/ayuda/soporte">Ayuda para publicar</Link><a href="/creditos-fotos.html">Créditos de fotografías</a></div>
       </div>
       <div className="container footer-bottom"><span>© {new Date().getFullYear()} AvisoSur · UNA Puno</span><span className="footer-demo"><ShieldCheck size={14}/>Publicación sujeta a revisión, pago confirmado y vigencia.</span></div>
     </footer>

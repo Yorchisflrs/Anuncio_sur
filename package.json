@@ -20,6 +20,7 @@
     "benchmark": "node scripts/benchmark.mjs",
     "check": "npm run check --workspace=frontend",
     "migrate:mysql": "node scripts/migrate-sqlite-to-mysql.mjs",
-    "assets": "node scripts/generate-demo-assets.mjs"
+    "assets": "node scripts/generate-demo-assets.mjs",
+    "catalog:seed": "node scripts/cargar-catalogo.mjs"
   }
 }
