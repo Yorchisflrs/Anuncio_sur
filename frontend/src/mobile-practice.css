@@ -1,0 +1,52 @@
+@media (max-width: 600px) {
+  .site-shell :is(.categories-section, .recent-section, .publication-pricing-section) .section-heading {
+    flex-wrap: wrap;
+    gap: 8px 20px;
+  }
+
+  .site-shell .directory-hero h1 {
+    font-size: clamp(28px, 8.9vw, 42px);
+    overflow-wrap: break-word;
+  }
+
+  .site-shell .hero-search {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 6px;
+    padding: 8px;
+  }
+
+  .site-shell .hero-search :is(.search-input, button) {
+    grid-column: 1 / -1;
+  }
+
+  .site-shell .hero-search .search-zone {
+    display: flex;
+    min-width: 0;
+    padding-inline: 6px;
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+  }
+
+  .site-shell .hero-search .search-zone select {
+    width: 100%;
+    max-width: none;
+    min-width: 0;
+  }
+
+  .site-shell :is(.hero-search, .catalog-search, .admin-search) input,
+  .site-shell :is(.hero-search, .quick-filters, .filters-panel.filters-open, .results-bar) select,
+  .site-shell .filters-panel .price-fields input {
+    min-height: 48px;
+    font-size: 16px;
+  }
+
+  .site-shell .results-bar select {
+    max-width: 100%;
+    min-width: 0;
+  }
+
+  .site-shell :is(.catalog-view-switch button, .admin-summary-link) {
+    min-height: 48px;
+  }
+}

@@ -58,7 +58,10 @@ export async function createApp(overrides = {}) {
   if (!privateRelative) throw new Error('PRIVATE_UPLOAD_DIR no puede coincidir con UPLOAD_DIR.');
   if (privateRelative !== '..' && !privateRelative.startsWith('..' + path.sep) && !path.isAbsolute(privateRelative) && !privateRelative.split(path.sep)[0].startsWith('.')) throw new Error('Si PRIVATE_UPLOAD_DIR está dentro de UPLOAD_DIR, debe estar en una carpeta oculta que comience con punto.');
   if (!privateRelative.startsWith('..') && !path.isAbsolute(privateRelative)) app.use('/uploads/' + privateRelative.split(path.sep).join('/'), (_req,_res,next)=>next(new ApiError(404,'No encontramos este recurso.')));
-  app.use('/uploads', express.static(config.uploadDir, { dotfiles: 'deny', index: false, maxAge: '7d' }));
+  app.use('/uploads', express.static(config.uploadDir, {
+    dotfiles: 'deny', index: false, cacheControl: false,
+    setHeaders: res => res.set('Cache-Control', 'no-store'),
+  }));
   app.use('/demo', compressedStatic(path.join(projectRoot, 'frontend', 'public', 'demo'), { cacheControl: () => 'public, max-age=604800' }));
   app.use('/demo', express.static(path.join(projectRoot, 'frontend', 'public', 'demo'), { maxAge: '7d' }));
 
