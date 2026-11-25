@@ -17,6 +17,7 @@
     "start": "npm run start --workspace=backend",
     "test": "npm run test --workspace=backend",
     "test:reporte": "npm run test:reporte --workspace=backend",
+    "smoke": "node scripts/smoke.mjs",
     "benchmark": "node scripts/benchmark.mjs",
     "check": "npm run check --workspace=frontend",
     "migrate:mysql": "node scripts/migrate-sqlite-to-mysql.mjs",

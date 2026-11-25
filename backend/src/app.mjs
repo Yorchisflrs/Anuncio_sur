@@ -44,6 +44,7 @@ export async function createApp(overrides = {}) {
   const app = express();
   const auth = authServices(db, config);
   app.disable('x-powered-by');
+  app.set('trust proxy', config.trustProxy);
   app.use(helmet({ contentSecurityPolicy: { directives: { upgradeInsecureRequests: null, imgSrc: ["'self'", 'data:', 'blob:', 'https:'], frameSrc: ["'self'", 'https://www.openstreetmap.org'] } } }));
   app.use(express.json({ limit: '16kb' }));
   app.use(cookieParser());
@@ -66,7 +67,15 @@ export async function createApp(overrides = {}) {
   app.use('/demo', express.static(path.join(projectRoot, 'frontend', 'public', 'demo'), { maxAge: '7d' }));
 
   const loginLimit = rateLimit({ windowMs: 15 * 60 * 1000, limit: config.authAttemptLimit ?? 30, standardHeaders: 'draft-8', legacyHeaders: false, message: { message: 'Has realizado varios intentos. Espera unos minutos y vuelve a intentarlo.' } });
-  app.get('/api/health', (_req, res) => res.json({ status: 'ok', nombre: 'AvisoSur' }));
+  app.get(['/salud', '/api/health'], async (_req, res) => {
+    res.set('Cache-Control', 'no-store');
+    try {
+      await db.get('SELECT 1 AS disponible');
+      res.json({ status: 'ok', nombre: 'AvisoSur' });
+    } catch {
+      res.status(503).json({ status: 'error', nombre: 'AvisoSur' });
+    }
+  });
   app.get('/api/categorias', async (_req, res) => {
     const rows = await db.all(`SELECT c.*, (SELECT COUNT(*) FROM anuncios a WHERE a.categoria_id = c.id AND ${publicCondition()}) AS total FROM categorias c WHERE c.activa = 1 ORDER BY c.id`,new Date().toISOString());
     res.json(rows.map(row => ({ id: row.id, nombre: row.nombre, subcategorias: typeof row.subcategorias === 'string' ? JSON.parse(row.subcategorias) : row.subcategorias, total: row.total })));
