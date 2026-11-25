@@ -3,11 +3,14 @@ frontend/dist/
 backend/data/
 backend/uploads/
 .env
+.env.*
+!.env.example
 *.log
 *.sqlite*
 .test-data/
 *.tsbuildinfo
 tmp/
+backups/
 # Datos de pago personales: el QR se sube desde el panel de administración, nunca al repositorio.
 QR_Yape*
 *qr*yape*

@@ -27,6 +27,8 @@ npm start
 
 Abre **http://127.0.0.1:3001**. Para usar el MySQL de XAMPP, sigue [docs/MYSQL.md](docs/MYSQL.md).
 
+Para publicar en Railway con MySQL y archivos persistentes, sigue [docs/DESPLIEGUE_RAILWAY.md](docs/DESPLIEGUE_RAILWAY.md). El Dockerfile compila la interfaz con Node 24 y sirve la aplicación y la API desde el mismo servicio. La ruta `/salud` comprueba la conexión con la base.
+
 ### Primera configuración
 
 1. Crea una cuenta de administración desde la terminal (la contraseña se pide sin mostrarse):

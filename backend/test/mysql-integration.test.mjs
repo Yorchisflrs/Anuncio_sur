@@ -143,8 +143,8 @@ test('MySQL/MariaDB temporal: migración legado, moderación, siete fotos y vige
   const detail41 = await request('/anuncios/41');
   assert.equal(detail41.body.vendedor.celular, undefined); assert.equal(detail41.body.whatsappUrl, undefined);
   const contact = await request('/anuncios/41/contacto');
-  assert.equal(contact.response.status, 200); assert.equal(new URL(contact.body.whatsappUrl).pathname, '/51900000007');
-  assert.equal((await context.db.get('SELECT COUNT(*) AS n FROM contactos_anuncio WHERE anuncio_id = 41')).n, 1);
+  assert.equal(contact.response.status, 404, 'El catálogo referencial conserva su contacto protegido.');
+  assert.equal((await context.db.get('SELECT COUNT(*) AS n FROM contactos_anuncio WHERE anuncio_id = 41')).n, 0);
   const reporters = [];
   for (let index = 0; index < 3; index += 1) {
     const registered = await request('/auth/registro', jsonRequest({ nombre: 'Comprador MySQL ' + index, correo: 'reporte-' + index + '@avisosur-test.local', celular: '91000020' + index, password: TEST_PASSWORD, confirmacion: TEST_PASSWORD }));
@@ -158,6 +158,16 @@ test('MySQL/MariaDB temporal: migración legado, moderación, siete fotos y vige
   const restored = await request('/admin/anuncios/41/reportes/resolver', jsonRequest({ accion: 'restaurar' }, adminCookie));
   assert.equal(restored.response.status, 200, JSON.stringify(restored.body)); assert(restored.body.fechaVencimiento.endsWith('Z'));
   assert.equal((await request('/anuncios')).body.total, 1);
+
+  // El contacto comercial se comprueba con un propietario y un aviso sin la marca referencial.
+  await context.db.run('UPDATE usuarios SET celular_verificado = 1 WHERE id = ?', 8);
+  const commercial = await request('/anuncios', { method: 'POST', headers: { Cookie: adminCookie }, body: form });
+  assert.equal(commercial.response.status, 201, JSON.stringify(commercial.body));
+  assert.equal((await approve(commercial.body.id)).response.status, 200);
+  const commercialContact = await request('/anuncios/' + commercial.body.id + '/contacto');
+  assert.equal(commercialContact.response.status, 200);
+  assert.equal(new URL(commercialContact.body.whatsappUrl).pathname, '/51900000008');
+  assert.equal((await context.db.get('SELECT COUNT(*) AS n FROM contactos_anuncio WHERE anuncio_id = ?', commercial.body.id)).n, 1);
 
   const before = await context.db.all('SELECT * FROM anuncios ORDER BY id');
   await new Promise(resolve => server.close(resolve)); server = null;
