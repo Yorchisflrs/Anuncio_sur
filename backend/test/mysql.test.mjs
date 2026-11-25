@@ -26,6 +26,8 @@ test('consultas MySQL usan precio decimal y parámetros, sin sintaxis SQLite', a
   assert(Math.abs(Date.parse(calls[0].values[0]) - Date.now()) < 5000);
   assert.deepEqual(calls[0].values.slice(1), ['moto', '1.00', '5000.00']);
   assert.match(calls[1].sql, /ORDER BY a\.precio ASC/);
+  assert.match(calls[1].sql, /LIMIT 24 OFFSET 0$/);
+  assert.deepEqual(calls[1].values, calls[0].values);
 });
 
 test('validación acepta categorías JSON decodificadas por MySQL', async () => {

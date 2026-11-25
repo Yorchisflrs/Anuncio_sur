@@ -44,7 +44,12 @@ export async function getCatalog(db, query) {
   const where = ' WHERE ' + conditions.join(' AND ');
   const order = { recent: 'a.fecha_publicacion DESC, a.id DESC', price_asc: priceColumn + ' ASC, a.id DESC', price_desc: priceColumn + ' DESC, a.id DESC' }[filters.sort];
   const total = (await db.get('SELECT COUNT(*) AS total FROM anuncios a JOIN categorias c ON c.id = a.categoria_id' + where, ...values)).total;
-  const rows = await db.all(listingSelect + where + ' ORDER BY ' + order + ' LIMIT ? OFFSET ?', ...values, filters.limit, (filters.page - 1) * filters.limit);
+  const offset = (filters.page - 1) * filters.limit;
+  // MySQL 8 rechaza los parámetros DOUBLE que mysql2 envía en LIMIT/OFFSET
+  // mediante execute(). Ambos números están acotados por parseFilters().
+  const pagination = db.kind === 'mysql' ? ` LIMIT ${filters.limit} OFFSET ${offset}` : ' LIMIT ? OFFSET ?';
+  const rows = await db.all(listingSelect + where + ' ORDER BY ' + order + pagination,
+    ...values, ...(db.kind === 'mysql' ? [] : [filters.limit, offset]));
   return { anuncios: rows.map(row => serializeListing(row)), total, page: filters.page, totalPages: Math.ceil(total / filters.limit) };
 }
 
